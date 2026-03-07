@@ -1,114 +1,81 @@
 # Voice Growth Archipelago
 
-A gamified habit and skill tracker web app, visualizing your daily tasks as islands on an archipelago map. Track streaks, analyze progress, and celebrate your growth—all synced with Google Sheets for persistence.
-
----
+A habit and skill tracker web app that visualizes routines as islands. It supports cross-device sync through Google Sheets + Apps Script, dynamic category analytics, archive-safe habit lifecycle, and custom date analysis.
 
 ## Features
 
-### 🏝️ Archipelago Map (Today Tab)
-- **Habit Islands:** Each habit/task is an island, positioned on a map.
-- **Icons & Labels:** Custom SVG icons, names, and frequency labels.
-- **Completion:** Click an island to mark as complete; completed islands glow.
-- **Constellation Celebration:** Complete all essential tasks to trigger constellation lines and confetti.
+### Today View
+- Island-based habit tracking with one-tap complete/uncomplete.
+- Undo toast for quick recovery from accidental taps.
+- Day scopes:
+  - `Standard Day`: all active due habits.
+  - `Lite Day`: only core due habits.
+- Constellation celebration when all core due habits are completed.
 
-### 🚦 Flow Modes
-- **Full Voyage:** Shows all tasks due today.
-- **Short Trip:** Shows only essential tasks for a quick routine.
-- **Toggle:** Switch modes with the Flow Mode Toggle.
+### Progress Overview
+- Preset windows: `7`, `30`, `90` days.
+- Custom date range (`From` / `To`) across all analytics.
+- Scope filter: `All Habits` vs `Core Habits`.
+- Optional `Include archived` toggle.
+- Activity Calendar:
+  - All-habits intensity mode.
+  - Single-habit done/missed/not-due mode.
+  - 3-letter weekdays (`Sun Mon Tue ...`).
+  - Month paging for large custom ranges.
+- Category analytics:
+  - Category Cadence (line chart)
+  - Category Mix (donut)
+  - Category Radar
+- Habit Breakdown and spotlight cards.
 
-### 📊 Progress Dashboard
-- **Current Streak:** Days in a row with all essential tasks completed.
-- **Total Completions:** Number of tasks completed in the selected period.
-- **Activity Calendar:** 90-day heatmap of daily completions.
-- **Skill Cadence:** Line chart for Mindfulness, Discipline, Learning.
-- **Skill Focus Donut:** Donut chart visualizing skill distribution.
-- **Skill Web Radar:** Radar chart for skill levels.
-- **Habit Deep Dive:** List of habits with streaks and sparklines.
-- **Habit Spotlight:** Highlights top performer and habit needing focus.
+### Habit Lifecycle
+- Add/edit habits with frequency, days, category, and color.
+- Remove is two-step and safe:
+  - Archive habit (default)
+  - Delete permanently
+- Re-adding a habit with the same name as an archived one offers restore.
+- Archived history is preserved and can be included in analytics.
 
-### 📝 Task Management
-- **Add/Edit/Delete Tasks:** Via Task Manager modal.
-- **Customization:** Choose icon, name, frequency, days, essential status.
-- **Persistence:** Full habit state saved in localStorage (max 20 tasks), with optional Google Sheets V2 sync.
+### Sync and Persistence
+- LocalStorage fallback for tasks, history, and progress filters.
+- Google Apps Script sync:
+  - Completion events (`add` / `remove`)
+  - Habit definitions (`saveTasks`)
+- User isolation via `?uid=<your-id>`.
 
-### 🔗 Google Sheets Integration
-- **Sync:** Task completions are logged to Google Sheets via Apps Script.
-- **Cross-device habits:** Habit definitions can also sync (requires V2 Apps Script endpoint).
-- **Load:** Data fetched from the sheet on app start.
+## Data Model Notes
 
-### 🎉 Celebration & Animation
-- **Constellation Lines:** Drawn between completed essential islands.
-- **Confetti & Sparkles:** Visual celebration when all essential tasks are done.
-- **Animated Backgrounds:** Nebula (dark) and water caustics (light).
-- **Theme Toggle:** Switch between dark and light modes.
+Each habit task now supports lifecycle fields:
+- `status`: `active | archived | deleted`
+- `createdAt`, `archivedAt`, `deletedAt`
 
----
-
-## Technical Details
-
-- **Frontend:** Pure HTML, Tailwind CSS (via CDN), and JavaScript.
-- **Charts:** Chart.js for line and radar charts; SVG for donut and sparklines.
-- **Data Model:** All tasks in `TASK_DEFINITIONS`; global state in `g_appState`.
-- **Persistence:** LocalStorage fallback + Google Apps Script backend.
-- **Responsive:** Mobile-first design.
-
----
-
-## How It Works
-
-1. **Initialization:** Loads habits from local state (and cloud when available), then loads completion data.
-2. **Daily Tracking:** Map view shows islands for tasks due today. Click to mark complete.
-3. **Progress Analytics:** Switch to Progress tab for charts and stats. Filter by 7, 30, or 90 days.
-4. **Task Management:** Add/edit/delete tasks in Task Manager modal.
-5. **Celebration:** Completing all essential tasks triggers constellation and confetti.
-
----
-
-## Customization
-
-- **Google Apps Script URL:** Set in `GOOGLE_SCRIPT_URL` at the top of the HTML file.
-- **Sync User ID:** Default is `habit-app-primary-user` for personal cross-device sync.
-  - Optional: append `?uid=your-id` to the app URL to isolate a specific user.
-- **Default Tasks:** Modify `getDefaultTasks()` for initial islands.
-- **Icons:** Add SVGs to `ICON_LIBRARY` for more choices.
-
----
+Backward compatibility is preserved:
+- Missing status defaults to `active`.
+- Missing category defaults to `Uncategorized`.
 
 ## Setup
 
-1. **Google Sheets Backend**
-   - For completions-only behavior, existing Apps Script is enough.
-   - For cross-device habit add/edit/delete sync, use `GOOGLE_APPS_SCRIPT_V2.md`.
-   - Paste your Apps Script URL in the `GOOGLE_SCRIPT_URL` constant.
-
-2. **Local Development**
-   - Open `index.html` in your browser.
-   - Manage tasks via the Task Manager.
-
----
+1. Deploy Apps Script web app (see `GOOGLE_APPS_SCRIPT_V2.md`).
+2. Set `GOOGLE_SCRIPT_URL` in `index.html`.
+3. Open `index.html` in a browser.
 
 ## File Structure
 
-- `index.html` — Main app file (all logic, styles, markup).
-- `GOOGLE_APPS_SCRIPT_V2.md` — Apps Script endpoint supporting both tasks + completions sync.
-
----
+- `index.html` — Main app (UI + state + rendering + task lifecycle).
+- `GOOGLE_APPS_SCRIPT_V2.md` — Backend script contract for tasks/completions sync.
 
 ## Troubleshooting
 
-- **Data Not Loading:** Check your Apps Script URL and permissions.
-- **Task Limit:** Max 20 tasks (custom + default).
-- **UI/Chart Issues:** Check browser console for errors.
-
----
+- Data mismatch across devices:
+  - Verify same `uid` is used.
+  - Verify the same Apps Script deployment URL is configured.
+- Custom date not updating charts:
+  - Ensure `From <= To` and end date is not in the future.
+- Habit missing after removal:
+  - Check if it was archived (toggle `Include archived` in Progress).
 
 ## Credits
 
-- **Icons:** [Heroicons](https://heroicons.com/)
-- **Charts:** [Chart.js](https://www.chartjs.org/)
-- **CSS:** [Tailwind CSS](https://tailwindcss.com/)
-
----
-
-**For backend setup, see `GOOGLE_SHEETS_SETUP.md` and `GOOGLE_APPS_SCRIPT.md`.**
+- Icons: [Heroicons](https://heroicons.com/)
+- Charts: [Chart.js](https://www.chartjs.org/)
+- CSS: [Tailwind CSS](https://tailwindcss.com/)

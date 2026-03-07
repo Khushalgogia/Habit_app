@@ -50,32 +50,32 @@ Make habit definitions and completions sync correctly across devices, and add pe
 ## Usability Plan (Pending Review)
 
 ### U1. Calendar must follow selected period (7 / 30 / 90 days)
-- [ ] Make Activity Calendar read `g_appState.currentPeriod` and render exactly that many days.
-- [ ] Recompute date range labels and month markers based on selected period.
-- [ ] Scale cell sizing and layout automatically:
+- [x] Make Activity Calendar read `g_appState.currentPeriod` and render exactly that many days.
+- [x] Recompute date range labels and month markers based on selected period.
+- [x] Scale cell sizing and layout automatically:
   - 7d: larger day cells + full weekday/date labels.
   - 30d: medium cells + week markers.
   - 90d: compact cells + month anchors.
-- [ ] Keep both modes compatible:
+- [x] Keep both modes compatible:
   - All Habits intensity view
   - Single-habit done/missed/not-due view
-- [ ] Ensure this re-renders instantly when period filter changes.
+- [x] Ensure this re-renders instantly when period filter changes.
 
 ### U2. Habit category must be user-defined (not hard-coded)
-- [ ] Add category selector in Add/Edit Habit modal.
-- [ ] Include category in data model and persistence (local + cloud sync payload).
-- [ ] Ship sensible defaults and allow custom categories.
-- [ ] Update analytics to derive sections/charts from actual user categories.
-- [ ] Remove assumptions that only Mindfulness/Discipline/Learning exist.
+- [x] Add category selector in Add/Edit Habit modal.
+- [x] Include category in data model and persistence (local + cloud sync payload).
+- [x] Ship sensible defaults and allow custom categories.
+- [x] Update analytics to derive sections/charts from actual user categories.
+- [x] Remove assumptions that only Mindfulness/Discipline/Learning exist.
 
 ### U3. Product flow cleanup (creation -> tracking -> analytics)
-- [ ] During habit creation, make category selection explicit and required.
-- [ ] Add lightweight helper text: category affects analytics grouping.
-- [ ] In analytics, show category legend built from current user categories.
-- [ ] Handle deleted/renamed categories without data loss.
+- [x] During habit creation, make category selection explicit and required.
+- [x] Add lightweight helper text: category affects analytics grouping.
+- [x] In analytics, show category legend built from current user categories.
+- [x] Handle deleted/renamed categories without data loss.
 
 ### U4. Validation and UX acceptance
 - [ ] Verify calendar period transitions are correct on desktop/mobile.
 - [ ] Verify per-habit red/green/neutral states remain correct for all periods.
 - [ ] Verify category edits immediately reflect in Habit Deep Dive and charts.
-- [ ] Verify backward compatibility for existing habits without category values.
+- [x] Verify backward compatibility for existing habits without category values.

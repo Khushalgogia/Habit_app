@@ -4,6 +4,12 @@ Use this if you want cross-device sync for both:
 - task completions
 - habit definitions (add/edit/delete habits)
 
+Lifecycle note:
+- The frontend now persists habit lifecycle inside `tasks_json` with fields like:
+  - `status: "active" | "archived" | "deleted"`
+  - `createdAt`, `archivedAt`, `deletedAt`
+- This script remains backward compatible because it stores raw JSON as-is.
+
 Your current frontend now sends:
 - `entity: "completion"` with `action: "add" | "remove"` for check/uncheck
 - `entity: "tasks"` with `action: "saveTasks"` and full `tasks` array
@@ -15,6 +21,26 @@ It also loads with:
 Frontend note:
 - Default `userId` is `habit-app-primary-user` (single-user mode).
 - You can override with URL param `?uid=<your-id>`.
+
+## Tasks JSON schema expectations
+
+`tasks_json` can contain both legacy and new fields. The backend should not validate/strip fields.
+
+Example task object:
+
+```json
+{
+  "id": "custom-123",
+  "name": "Morning Walk",
+  "frequency": "daily",
+  "daysDue": [0,1,2,3,4,5,6],
+  "isEssential": true,
+  "skill": "Fitness",
+  "skillColor": "#34d399",
+  "status": "active",
+  "createdAt": 1762450000000
+}
+```
 
 ## Apps Script code
 
