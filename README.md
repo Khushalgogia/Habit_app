@@ -30,10 +30,11 @@ A gamified habit and skill tracker web app, visualizing your daily tasks as isla
 ### 📝 Task Management
 - **Add/Edit/Delete Tasks:** Via Task Manager modal.
 - **Customization:** Choose icon, name, frequency, days, essential status.
-- **Persistence:** Custom tasks saved in localStorage (max 20 tasks).
+- **Persistence:** Full habit state saved in localStorage (max 20 tasks), with optional Google Sheets V2 sync.
 
 ### 🔗 Google Sheets Integration
-- **Sync:** All completions logged to a Google Sheet via Apps Script.
+- **Sync:** Task completions are logged to Google Sheets via Apps Script.
+- **Cross-device habits:** Habit definitions can also sync (requires V2 Apps Script endpoint).
 - **Load:** Data fetched from the sheet on app start.
 
 ### 🎉 Celebration & Animation
@@ -49,14 +50,14 @@ A gamified habit and skill tracker web app, visualizing your daily tasks as isla
 - **Frontend:** Pure HTML, Tailwind CSS (via CDN), and JavaScript.
 - **Charts:** Chart.js for line and radar charts; SVG for donut and sparklines.
 - **Data Model:** All tasks in `TASK_DEFINITIONS`; global state in `g_appState`.
-- **Persistence:** Google Apps Script backend + browser localStorage.
+- **Persistence:** LocalStorage fallback + Google Apps Script backend.
 - **Responsive:** Mobile-first design.
 
 ---
 
 ## How It Works
 
-1. **Initialization:** Loads completion data from Google Sheets and custom tasks from localStorage.
+1. **Initialization:** Loads habits from local state (and cloud when available), then loads completion data.
 2. **Daily Tracking:** Map view shows islands for tasks due today. Click to mark complete.
 3. **Progress Analytics:** Switch to Progress tab for charts and stats. Filter by 7, 30, or 90 days.
 4. **Task Management:** Add/edit/delete tasks in Task Manager modal.
@@ -67,6 +68,8 @@ A gamified habit and skill tracker web app, visualizing your daily tasks as isla
 ## Customization
 
 - **Google Apps Script URL:** Set in `GOOGLE_SCRIPT_URL` at the top of the HTML file.
+- **Sync User ID:** Default is `habit-app-primary-user` for personal cross-device sync.
+  - Optional: append `?uid=your-id` to the app URL to isolate a specific user.
 - **Default Tasks:** Modify `getDefaultTasks()` for initial islands.
 - **Icons:** Add SVGs to `ICON_LIBRARY` for more choices.
 
@@ -75,20 +78,20 @@ A gamified habit and skill tracker web app, visualizing your daily tasks as isla
 ## Setup
 
 1. **Google Sheets Backend**
-   - Follow instructions in your `GOOGLE_SHEETS_SETUP.md` and `GOOGLE_APPS_SCRIPT.md` for backend setup.
+   - For completions-only behavior, existing Apps Script is enough.
+   - For cross-device habit add/edit/delete sync, use `GOOGLE_APPS_SCRIPT_V2.md`.
    - Paste your Apps Script URL in the `GOOGLE_SCRIPT_URL` constant.
 
 2. **Local Development**
-   - Open `final_revamped/index.html` in your browser.
+   - Open `index.html` in your browser.
    - Manage tasks via the Task Manager.
 
 ---
 
 ## File Structure
 
-- `final_revamped/index.html` — Main app file (all logic, styles, markup).
-- `GOOGLE_SHEETS_SETUP.md` — Backend setup instructions.
-- `GOOGLE_APPS_SCRIPT.md` — Apps Script details.
+- `index.html` — Main app file (all logic, styles, markup).
+- `GOOGLE_APPS_SCRIPT_V2.md` — Apps Script endpoint supporting both tasks + completions sync.
 
 ---
 
