@@ -1,0 +1,2491 @@
+
+<!DOCTYPE html>
+<!-- Set 'dark' as default, JS will toggle this -->
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Voice Growth Archipelago</title>
+<!-- Load Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Use Inter font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Load Chart.js for the Radar Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Setup Tailwind Dark Mode -->
+<script>
+tailwind.config = {
+darkMode: 'class', // Use 'class' strategy
+}
+</script>
+<style>
+/* Apply Inter font */
+body {
+font-family: 'Inter', sans-serif;
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+overflow: hidden; /* Hide scrollbars */
+}
+/* --- Base App Styles (Light Mode) --- */
+body {
+background-color: #f4f8ff;
+color: #1f2937; /* gray-800 */
+transition: background-color 0.3s ease;
+display: flex;
+flex-direction: column;
+/* Use dynamic viewport height for mobile */
+height: 100vh;
+height: 100dvh;
+max-height: 100vh;
+max-height: 100dvh;
+overflow: hidden;
+}
+
+/* --- Dark Mode Styles --- */
+html.dark body {
+background-color: #0B1120;
+color: #e5e7eb; /* gray-200 */
+}
+
+/* --- Next Gen Animated Backgrounds --- */
+.animated-bg {
+position: absolute;
+inset: 0;
+z-index: 1; /* Sits behind content */
+width: 100%; height: 100%;
+background-size: 400% 400%;
+animation: gradientDrift 20s ease infinite;
+transition: opacity 0.5s ease-in-out;
+}
+
+/* Dark: Drifting Nebula */
+#archipelago-bg-dark {
+background-image: radial-gradient(ellipse at 70% 30%, #334155 0%, transparent 40%),
+radial-gradient(ellipse at 30% 70%, #4f46e5 0%, transparent 40%),
+radial-gradient(ellipse at 50% 50%, #1e293b 0%, #0B1120 70%);
+}
+/* Light: Water Caustics */
+#archipelago-bg-light {
+background-image: radial-gradient(ellipse at 20% 80%, #ffffff 0%, transparent 30%),
+radial-gradient(ellipse at 80% 40%, #ccefff 0%, transparent 35%),
+radial-gradient(ellipse at 50% 50%, #e0f2fe 0%, #f4f8ff 70%);
+}
+
+@keyframes gradientDrift {
+0% { background-position: 0% 50%; }
+50% { background-position: 100% 50%; }
+100% { background-position: 0% 50%; }
+}
+
+/* --- Next-Gen Animation Layer --- */
+#animation-wrapper {
+position: absolute; inset: 0; z-index: 1;
+width: 100%; height: 100%;
+overflow: hidden;
+}
+.particle {
+position: absolute;
+border-radius: 50%;
+will-change: transform, opacity;
+}
+/* Dark Mode: Stars */
+.star {
+background: rgba(200, 220, 255, 0.8);
+box-shadow: 0 0 8px rgba(100, 150, 255, 0.7);
+animation: twinkle-drift 15s infinite linear;
+}
+@keyframes twinkle-drift {
+0% { transform: translate(var(--start-x), var(--start-y)); opacity: 0; }
+20% { opacity: 0.8; }
+80% { opacity: 0.8; }
+100% { transform: translate(var(--end-x), var(--end-y)); opacity: 0; }
+}
+
+/* Light Mode: Motes */
+.mote {
+background: rgba(255, 235, 150, 0.3);
+box-shadow: 0 0 12px rgba(255, 235, 150, 0.5);
+animation: mote-float 20s infinite linear;
+}
+
+@keyframes mote-float {
+0% { transform: translate(var(--start-x), var(--start-y)); opacity: 0; }
+25% { opacity: 0.7; }
+75% { opacity: 0.7; }
+100% { transform: translate(var(--start-x), calc(var(--start-y) - 300px)); opacity: 0; }
+}
+/* Main content area */
+#main-content {
+flex: 1; /* Takes up all space between header and nav */
+overflow-y: auto; /* Allows content to scroll */
+position: relative; /* For z-index stacking */
+z-index: 10; /* Sits on top of background */
+display: flex; /* Use flex to control map view */
+flex-direction: column;
+padding: 0.75rem; /* Reduced padding for mobile */
+}
+
+/* --- Island Map Styles (Today Tab) --- */
+#map-wrapper {
+position: relative;
+width: 100%;
+flex: 1;
+min-height: 400px;
+z-index: 2;
+}
+
+/* --- Confetti Animation --- */
+.confetti {
+position: absolute;
+width: 10px;
+height: 10px;
+background: #f0f;
+animation: confetti-fall 3s linear forwards;
+z-index: 100;
+box-shadow: 0 0 10px currentColor;
+}
+
+@keyframes confetti-fall {
+0% {
+transform: translateY(-10vh) translateX(0) rotateZ(0deg) scale(1);
+opacity: 1;
+}
+50% {
+opacity: 1;
+}
+100% {
+transform: translateY(100vh) translateX(var(--drift, 0)) rotateZ(720deg) scale(0.5);
+opacity: 0;
+}
+}
+
+.confetti-container {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+pointer-events: none;
+z-index: 1000;
+overflow: hidden;
+}
+
+/* Sparkle effect for celebration */
+@keyframes sparkle {
+0%, 100% {
+opacity: 0;
+transform: scale(0);
+}
+50% {
+opacity: 1;
+transform: scale(1);
+}
+}
+
+.sparkle {
+position: absolute;
+width: 4px;
+height: 4px;
+background: white;
+border-radius: 50%;
+animation: sparkle 1s ease-in-out;
+pointer-events: none;
+z-index: 101;
+box-shadow: 0 0 6px 2px currentColor;
+}
+/* SVG layer for constellation lines */
+#connection-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5; /* Behind islands (z-10) */
+    pointer-events: none;
+}
+
+.connection-line {
+    stroke-width: 2px;
+    stroke: rgba(255, 255, 255, 0.7);
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: draw-line 2s ease-out forwards;
+    filter: drop-shadow(0 0 5px #fff); /* Glow effect */
+}
+
+html.light .connection-line {
+    stroke: rgba(0, 0, 0, 0.7);
+    filter: drop-shadow(0 0 5px #333); /* Glow effect for light mode */
+}
+
+@keyframes draw-line {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+
+.island-node {
+position: absolute;
+display: flex;
+flex-direction: column;
+align-items: center;
+cursor: pointer;
+transition: all 0.3s ease-in-out;
+transform-origin: center;
+z-index: 10;
+}
+/* Style for islands not due today */
+.island-node.not-due {
+    opacity: 0.3;
+    filter: grayscale(80%);
+    cursor: default; /* Not clickable */
+}
+ html.dark .island-node.not-due {
+    opacity: 0.2; /* Even fainter in dark mode */
+}
+
+
+.island-base {
+width: 48px;
+height: 48px;
+border-radius: 9999px; /* rounded-full */
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.3s ease-in-out;
+border: 2px solid;
+/* Light mode base */
+background-color: #f9fafb; /* gray-50 */
+border-color: #e5e7eb; /* gray-200 */
+box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+/* Dark mode base */
+html.dark .island-base {
+background-color: #334155; /* slate-700 */
+border-color: #475569; /* slate-600 */
+box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+.island-node.pending:not(.not-due) .island-icon { /* Only style pending icons if due */
+    color: var(--island-icon-color);
+    opacity: 0.7;
+}
+.island-node.not-due .island-icon { /* Style icons for not-due islands */
+     color: #9ca3af; /* gray-400 */
+     opacity: 0.5;
+}
+html.dark .island-node.not-due .island-icon {
+    color: #4b5563; /* gray-600 */
+}
+
+
+/* Light mode hover */
+.island-node.pending:not(.not-due):hover .island-base { /* Only allow hover on due islands */
+transform: scale(1.1);
+border-color: #64748B; /* slate-500 */
+box-shadow: 0 0 30px rgba(100, 116, 139, 0.3);
+}
+/* Dark mode hover */
+html.dark .island-node.pending:not(.not-due):hover .island-base {
+border-color: #64748B; /* slate-500 */
+box-shadow: 0 0 30px rgba(100, 116, 139, 0.5);
+}
+
+.island-node.completed .island-base {
+background-color: var(--island-base-color);
+border-color: var(--island-base-color);
+box-shadow: 0 0 30px var(--island-glow-color);
+}
+html.dark .island-node.completed .island-base {
+border-color: #fff;
+box-shadow: 0 0 20px #fff, 0 0 40px var(--island-glow-color);
+}
+.island-node.completed .island-icon {
+color: #fff; /* White icon on solid color bg */
+opacity: 1;
+}
+.island-label {
+    margin-top: 4px;
+    font-size: 0.625rem; /* 10px */
+    font-weight: 500; /* medium */
+    color: #374151; /* gray-700 */
+    transition: color 0.3s ease;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.3);
+    text-align: center;
+    max-width: 80px;
+    line-height: 1.2;
+}
+html.dark .island-label {
+    color: #D1D5DB; /* gray-300 */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.island-node.completed .island-label {
+    color: #1f2937; /* gray-800 */
+    font-weight: 600;
+}
+html.dark .island-node.completed .island-label {
+    color: #fff;
+    font-weight: 600;
+}
+.island-node.not-due .island-label {
+    color: #9ca3af; /* gray-400 */
+}
+html.dark .island-node.not-due .island-label {
+    color: #4b5563; /* gray-600 */
+}
+
+/* New style for frequency label */
+.island-frequency {
+    font-size: 0.5rem; /* 8px */
+    font-weight: 400;
+    color: #6b7280; /* gray-500 */
+    margin-top: 1px;
+    text-align: center;
+}
+html.dark .island-frequency {
+    color: #9ca3af; /* gray-400 */
+}
+.island-node.not-due .island-frequency {
+    color: #9ca3af; /* gray-400 */
+}
+html.dark .island-node.not-due .island-frequency {
+    color: #4b5563; /* gray-600 */
+}
+
+
+/* --- Focus Card Styles (Today Tab) --- */
+#focus-card-view {
+position: fixed;
+bottom: 0; left: 0; right: 0;
+margin-left: auto;
+margin-right: auto;
+max-width: 390px; /* Match mobile width */
+z-index: 40;
+/* Light Mode */
+background: rgba(255, 255, 255, 0.8);
+backdrop-filter: blur(10px);
+-webkit-backdrop-filter: blur(10px);
+border-top: 1px solid #e5e7eb; /* gray-200 */
+transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+transform: translateY(100%);
+border-top-left-radius: 1.5rem; /* rounded-t-2xl */
+border-top-right-radius: 1.5rem;
+}
+/* Dark Mode */
+html.dark #focus-card-view {
+background: rgba(17, 24, 39, 0.8); /* bg-gray-900 with transparency */
+border-top: 1px solid #374151;
+}
+#focus-card-view.visible {
+transform: translateY(0%);
+}
+
+/* --- Flow Toggle (Today Tab) --- */
+.flow-toggle-bg {
+background-color: #e5e7eb; /* gray-200 */
+}
+html.dark .flow-toggle-bg {
+background-color: #1F2937;
+}
+
+.flow-toggle-btn { transition: all 0.3s ease-in-out; z-index: 10; }
+.flow-toggle-btn.active { color: #111827; /* gray-900 */ }
+html.dark .flow-toggle-btn.active { color: #E5E7EB; }
+.flow-toggle-btn.inactive { color: #6b7280; /* gray-500 */ }
+html.dark .flow-toggle-btn.inactive { color: #9CA3AF; }
+#flow-toggle-slider {
+position: absolute; top: 2px; bottom: 2px;
+width: calc(50% - 2px);
+background-color: #ffffff; /* white */
+border-radius: 0.5rem; /* rounded-lg */
+transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+z-index: 5;
+box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+html.dark #flow-toggle-slider {
+background-color: #4F46E5; /* indigo-600 */
+}
+.flow-toggle-bg[data-mode="mini"] #flow-toggle-slider {
+transform: translateX(calc(100% - 2px));
+}
+
+/* --- Bottom Nav Bar --- */
+#bottom-nav {
+position: relative;
+z-index: 30;
+background-color: #ffffff;
+border-top: 1px solid #e5e7eb;
+border-top-left-radius: 1.5rem;
+border-top-right-radius: 1.5rem;
+width: 100%;
+max-width: 390px;
+margin: 0 auto;
+flex-shrink: 0;
+padding-bottom: env(safe-area-inset-bottom);
+}
+html.dark #bottom-nav {
+background-color: #1f2937; /* gray-800 */
+border-top: 1px solid #374151; /* gray-700 */
+}
+
+/* --- Styles from Progress Tab --- */
+/* --- Shared Glass Card Style --- */
+.glass-card {
+background: rgba(255, 255, 255, 0.5);
+backdrop-filter: blur(10px);
+-webkit-backdrop-filter: blur(10px);
+border-radius: 1rem; /* rounded-2xl */
+padding: 1rem; /* p-4 */
+border: 1px solid rgba(255, 255, 255, 0.7);
+box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+margin-bottom: 1rem;
+}
+html.dark .glass-card {
+background: rgba(29, 39, 58, 0.5); /* slate-800/50 */
+border: 1px solid #334155; /* slate-700 */
+box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+/* --- Stat Card Style --- */
+.stat-card {
+background: rgba(255, 255, 255, 0.7);
+padding: 1rem;
+border-radius: 1rem;
+box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+html.dark .stat-card {
+background: rgba(29, 39, 58, 0.7); /* slate-800/70 */
+}
+
+/* --- Period Filter Style --- */
+.period-filter-bg {
+background-color: #e5e7eb; /* gray-200 */
+}
+html.dark .period-filter-bg {
+background-color: #1F2937;
+}
+.period-filter-btn {
+transition: all 0.3s ease-in-out;
+z-index: 10;
+font-size: 0.75rem; /* 12px */
+padding-top: 0.375rem; /* py-1.5 */
+padding-bottom: 0.375rem;
+}
+.period-filter-btn.active { color: #111827; /* gray-900 */ }
+html.dark .period-filter-btn.active { color: #E5E7EB; }
+.period-filter-btn.inactive { color: #6b7280; /* gray-500 */ }
+html.dark .period-filter-btn.inactive { color: #9CA3AF; }
+#period-filter-slider {
+position: absolute; top: 2px; bottom: 2px;
+width: calc(33.33% - 1.33px);
+background-color: #ffffff; /* white */
+border-radius: 0.5rem; /* rounded-lg */
+transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+z-index: 5;
+box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+html.dark #period-filter-slider {
+background-color: #4F46E5; /* indigo-600 */
+}
+.period-filter-bg[data-period="7d"] #period-filter-slider {
+transform: translateX(0%);
+}
+.period-filter-bg[data-period="30d"] #period-filter-slider {
+transform: translateX(calc(100% - 1px));
+}
+.period-filter-bg[data-period="90d"] #period-filter-slider {
+transform: translateX(calc(200% - 2px));
+}
+
+/* --- Skill Focus Donut Chart --- */
+#skill-chart-container {
+position: relative;
+width: 100%;
+height: 150px;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+#skill-chart-svg {
+transform: rotate(-90deg); /* Start at the top */
+}
+.donut-segment {
+fill: none;
+stroke-width: 16;
+transition: stroke-dashoffset 1s ease-out;
+}
+#skill-chart-center-text {
+position: absolute;
+text-align: center;
+color: #1f2937;
+}
+html.dark #skill-chart-center-text {
+color: #e5e7eb;
+}
+
+/* Legend description */
+.legend-description {
+font-size: 0.75rem; /* 12px */
+color: #6b7280; /* gray-500 */
+}
+html.dark .legend-description {
+color: #9ca3af; /* gray-400 */
+}
+
+/* --- Cadence Line Chart --- */
+#cadence-chart-container {
+position: relative;
+height: 180px;
+width: 100%;
+}
+
+/* --- Skill Web (Radar Chart) --- */
+#skill-web-container {
+position: relative;
+height: 250px; /* Give it space */
+width: 100%;
+}
+/* --- Habit Deep Dive (Sparklines) --- */
+.sparkline {
+width: 80px; /* Fixed width for the mini-chart */
+height: 30px;
+}
+.sparkline-line {
+fill: none;
+stroke-width: 2.5;
+stroke: #4f46e5;
+transition: d 0.5s ease;
+}
+html.light .sparkline-line {
+stroke: #6366f1;
+}
+
+/* Skill Tag for Habit List */
+.skill-tag {
+font-size: 0.625rem; /* 10px */
+font-weight: 600;
+padding: 2px 6px;
+border-radius: 9999px; /* rounded-full */
+margin-right: 8px;
+text-transform: uppercase;
+letter-spacing: 0.05em;
+width: 80px; /* Increased width */
+text-align: center;
+display: inline-block;
+}
+
+/* View Hiding */
+.view.hidden {
+display: none;
+}
+
+/* --- Date Navigator Button --- */
+#nav-date-next:disabled {
+opacity: 0.4;
+cursor: not-allowed;
+}
+#current-date-display { /* Updated ID */
+cursor: pointer;
+}
+
+/* --- NEW: Loading Overlay --- */
+#loading-overlay {
+position: absolute;
+inset: 0;
+background: rgba(11, 17, 32, 0.8); /* #0B1120 with opacity */
+backdrop-filter: blur(5px);
+-webkit-backdrop-filter: blur(5px);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+z-index: 50;
+transition: opacity 0.3s ease;
+}
+html.light #loading-overlay {
+background: rgba(244, 248, 255, 0.8); /* #f4f8ff with opacity */
+}
+#loading-overlay.hidden {
+opacity: 0;
+pointer-events: none;
+}
+</style>
+</head>
+<body class="flex flex-col h-screen">
+<!-- Animated Backgrounds -->
+<div id="archipelago-bg-light" class="animated-bg block dark:hidden"></div>
+<div id="archipelago-bg-dark" class="animated-bg hidden dark:block"></div>
+<div id="animation-wrapper">
+<div class="hidden dark:block"></div>
+<div class="block dark:hidden"></div>
+</div>
+
+<!-- NEW: Loading Overlay -->
+<div id="loading-overlay">
+<svg class="animate-spin h-10 w-10 text-indigo-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+</svg>
+<p class="text-lg font-medium text-gray-900 dark:text-white">Loading Your Data...</p>
+</div>
+
+
+<!-- This div holds all SCROLLING app content -->
+<div id="main-content">
+<!-- Header (Today Tab) -->
+<header id="header-today" class="flex justify-between items-center mb-3 flex-shrink-0">
+<div>
+<h1 class="text-lg font-bold text-gray-900 dark:text-white">The Archipelago</h1>
+<div id="today-streak" class="flex items-center space-x-1.5 text-xs text-indigo-600 dark:text-indigo-400">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343m11.314 11.314a8 8 0 00-11.314-11.314m11.314 11.314L6.343 7.343" /></svg>
+<span>Day 0 Streak 🔥</span>
+</div>
+</div>
+<!-- Icons -->
+<div class="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+<!-- Task Manager Button -->
+<button id="task-manager-btn" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Manage Tasks">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+<path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+</svg>
+</button>
+<!-- Google Sheets Button -->
+<a href="https://docs.google.com/spreadsheets/d/1AwggGgh6vXfIuPZG0fPYv0fhrdyLTSUD6nt0wuw6h3c/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Open Google Sheet">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3h5v2h-5V6zm0 4h5v2h-5v-2zm0 4h5v2h-5v-2zM7 6h3v2H7V6zm0 4h3v2H7v-2zm0 4h3v2H7v-2z"/>
+</svg>
+</a>
+<!-- Theme Toggle Button -->
+<button id="theme-toggle" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<!-- Sun Icon (Light Mode) -->
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+</svg>
+<!-- Moon Icon (Dark Mode) -->
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+<path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+</svg>
+</button>
+</div>
+</header>
+<!-- Header (Progress Tab) -->
+<header id="header-progress" class="hidden justify-between items-center mb-3 flex-shrink-0">
+<div>
+<h1 class="text-lg font-bold text-gray-900 dark:text-white">Growth Dashboard</h1>
+<p id="dashboard-subtitle" class="text-xs text-gray-600 dark:text-gray-400">Your 30-day analysis.</p>
+</div>
+<!-- Icons -->
+<div class="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+<!-- Task Manager Button -->
+<button id="task-manager-btn-progress" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Manage Tasks">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+<path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+</svg>
+</button>
+<!-- Google Sheets Button -->
+<a href="https://docs.google.com/spreadsheets/d/119oVJoEAXccYfJcz1u-6Tw6FI6KMJ1MKNld1It3J4WQ/edit?gid=1249215034#gid=1249215034" target="_blank" rel="noopener noreferrer" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Open Google Sheet">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3h5v2h-5V6zm0 4h5v2h-5v-2zm0 4h5v2h-5v-2zM7 6h3v2H7V6zm0 4h3v2H7v-2zm0 4h3v2H7v-2z"/>
+</svg>
+</a>
+<!-- Theme Toggle Button (shared, but shown with this header) -->
+<button id="theme-toggle-progress" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+</button>
+</div>
+</header>
+
+<!-- View 1: Map View (Today) -->
+<div id="map-view" class="view flex-1 flex flex-col items-center">
+<!-- Date Navigator -->
+<div class="flex justify-between items-center mb-3 w-full flex-shrink-0">
+<button id="nav-date-prev" class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></button>
+<h2 id="current-date-display" class="text-base font-semibold text-gray-900 dark:text-white" title="Go to Today">...</h2> <!-- Updated ID -->
+<button id="nav-date-next" class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg></button>
+</div>
+
+<!-- Flow Mode Toggle -->
+<div class="w-full max-w-xs mx-auto my-3 flex-shrink-0">
+<div id="flow-toggle" data-mode="full" class="flow-toggle-bg relative flex w-full p-0.5 rounded-lg shadow-inner">
+<div id="flow-toggle-slider"></div>
+<button id="toggle-full" class="flow-toggle-btn active w-1/2 py-1.5 text-xs font-semibold rounded-lg">Full Voyage</button>
+<button id="toggle-mini" class="flow-toggle-btn inactive w-1/2 py-1.5 text-xs font-semibold rounded-lg">Short Trip</button>
+</div>
+</div>
+
+<!-- The Archipelago -->
+<div id="map-wrapper" class="flex-1 w-full">
+    <!-- Added SVG layer for constellation lines -->
+    <svg id="connection-layer" style="display: none;"></svg>
+    <!-- Island nodes will be injected by JS -->
+</div>
+<p id="progress-text" class="text-gray-600 dark:text-gray-400 text-xs mb-3 flex-shrink-0"></p>
+</div>
+
+<!-- View 2: Progress Dashboard -->
+<div id="progress-view" class="view hidden flex-1 flex flex-col">
+<!-- Period Filter -->
+<div class="w-full max-w-xs mx-auto mb-4 flex-shrink-0">
+<div id="period-filter" data-period="30d" class="period-filter-bg relative flex w-full p-0.5 rounded-lg shadow-inner">
+<div id="period-filter-slider"></div>
+<button id="filter-7d" class="period-filter-btn inactive w-1/3 font-semibold rounded-lg">7 Days</button>
+<button id="filter-30d" class="period-filter-btn active w-1/3 font-semibold rounded-lg">30 Days</button>
+<button id="filter-90d" class="period-filter-btn inactive w-1/3 font-semibold rounded-lg">90 Days</button>
+</div>
+</div>
+<!-- Key Stats -->
+<div class="grid grid-cols-2 gap-4 mb-4">
+<div class="stat-card">
+<span class="text-sm text-gray-600 dark:text-gray-400">Current Streak</span>
+<p id="stat-streak" class="text-2xl font-bold text-gray-900 dark:text-white">... 🔥</p>
+</div>
+<div class="stat-card">
+<span class="text-sm text-gray-600 dark:text-gray-400">Total Completions</span>
+<p id="stat-completions" class="text-2xl font-bold text-gray-900 dark:text-white">...</p>
+</div>
+</div>
+
+<!-- Calendar Heatmap -->
+<div class="glass-card mb-4">
+<div class="flex justify-between items-center mb-3">
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Activity Calendar</h3>
+<div class="flex items-center space-x-2">
+<span class="text-xs text-gray-500 dark:text-gray-400">Less</span>
+<div class="flex space-x-1">
+<div class="w-3 h-3 rounded-sm bg-gray-200 dark:bg-gray-700"></div>
+<div class="w-3 h-3 rounded-sm bg-green-200 dark:bg-green-900"></div>
+<div class="w-3 h-3 rounded-sm bg-green-400 dark:bg-green-700"></div>
+<div class="w-3 h-3 rounded-sm bg-green-600 dark:bg-green-500"></div>
+<div class="w-3 h-3 rounded-sm bg-green-800 dark:bg-green-400"></div>
+</div>
+<span class="text-xs text-gray-500 dark:text-gray-400">More</span>
+</div>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Your daily task completion over the last 90 days</p>
+<div id="calendar-heatmap" class="overflow-x-auto">
+<!-- Calendar will be rendered here -->
+</div>
+<div class="mt-3 flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+<div>
+<span class="font-semibold" id="calendar-total-days">0</span> days tracked
+</div>
+<div>
+<span class="font-semibold" id="calendar-best-day">0</span> tasks on best day
+</div>
+<div>
+<span class="font-semibold" id="calendar-avg">0</span> avg tasks/day
+</div>
+</div>
+</div>
+
+<!-- Skill Cadence (Line Chart) -->
+<div class="glass-card">
+<div class="flex justify-between items-center mb-1">
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Skill Cadence</h3>
+<p id="cadence-comparison" class="text-sm font-medium text-green-500"></p>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Your skill focus over time.</p>
+<div id="cadence-chart-container">
+<canvas id="cadence-chart"></canvas>
+</div>
+</div>
+<!-- Habit Deep Dive -->
+<div class="glass-card">
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Habit Deep Dive</h3>
+<ul id="habit-list" class="divide-y divide-gray-200 dark:divide-slate-700">
+<!-- JS will inject habits here -->
+</ul>
+</div>
+<!-- Insights Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Skill Focus (Donut) -->
+<div class="glass-card">
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Skill Focus</h3>
+<div id="skill-chart-container">
+<svg id="skill-chart-svg" width="120" height="120" viewBox="0 0 150 150">
+<circle cx="75" cy="75" r="60" fill="none" stroke-width="16" class="text-gray-200 dark:text-slate-700" />
+<circle id="chart-mindfulness" class="donut-segment" cx="75" cy="75" r="60" stroke="#6366f1" />
+<circle id="chart-discipline" class="donut-segment" cx="75" cy="75" r="60" stroke="#f59e0b" />
+<circle id="chart-learning" class="donut-segment" cx="75" cy="75" r="60" stroke="#34d399" />
+</svg>
+<div id="skill-chart-center-text">
+<span id="skill-chart-total" class="text-2xl font-bold">...</span>
+<span class="block text-xs text-gray-600 dark:text-gray-400">Total</span>
+</div>
+</div>
+<div class="space-y-2 mt-3">
+<div class="flex">
+<span class="h-3 w-3 rounded-full bg-[#6366f1] mr-2 mt-1 flex-shrink-0"></span>
+<div>
+<span id="legend-mindfulness" class="text-xs font-medium text-gray-900 dark:text-white">Mindfulness (...)</span>
+<p class="legend-description">Meditation, Journaling, Reading, Walk</p>
+</div>
+</div>
+<div class="flex">
+<span class="h-3 w-3 rounded-full bg-[#f59e0b] mr-2 mt-1 flex-shrink-0"></span>
+<div>
+<span id="legend-discipline" class="text-xs font-medium text-gray-900 dark:text-white">Discipline (...)</span>
+<p class="legend-description">Exercise, Coding</p>
+</div>
+</div>
+<div class="flex">
+<span class="h-3 w-3 rounded-full bg-[#34d399] mr-2 mt-1 flex-shrink-0"></span>
+<div>
+<span id="legend-learning" class="text-xs font-medium text-gray-900 dark:text-white">Learning (...)</span>
+<p class="legend-description">Language Class</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Skill Web (Radar) -->
+<div class="glass-card">
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Skill Web</h3>
+<div id="skill-web-container">
+<canvas id="skill-web-chart"></canvas>
+</div>
+</div>
+</div>
+<!-- Habit Spotlight -->
+<div class="glass-card">
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Habit Spotlight</h3>
+<div class="grid grid-cols-2 gap-4">
+<!-- Top Performer -->
+<div class="bg-white/50 dark:bg-slate-800/50 p-3 rounded-lg text-center shadow-inner">
+<span class="text-xs text-gray-600 dark:text-gray-400">Top Performer</span>
+<div id="spotlight-top-icon" class="my-2">
+<!-- Icon will be set by JS -->
+</div>
+<p id="spotlight-top-name" class="text-sm font-semibold text-gray-900 dark:text-white">...</p>
+<span id="spotlight-top-stat" class="text-xs font-semibold text-orange-500">... 🔥</span>
+</div>
+<!-- Needs Focus -->
+<div class="bg-white/50 dark:bg-slate-800/50 p-3 rounded-lg text-center shadow-inner">
+<span class="text-xs text-gray-600 dark:text-gray-400">Needs Focus</span>
+<div id="spotlight-low-icon" class="my-2">
+<!-- Icon will be set by JS -->
+</div>
+<p id="spotlight-low-name" class="text-sm font-semibold text-gray-900 dark:text-white">...</p>
+<span id="spotlight-low-stat" class="text-xs text-gray-500 dark:text-gray-400">...</span>
+</div>
+</div>
+</div>
+</div>
+
+</div> <!-- End #main-content -->
+
+<!-- View 2: Focus Card View (hidden by default) -->
+<div id="focus-card-view">
+<!-- This div will be populated by JS -->
+</div>
+
+
+<!-- Task Manager Modal -->
+<div id="task-manager-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[2000] flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+<!-- Modal Header -->
+<div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+<h2 class="text-xl font-bold text-gray-900 dark:text-white">Manage Tasks</h2>
+<button id="close-task-manager" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+</svg>
+</button>
+</div>
+
+<!-- Task List -->
+<div id="task-list-container" class="flex-1 overflow-y-auto p-4">
+<!-- Tasks will be rendered here -->
+</div>
+
+<!-- Add Task Button -->
+<div class="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+<button id="add-task-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+</svg>
+<span>Add New Task</span>
+</button>
+<p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+<span id="task-count">0</span>/20 tasks
+</p>
+</div>
+</div>
+</div>
+
+<!-- Task Edit Modal -->
+<div id="task-edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[2001] flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
+<!-- Edit Form Header -->
+<div class="p-4 border-b border-gray-200 dark:border-gray-700">
+<h3 class="text-lg font-bold text-gray-900 dark:text-white" id="edit-modal-title">Edit Task</h3>
+</div>
+
+<!-- Edit Form -->
+<div class="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task Name</label>
+<input type="text" id="edit-task-name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Isle of Calm">
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+<input type="text" id="edit-task-time" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="10-15 min Meditation">
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Choose Icon</label>
+<div id="icon-picker" class="grid grid-cols-6 gap-2 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 max-h-48 overflow-y-auto">
+<!-- Icons will be populated here -->
+</div>
+<input type="hidden" id="selected-icon-index" value="0">
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Frequency</label>
+<select id="edit-task-frequency" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+<option value="daily">Daily (Every day)</option>
+<option value="weekly">Weekly (Once a week)</option>
+<option value="2x-weekly">2x Weekly (Twice a week)</option>
+<option value="3x-weekly">3x Weekly (Three times a week)</option>
+</select>
+</div>
+
+<div id="days-selector" class="hidden">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Days</label>
+<div class="flex flex-wrap gap-2">
+<label class="flex items-center space-x-1 cursor-pointer">
+<input type="checkbox" class="day-checkbox" value="0" class="w-4 h-4 text-indigo-600 border-gray-300 rounded">
+<span class="text-sm text-gray-700 dark:text-gray-300">Sun</span>
+</label>
+<label class="flex items-center space-x-1 cursor-pointer">
+<input type="checkbox" class="day-checkbox" value="1" class="w-4 h-4 text-indigo-600 border-gray-300 rounded">
+<span class="text-sm text-gray-700 dark:text-gray-300">Mon</span>
+</label>
+<label class="flex items-center space-x-1 cursor-pointer">
+<input type="checkbox" class="day-checkbox" value="2" class="w-4 h-4 text-indigo-600 border-gray-300 rounded">
+<span class="text-sm text-gray-700 dark:text-gray-300">Tue</span>
+</label>
+<label class="flex items-center space-x-1 cursor-pointer">
+<input type="checkbox" class="day-checkbox" value="3" class="w-4 h-4 text-indigo-600 border-gray-300 rounded">
+<span class="text-sm text-gray-700 dark:text-gray-300">Wed</span>
+</label>
+<label class="flex items-center space-x-1 cursor-pointer">
+<input type="checkbox" class="day-checkbox" value="4" class="w-4 h-4 text-indigo-600 border-gray-300 rounded">
+<span class="text-sm text-gray-700 dark:text-gray-300">Thu</span>
+</label>
+<label class="flex items-center space-x-1 cursor-pointer">
+<input type="checkbox" class="day-checkbox" value="5" class="w-4 h-4 text-indigo-600 border-gray-300 rounded">
+<span class="text-sm text-gray-700 dark:text-gray-300">Fri</span>
+</label>
+<label class="flex items-center space-x-1 cursor-pointer">
+<input type="checkbox" class="day-checkbox" value="6" class="w-4 h-4 text-indigo-600 border-gray-300 rounded">
+<span class="text-sm text-gray-700 dark:text-gray-300">Sat</span>
+</label>
+</div>
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mode</label>
+<select id="edit-task-mode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+<option value="both">Both (Short Trip & Full Voyage)</option>
+<option value="full">Full Voyage Only</option>
+<option value="short">Short Trip Only</option>
+</select>
+</div>
+
+<div class="flex items-center space-x-2">
+<input type="checkbox" id="edit-task-essential" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+<label for="edit-task-essential" class="text-sm font-medium text-gray-700 dark:text-gray-300">Essential Task (for constellation)</label>
+</div>
+</div>
+
+<!-- Edit Form Actions -->
+<div class="p-4 border-t border-gray-200 dark:border-gray-700 flex space-x-3">
+<button id="cancel-edit-btn" class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+Cancel
+</button>
+<button id="save-edit-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+Save
+</button>
+</div>
+</div>
+</div>
+
+<!-- Bottom Navigation Bar -->
+<nav id="bottom-nav">
+<div class="flex justify-around items-center p-3">
+<button id="nav-today" class="flex flex-col items-center text-indigo-600 dark:text-indigo-400 w-1/2">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fill-rule="evenodd" d="M4 5a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h.01a1 1 0 100-2H10zm3 0a1 1 0 000 2h.01a1 1 0 100-2H13zM7 14a1 1 0 100-2h.01a1 1 0 100 2H7zm3 0a1 1 0 100-2h.01a1 1 0 100 2H10zm3 0a1 1 0 100-2h.01a1 1 0 100 2H13z" clip-rule="evenodd" /></svg>
+<span class="text-[10px] font-medium">Today</span>
+</button>
+<button id="nav-progress" class="flex flex-col items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white w-1/2">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+<span class="text-[10px] font-medium">Progress</span>
+</button>
+</div>
+<!-- Extra padding at the bottom for the "home bar" area on modern phones -->
+<div style="padding-bottom: max(1rem, env(safe-area-inset-bottom));"></div>
+</nav>
+
+<!-- App Javascript -->
+<script>
+// --- MERGED APP SCRIPT ---
+
+// --- 0. CONFIGURATION ---
+// ⬇️ !!! PASTE YOUR GOOGLE APPS SCRIPT URL HERE !!! ⬇️
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHQwnYysj-5ihzXnLgFuHTOoG5UFVREmxIlpnyXYUyRUFTWC00T7clGx-IdRYWI5Pn/exec";
+// ⬆️ !!! PASTE YOUR GOOGLE APPS SCRIPT URL HERE !!! ⬆️
+
+
+// --- 1. TASK DEFINITIONS (Single Source of Truth) ---
+const TASK_DEFINITIONS = [
+    // Default tasks with new skills
+    { id: 'reading', name: 'Sage\'s Library', time: '20 min Reading', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>`, iconColor: '#c084fc', baseColor: '#9333ea', glowColor: '#C084FC', isEssential: false, x: 20, y: 25, frequency: 'daily', daysDue: [0,1,2,3,4,5,6], skill: 'Mindfulness', skillColor: '#6366f1' },
+    { id: 'meditation', name: 'Isle of Calm', time: '10 min Meditation', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, iconColor: '#22d3ee', baseColor: '#0891b2', glowColor: '#22D3EE', isEssential: true, x: 50, y: 15, frequency: 'daily', daysDue: [0,1,2,3,4,5,6], skill: 'Mindfulness', skillColor: '#6366f1' },
+    { id: 'walk', name: 'Wanderer\'s Path', time: '10 min Walk', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, iconColor: '#34d399', baseColor: '#059669', glowColor: '#34D399', isEssential: false, x: 80, y: 25, frequency: 'daily', daysDue: [0,1,2,3,4,5,6], skill: 'Mindfulness', skillColor: '#6366f1' },
+    { id: 'journaling', name: 'Reflective Peak', time: '10 min Journaling', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>`, iconColor: '#f472b6', baseColor: '#db2777', glowColor: '#F472B6', isEssential: true, x: 15, y: 60, frequency: 'daily', daysDue: [0,1,2,3,4,5,6], skill: 'Mindfulness', skillColor: '#6366f1' },
+    { id: 'coding', name: 'Forge of Logic', time: '30 min Coding', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>`, iconColor: '#facc15', baseColor: '#d97706', glowColor: '#FACC15', isEssential: false, x: 50, y: 85, frequency: '3x-weekly', daysDue: [1, 3, 5], skill: 'Discipline', skillColor: '#f59e0b' },
+    { id: 'language', name: 'Babel\'s Spire', time: 'Language Class', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>`, iconColor: '#60a5fa', baseColor: '#2563eb', glowColor: '#60A5FA', isEssential: false, x: 85, y: 60, frequency: '2x-weekly', daysDue: [2, 4], skill: 'Learning', skillColor: '#34d399' },
+    { id: 'exercise', name: 'Mount Olympus', time: '30 min Exercise', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>`, iconColor: '#fb923c', baseColor: '#f97316', glowColor: '#FB923C', isEssential: true, x: 50, y: 50, frequency: 'daily', daysDue: [0,1,2,3,4,5,6], skill: 'Discipline', skillColor: '#f59e0b' },
+];
+
+
+// Utility to get task details by ID
+const getTaskById = (id) => TASK_DEFINITIONS.find(task => task.id === id);
+
+// --- 2. GLOBAL APP STATE ---
+// This object holds all the dynamic data for the app.
+const g_appState = {
+currentView: 'today', // 'today' or 'progress'
+todayMode: 'full', // 'full' or 'mini'
+currentPeriod: '30d', // '7d', '30d', '90d'
+currentTask: null, // Task being focused on
+completedTasksToday: new Set(), // Set of task IDs completed *for the viewingDate*
+taskHistory: {}, // { 'meditation': [timestamp1, timestamp2], ... }
+isDark: document.documentElement.classList.contains('dark'),
+today: getStartOfDay(new Date()), // The actual current date
+viewingDate: getStartOfDay(new Date()) // The date the user is looking at
+};
+
+// --- 3. DOM ELEMENT REFERENCES ---
+// Get all DOM elements once for efficiency.
+const g_dom = {
+// NEW: Loading
+loadingOverlay: document.getElementById('loading-overlay'),
+// Views
+mainContent: document.getElementById('main-content'),
+mapView: document.getElementById('map-view'),
+progressView: document.getElementById('progress-view'),
+focusCardView: document.getElementById('focus-card-view'),
+// Headers
+headerToday: document.getElementById('header-today'),
+headerProgress: document.getElementById('header-progress'),
+// Nav
+bottomNav: document.getElementById('bottom-nav'),
+navToday: document.getElementById('nav-today'),
+navWeekly: document.getElementById('nav-weekly'), // Will be null, but safe
+navProgress: document.getElementById('nav-progress'),
+navReflection: document.getElementById('nav-reflection'), // Will be null, but safe
+// Theme
+themeToggle: document.getElementById('theme-toggle'),
+themeToggleProgress: document.getElementById('theme-toggle-progress'),
+// Backgrounds
+animationWrapper: document.getElementById('animation-wrapper'),
+// Today View
+mapWrapper: document.getElementById('map-wrapper'),
+connectionLayer: document.getElementById('connection-layer'), // Added
+flowToggle: document.getElementById('flow-toggle'),
+toggleFullBtn: document.getElementById('toggle-full'),
+toggleMiniBtn: document.getElementById('toggle-mini'),
+progressText: document.getElementById('progress-text'),
+currentDateDisplay: document.getElementById('current-date-display'), // Updated ID
+todayStreak: document.getElementById('today-streak'),
+navDatePrev: document.getElementById('nav-date-prev'),
+navDateNext: document.getElementById('nav-date-next'),
+// Progress View
+periodFilter: document.getElementById('period-filter'),
+filter7d: document.getElementById('filter-7d'),
+filter30d: document.getElementById('filter-30d'),
+filter90d: document.getElementById('filter-90d'),
+dashboardSubtitle: document.getElementById('dashboard-subtitle'),
+statStreak: document.getElementById('stat-streak'),
+statCompletions: document.getElementById('stat-completions'),
+cadenceChartCanvas: document.getElementById('cadence-chart'),
+cadenceComparison: document.getElementById('cadence-comparison'),
+habitList: document.getElementById('habit-list'),
+skillChart: {
+mindfulness: document.getElementById('chart-mindfulness'),
+discipline: document.getElementById('chart-discipline'),
+learning: document.getElementById('chart-learning'),
+total: document.getElementById('skill-chart-total'),
+legendMindfulness: document.getElementById('legend-mindfulness'),
+legendDiscipline: document.getElementById('legend-discipline'),
+legendLearning: document.getElementById('legend-learning')
+},
+skillWebChartCanvas: document.getElementById('skill-web-chart'),
+spotlight: {
+topIcon: document.getElementById('spotlight-top-icon'),
+topName: document.getElementById('spotlight-top-name'),
+topStat: document.getElementById('spotlight-top-stat'),
+lowIcon: document.getElementById('spotlight-low-icon'),
+lowName: document.getElementById('spotlight-low-name'),
+lowStat: document.getElementById('spotlight-low-stat')
+}
+};
+
+// --- 4. CHART.JS INSTANCES ---
+let g_skillWebChart = null;
+let g_cadenceChart = null;
+
+// --- 5. HELPER & UTILITY FUNCTIONS ---
+
+/**
+* Helper to check if two dates are the same day (ignoring time)
+*/
+function isSameDay(d1, d2) {
+return d1.getFullYear() === d2.getFullYear() &&
+d1.getMonth() === d2.getMonth() &&
+d1.getDate() === d2.getDate();
+}
+
+/**
+* Gets the start of a given date (midnight)
+*/
+function getStartOfDay(date) {
+const d = new Date(date);
+d.setHours(0, 0, 0, 0);
+return d;
+}
+
+/**
+* Formats the date for the "Today" header
+*/
+function formatDate(date) {
+return date.toLocaleDateString('en-US', {
+weekday: 'long',
+month: 'long',
+day: 'numeric'
+});
+}
+
+/**
+ * NEW: Function to check if a task is due on the currently viewed date
+ */
+function isTaskDueOnViewingDate(task) {
+    const viewingDayOfWeek = g_appState.viewingDate.getDay(); // 0 = Sunday, 6 = Saturday
+    return task.daysDue.includes(viewingDayOfWeek);
+}
+
+/**
+ * NEW: Function to get a display string for frequency
+ */
+function getFrequencyLabel(task) {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    switch (task.frequency) {
+        case 'daily': return 'Daily';
+        case 'weekly': return `Weekly - ${days[task.daysDue[0]]}`;
+        case '2x-weekly': return `2x Weekly - ${task.daysDue.map(d => days[d]).join('/')}`;
+        case '3x-weekly': return `3x Weekly - ${task.daysDue.map(d => days[d]).join('/')}`;
+        default: return task.frequency || '';
+    }
+}
+
+
+/**
+* Calculates all dynamic data for the Progress tab based on the current period.
+*/
+function getDynamicProgressData(periodDays) {
+const now = g_appState.today.getTime() + (24*60*60*1000 - 1); // End of today
+const periodStart = getStartOfDay(g_appState.today);
+periodStart.setDate(periodStart.getDate() - (periodDays - 1));
+const periodStartTs = periodStart.getTime();
+
+const data = {
+completions: [], // { ts, task }
+skillCounts: { Mindfulness: 0, Discipline: 0, Learning: 0 },
+taskCounts: {},
+totalCompletions: 0,
+currentStreak: 0,
+habitData: {},
+cadence: {
+labels: [],
+datasets: { Mindfulness: [], Discipline: [], Learning: [] }
+}
+};
+
+// 1. Filter history for the selected period
+TASK_DEFINITIONS.forEach(task => {
+data.taskCounts[task.id] = 0;
+data.habitData[task.id] = {
+id: task.id,
+name: task.name,
+skill: task.skill,
+color: task.skillColor,
+completions: 0,
+streak: 0,
+sparkline: []
+};
+if (g_appState.taskHistory[task.id]) {
+g_appState.taskHistory[task.id].forEach(ts => {
+if (ts >= periodStartTs && ts <= now) {
+data.completions.push({ ts, task });
+if(data.skillCounts[task.skill] !== undefined) {
+    data.skillCounts[task.skill]++;
+}
+data.taskCounts[task.id]++;
+data.totalCompletions++;
+}
+});
+}
+});
+
+// 2. Calculate Current Streak (for all tasks)
+let streak = 0;
+let today = getStartOfDay(g_appState.today);
+let checkDay = new Date(today);
+while (true) {
+const dayStart = checkDay.getTime();
+const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
+const completedEssentialDueTaskOnDay = TASK_DEFINITIONS.some(task => {
+    const isDueOnCheckDay = task.daysDue.includes(checkDay.getDay());
+    return task.isEssential &&
+           isDueOnCheckDay &&
+           g_appState.taskHistory[task.id] &&
+           g_appState.taskHistory[task.id].some(ts => ts >= dayStart && ts <= dayEnd);
+});
+
+if (completedEssentialDueTaskOnDay) {
+    streak++;
+    checkDay.setDate(checkDay.getDate() - 1);
+} else {
+    break;
+}
+}
+data.currentStreak = streak;
+
+// 3. Calculate Habit-Specific Streaks and Sparklines
+const sparklineLength = periodDays === 7 ? 7 : (periodDays === 30 ? 7 : 9);
+const sparklinePeriodDays = periodDays === 90 ? 10 : 1;
+const todayForSparkline = getStartOfDay(g_appState.today);
+
+TASK_DEFINITIONS.forEach(task => {
+let habitStreak = 0;
+let checkDay = new Date(todayForSparkline);
+while (true) {
+    const dayStart = checkDay.getTime();
+    const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
+    const isDueOnCheckDay = task.daysDue.includes(checkDay.getDay());
+    const completedOnDay = g_appState.taskHistory[task.id] &&
+                           g_appState.taskHistory[task.id].some(ts => ts >= dayStart && ts <= dayEnd);
+
+    if (isDueOnCheckDay && completedOnDay) {
+        habitStreak++;
+        checkDay.setDate(checkDay.getDate() - 1);
+    } else if (completedOnDay && !isDueOnCheckDay) {
+         checkDay.setDate(checkDay.getDate() - 1);
+    } else {
+        break;
+    }
+}
+data.habitData[task.id].streak = habitStreak;
+data.habitData[task.id].completions = data.taskCounts[task.id];
+
+
+let sparkline = [];
+let sparklineCheckDate = new Date(todayForSparkline);
+for (let i = 0; i < sparklineLength; i++) {
+const periodEnd = sparklineCheckDate.getTime() + 24 * 60 * 60 * 1000 - 1;
+const periodStart = new Date(sparklineCheckDate);
+periodStart.setDate(periodStart.getDate() - (sparklinePeriodDays - 1));
+const periodStartTs = getStartOfDay(periodStart).getTime();
+
+const completedInPeriod = g_appState.taskHistory[task.id] &&
+g_appState.taskHistory[task.id].some(ts => ts >= periodStartTs && ts <= periodEnd);
+sparkline.push(completedInPeriod ? 1 : 0);
+
+sparklineCheckDate.setDate(sparklineCheckDate.getDate() - sparklinePeriodDays);
+}
+data.habitData[task.id].sparkline = sparkline.reverse();
+});
+
+// 4. Calculate Cadence (Line Chart data)
+const todayForCadence = getStartOfDay(g_appState.today);
+if (periodDays === 7) {
+let day = new Date(todayForCadence);
+for (let i = 0; i < 7; i++) {
+data.cadence.labels.push(day.toLocaleDateString('en-US', { weekday: 'short' }));
+const dayStart = getStartOfDay(day).getTime();
+const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
+let counts = { Mindfulness: 0, Discipline: 0, Learning: 0 };
+data.completions.forEach(c => {
+if (c.ts >= dayStart && c.ts <= dayEnd) {
+if(counts[c.task.skill] !== undefined) counts[c.task.skill]++;
+}
+});
+data.cadence.datasets.Mindfulness.push(counts.Mindfulness);
+data.cadence.datasets.Discipline.push(counts.Discipline);
+data.cadence.datasets.Learning.push(counts.Learning);
+day.setDate(day.getDate() - 1);
+}
+data.cadence.labels.reverse();
+data.cadence.datasets.Mindfulness.reverse();
+data.cadence.datasets.Discipline.reverse();
+data.cadence.datasets.Learning.reverse();
+} else if (periodDays === 30) {
+data.cadence.labels = ['Week 1', 'Week 2', 'Week 3', 'This Week'];
+let counts = [
+{ Mindfulness: 0, Discipline: 0, Learning: 0 },
+{ Mindfulness: 0, Discipline: 0, Learning: 0 },
+{ Mindfulness: 0, Discipline: 0, Learning: 0 },
+{ Mindfulness: 0, Discipline: 0, Learning: 0 }
+];
+let week3Start = new Date(todayForCadence); week3Start.setDate(week3Start.getDate() - 20);
+let week2Start = new Date(todayForCadence); week2Start.setDate(week2Start.getDate() - 13);
+let week1Start = new Date(todayForCadence); week1Start.setDate(week1Start.getDate() - 6);
+getStartOfDay(week3Start); getStartOfDay(week2Start); getStartOfDay(week1Start);
+
+data.completions.forEach(c => {
+    if(counts[0][c.task.skill] === undefined) return;
+    if(c.ts >= week1Start.getTime()) counts[3][c.task.skill]++;
+    else if (c.ts >= week2Start.getTime()) counts[2][c.task.skill]++;
+    else if (c.ts >= week3Start.getTime()) counts[1][c.task.skill]++;
+    else counts[0][c.task.skill]++;
+});
+data.cadence.datasets.Mindfulness = counts.map(c => c.Mindfulness);
+data.cadence.datasets.Discipline = counts.map(c => c.Discipline);
+data.cadence.datasets.Learning = counts.map(c => c.Learning);
+} else { // 90 Days
+data.cadence.labels = ['Month 1', 'Month 2', 'This Month'];
+let counts = [
+{ Mindfulness: 0, Discipline: 0, Learning: 0 },
+{ Mindfulness: 0, Discipline: 0, Learning: 0 },
+{ Mindfulness: 0, Discipline: 0, Learning: 0 }
+];
+let month2Start = new Date(todayForCadence); month2Start.setMonth(month2Start.getMonth() - 1);
+let month1Start = new Date(todayForCadence); month1Start.setMonth(month1Start.getMonth() - 2);
+getStartOfDay(month2Start); getStartOfDay(month1Start);
+data.completions.forEach(c => {
+    if(counts[0][c.task.skill] === undefined) return;
+    if(c.ts >= month2Start.getTime()) counts[2][c.task.skill]++;
+    else if (c.ts >= month1Start.getTime()) counts[1][c.task.skill]++;
+    else counts[0][c.task.skill]++;
+});
+data.cadence.datasets.Mindfulness = counts.map(c => c.Mindfulness);
+data.cadence.datasets.Discipline = counts.map(c => c.Discipline);
+data.cadence.datasets.Learning = counts.map(c => c.Learning);
+}
+
+return data;
+}
+
+
+// --- 6. VIEW SWITCHING & NAVIGATION ---
+
+/**
+* Main navigation function
+*/
+function navigateTo(viewName) {
+if (g_appState.currentView === viewName) return;
+
+g_appState.currentView = viewName;
+
+// 1. Hide all views and headers
+g_dom.mapView.classList.add('hidden');
+g_dom.progressView.classList.add('hidden');
+g_dom.headerToday.classList.add('hidden');
+g_dom.headerProgress.classList.add('hidden');
+// 2. Deactivate all nav buttons
+g_dom.navToday.className = "flex flex-col items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white w-1/2";
+if (g_dom.navWeekly) g_dom.navWeekly.className = "flex flex-col items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white";
+g_dom.navProgress.className = "flex flex-col items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white w-1/2";
+if (g_dom.navReflection) g_dom.navReflection.className = "flex flex-col items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white";
+
+// 3. Show the selected view and header, and activate nav button
+if (viewName === 'today') {
+g_dom.mapView.classList.remove('hidden');
+g_dom.headerToday.classList.remove('hidden');
+g_dom.navToday.className = "flex flex-col items-center text-indigo-600 dark:text-indigo-400 w-1/2";
+// Update "Today" view data
+loadCompletionsForDate(g_appState.viewingDate);
+renderTodayView();
+} else if (viewName === 'progress') {
+g_dom.progressView.classList.remove('hidden');
+g_dom.headerProgress.classList.remove('hidden');
+g_dom.navProgress.className = "flex flex-col items-center text-indigo-600 dark:text-indigo-400 w-1/2";
+// Update "Progress" view data
+updateAllCharts();
+}
+// Scroll to top of main content
+g_dom.mainContent.scrollTop = 0;
+}
+
+/**
+* Show the popup card for a specific task
+*/
+function showFocusCard(task) {
+    // Only show card if the task is due on the viewing date
+    if (!isTaskDueOnViewingDate(task)) {
+        console.warn(`${task.name} is not scheduled for ${formatDate(g_appState.viewingDate)}. Schedule: ${getFrequencyLabel(task)}`);
+        // We might want a less intrusive notification than console later
+        return;
+    }
+    g_appState.currentTask = task;
+    renderFocusCard(task);
+    g_dom.focusCardView.classList.add('visible');
+}
+
+/**
+* Hide the popup card
+*/
+function hideFocusCard() {
+    g_appState.currentTask = null;
+    g_dom.focusCardView.classList.remove('visible');
+    // Check if constellations should be drawn or cleared after closing card
+    checkAllTasksDone(true); // Pass flag
+}
+
+// --- 7. "TODAY" VIEW RENDER FUNCTIONS ---
+
+/**
+* Loads the completion set for a specific date
+*/
+function loadCompletionsForDate(date) {
+g_appState.completedTasksToday.clear();
+const dayStart = getStartOfDay(date).getTime();
+const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
+
+TASK_DEFINITIONS.forEach(task => {
+if (g_appState.taskHistory[task.id]) {
+if (g_appState.taskHistory[task.id].some(ts => ts >= dayStart && ts <= dayEnd)) {
+g_appState.completedTasksToday.add(task.id);
+}
+}
+});
+}
+
+/**
+* Renders the archipelago of island nodes based on due date.
+*/
+function renderMap() {
+    // Clear only island nodes, keep SVG layer
+    g_dom.mapWrapper.querySelectorAll('.island-node').forEach(node => node.remove());
+
+    let completedTodayCount = 0;
+    let totalDueTodayCount = 0;
+
+    TASK_DEFINITIONS.forEach(task => {
+        const isCompleted = g_appState.completedTasksToday.has(task.id);
+        const isDue = isTaskDueOnViewingDate(task); // Use viewing date
+        const isMiniMode = g_appState.todayMode === 'mini';
+
+        if (isDue) {
+            totalDueTodayCount++;
+            if (isCompleted) completedTodayCount++;
+        }
+
+        const node = document.createElement('div');
+        node.className = `island-node ${isCompleted ? 'completed' : 'pending'} ${isDue ? '' : 'not-due'}`;
+        node.style.left = `${task.x}%`;
+        node.style.top = `${task.y}%`;
+        node.style.transform = 'translate(-50%, -50%)';
+        node.style.setProperty('--island-base-color', task.baseColor);
+        node.style.setProperty('--island-glow-color', task.glowColor);
+        node.style.setProperty('--island-icon-color', task.iconColor);
+
+        // Fade non-essential tasks DUE TODAY in mini mode
+        if (isMiniMode && isDue && !task.isEssential) {
+            node.style.opacity = '0.3';
+            node.style.filter = 'grayscale(50%)';
+        }
+        // .not-due class handles fading for non-due tasks
+
+        node.innerHTML = `
+            <div class="island-base">
+                <span class="island-icon">
+                    ${task.icon}
+                </span>
+            </div>
+            <span class="island-label">${task.name}</span>
+            <span class="island-frequency">${getFrequencyLabel(task)}</span>
+        `;
+
+        if (isDue && !isCompleted) {
+            node.addEventListener('click', () => showFocusCard(task));
+        } else if (isDue && isCompleted) {
+            // Add listener to un-complete
+            node.addEventListener('click', () => handleUncompleteTask(task));
+        } else { // Not due
+            // Optional: Add listener to show "not due" message on tap
+            node.addEventListener('click', () => {
+                console.log(`${task.name} is not scheduled for ${formatDate(g_appState.viewingDate)}. Schedule: ${getFrequencyLabel(task)}`);
+                // Consider a less intrusive UI notification later
+            });
+        }
+        g_dom.mapWrapper.appendChild(node);
+    });
+    g_dom.progressText.textContent = `You've explored ${completedTodayCount} of ${totalDueTodayCount} destinations for ${formatDate(g_appState.viewingDate)}.`;
+    // Check if constellations should be drawn after rendering
+    checkAllTasksDone();
+}
+
+
+/**
+* Renders the focus card for a specific task.
+*/
+function renderFocusCard(task) {
+g_dom.focusCardView.innerHTML = `
+<div class="p-5 pb-8"> <!-- Reduced padding for mobile -->
+<div class="flex justify-between items-center mb-3">
+<div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">${task.name}</h3>
+<p class="text-sm text-gray-700 dark:text-gray-400">${task.time}</p>
+</div>
+<div class="island-icon" style="color: ${task.iconColor}">
+${task.icon.replace('h-5 w-5', 'h-8 w-8')}
+</div>
+</div>
+<p class="text-gray-600 dark:text-gray-300 mb-5 text-xs">You are about to visit this island. Go to your preferred app or tool to complete this task. Tap below when you're done.</p>
+
+<div class="flex space-x-3">
+<button id="cancel-btn" class="w-1/3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2.5 px-3 rounded-lg shadow-lg transition duration-200 ease-in-out text-sm">
+Cancel
+</button>
+<button id="complete-btn" class="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg transition duration-200 ease-in-out text-sm">
+I've Completed This
+</button>
+</div>
+</div>
+`;
+document.getElementById('complete-btn').addEventListener('click', handleCompleteTask);
+document.getElementById('cancel-btn').addEventListener('click', hideFocusCard);
+}
+
+/**
+* Updates all elements in the "Today" view
+*/
+function renderTodayView() {
+// Update date
+g_dom.currentDateDisplay.textContent = formatDate(g_appState.viewingDate); // Use updated ID
+
+// Disable/enable next button
+g_dom.navDateNext.disabled = isSameDay(g_appState.viewingDate, g_appState.today);
+
+// Update streak
+const streakData = getDynamicProgressData(90); // Get data to calculate streak
+g_appState.currentStreak = streakData.currentStreak;
+g_dom.todayStreak.innerHTML = `
+<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343m11.314 11.314a8 8 0 00-11.314-11.314m11.314 11.314L6.343 7.343" /></svg>
+<span>Day ${g_appState.currentStreak} Streak 🔥</span>
+`;
+
+// Update toggle UI
+if (g_appState.todayMode === 'full') {
+g_dom.flowToggle.dataset.mode = 'full';
+g_dom.toggleFullBtn.classList.add('active');
+g_dom.toggleFullBtn.classList.remove('inactive');
+g_dom.toggleMiniBtn.classList.add('inactive');
+g_dom.toggleMiniBtn.classList.remove('active');
+} else {
+g_dom.flowToggle.dataset.mode = 'mini';
+g_dom.toggleMiniBtn.classList.add('active');
+g_dom.toggleMiniBtn.classList.remove('inactive');
+g_dom.toggleFullBtn.classList.add('inactive');
+g_dom.toggleFullBtn.classList.remove('active');
+}
+renderMap(); // This now implicitly calls checkAllTasksDone
+}
+
+// --- 8. "PROGRESS" VIEW RENDER FUNCTIONS ---
+function updateAllCharts() {
+const periodDays = parseInt(g_appState.currentPeriod.replace('d', ''));
+g_dom.dashboardSubtitle.textContent = `Your ${periodDays}-day analysis.`;
+const data = getDynamicProgressData(periodDays);
+
+// Render calendar heatmap
+renderCalendarHeatmap();
+g_dom.statStreak.textContent = `${data.currentStreak} Days 🔥`;
+g_dom.statCompletions.textContent = data.totalCompletions;
+renderSkillChart(data.skillCounts, data.totalCompletions);
+renderCadenceChart(data.cadence);
+renderSkillWeb(data.skillCounts);
+renderHabitDeepDive(data.habitData);
+renderSpotlight(data.habitData);
+}
+
+function renderSkillChart(skillCounts, total) {
+    g_dom.skillChart.total.textContent = total;
+
+    // More robust percentage calculation to avoid rounding errors
+    let mindfulnessPct = total > 0 ? (skillCounts.Mindfulness / total) * 100 : 0;
+    let disciplinePct = total > 0 ? (skillCounts.Discipline / total) * 100 : 0;
+    let learningPct = total > 0 ? (skillCounts.Learning / total) * 100 : 0;
+    
+    const totalPct = mindfulnessPct + disciplinePct + learningPct;
+    if (totalPct > 0) {
+        const scale = 100 / totalPct;
+        mindfulnessPct *= scale;
+        disciplinePct *= scale;
+        learningPct *= scale;
+    }
+
+    const roundedMindfulness = Math.round(mindfulnessPct);
+    const roundedDiscipline = Math.round(disciplinePct);
+    const roundedLearning = 100 - roundedMindfulness - roundedDiscipline;
+
+    g_dom.skillChart.legendMindfulness.textContent = `Mindfulness (${roundedMindfulness}%)`;
+    g_dom.skillChart.legendDiscipline.textContent = `Discipline (${roundedDiscipline}%)`;
+    g_dom.skillChart.legendLearning.textContent = `Learning (${roundedLearning}%)`;
+
+    const radius = 60;
+    const circumference = 2 * Math.PI * radius;
+
+    let mindfulnessOffset = circumference * (1 - roundedMindfulness / 100);
+    let disciplineOffset = circumference * (1 - (roundedMindfulness + roundedDiscipline) / 100);
+    let learningOffset = 0; // This segment is last, so it fills the rest
+
+    g_dom.skillChart.mindfulness.setAttribute('stroke-dasharray', `${circumference} ${circumference}`);
+    g_dom.skillChart.discipline.setAttribute('stroke-dasharray', `${circumference} ${circumference}`);
+    g_dom.skillChart.learning.setAttribute('stroke-dasharray', `${circumference} ${circumference}`);
+
+    setTimeout(() => {
+        g_dom.skillChart.mindfulness.style.strokeDashoffset = mindfulnessOffset;
+        g_dom.skillChart.discipline.style.strokeDashoffset = disciplineOffset;
+        g_dom.skillChart.learning.style.strokeDashoffset = learningOffset;
+    }, 100);
+}
+
+function renderCadenceChart(cadenceData) {
+const ctx = g_dom.cadenceChartCanvas.getContext('2d');
+const gridColor = g_appState.isDark ? 'rgba(209, 213, 219, 0.2)' : 'rgba(55, 65, 81, 0.2)';
+const textColor = g_appState.isDark ? '#e5e7eb' : '#1f2937';
+const chartData={labels: cadenceData.labels, datasets: [
+    { label: 'Mindfulness', data: cadenceData.datasets.Mindfulness, borderColor: '#6366f1', backgroundColor: '#6366f1', tension: .3, borderWidth: 3, pointRadius: 4 }, 
+    { label: 'Discipline', data: cadenceData.datasets.Discipline, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: .3, borderWidth: 3, pointRadius: 4 }, 
+    { label: 'Learning', data: cadenceData.datasets.Learning, borderColor: '#34d399', backgroundColor: '#34d399', tension: .3, borderWidth: 3, pointRadius: 4 }
+] };
+const options={ responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } }, y: { grid: { color: gridColor, drawBorder: false }, ticks: { color: textColor, font: { size: 10 }, stepSize: 1 }, beginAtZero: true } }, plugins: { legend: { position: 'bottom', align: 'start', labels: { color: textColor, font: { size: 12, family: 'Inter' }, usePointStyle: true, boxWidth: 8 } }, tooltip: { mode: 'index', intersect: false } }, animation: { duration: 500 } };
+if(g_cadenceChart){ g_cadenceChart.data=chartData; g_cadenceChart.options.scales.x.ticks.color=textColor; g_cadenceChart.options.scales.y.ticks.color=textColor; g_cadenceChart.options.scales.y.grid.color=gridColor; g_cadenceChart.options.plugins.legend.labels.color=textColor; g_cadenceChart.update() }else{ g_cadenceChart=new Chart(ctx,{ type: 'line', data: chartData, options: options }) }
+}
+
+function renderSkillWeb(skillCounts) {
+const ctx = g_dom.skillWebChartCanvas.getContext('2d');
+const gridColor = g_appState.isDark ? 'rgba(209, 213, 219, 0.2)' : 'rgba(55, 65, 81, 0.2)';
+const textColor = g_appState.isDark ? '#e5e7eb' : '#1f2937';
+const maxVal = Math.max(10, ...Object.values(skillCounts));
+const chartData={ labels: ['Mindfulness', 'Discipline', 'Learning'], datasets: [{ label: 'Skill Level', data: [skillCounts.Mindfulness, skillCounts.Discipline, skillCounts.Learning], fill: true, backgroundColor: 'rgba(99, 102, 241, 0.4)', borderColor: 'rgba(99, 102, 241, 1)', pointBackgroundColor: '#fff', pointBorderColor: 'rgba(99, 102, 241, 1)', pointRadius: 4 }] };
+const options={ responsive: true, maintainAspectRatio: false, scales: { r: { angleLines: { color: gridColor }, grid: { color: gridColor }, pointLabels: { color: textColor, font: { size: 12, family: 'Inter', weight: 500 } }, ticks: { display: false, beginAtZero: true, max: maxVal, stepSize: Math.max(1, Math.round(maxVal / 5)) } } }, plugins: { legend: { display: false } }, animation: { duration: 500 } };
+if(g_skillWebChart){ g_skillWebChart.data=chartData; g_skillWebChart.options.scales.r.angleLines.color=gridColor; g_skillWebChart.options.scales.r.grid.color=gridColor; g_skillWebChart.options.scales.r.pointLabels.color=textColor; g_skillWebChart.options.scales.r.ticks.max=maxVal; g_skillWebChart.options.scales.r.ticks.stepSize=Math.max(1, Math.round(maxVal / 5)); g_skillWebChart.update() }else{ g_skillWebChart=new Chart(ctx,{ type: 'radar', data: chartData, options: options }) }
+}
+
+function renderHabitDeepDive(habitData) {
+g_dom.habitList.innerHTML=''; const habits=Object.values(habitData); habits.sort((a,b)=>a.name.localeCompare(b.name)); habits.forEach(habit=>{ const points=habit.sparkline.map((d,i)=>{ const x=(i/(habit.sparkline.length-1))*80; const y=(1-d)*20+5; return `${x},${y}` }).join(' '); const li=document.createElement('li'); li.className='flex items-center justify-between py-3'; li.innerHTML=`<div class="flex items-center"><span class="skill-tag" style="background-color: ${habit.color}20; color: ${habit.color}; border: 1px solid ${habit.color}50;"> ${habit.skill}</span><div><p class="text-sm font-medium text-gray-900 dark:text-white">${habit.name}</p> ${habit.streak>0?`<span class="text-xs font-semibold text-orange-500">${habit.streak}-day streak 🔥</span>`:`<span class="text-xs text-gray-500 dark:text-gray-400">No current streak</span>`}</div></div><svg class="sparkline" viewBox="0 0 80 30"><polyline class="sparkline-line" points="${points}" /></svg>`; g_dom.habitList.appendChild(li) })
+}
+
+function renderSpotlight(habitData) {
+const habits=Object.values(habitData); if(habits.length===0)return; habits.sort((a,b)=>b.streak-a.streak); const topHabit=getTaskById(habits[0].id); if(topHabit){ g_dom.spotlight.topName.textContent=topHabit.name; g_dom.spotlight.topStat.textContent=`${habits[0].streak}-day streak 🔥`; g_dom.spotlight.topIcon.innerHTML=topHabit.icon.replace('h-5 w-5', `h-8 w-8 mx-auto text-[${topHabit.iconColor}]`) } habits.sort((a,b)=>a.completions-b.completions); const lowHabit=getTaskById(habits[0].id); if(lowHabit){ g_dom.spotlight.lowName.textContent=lowHabit.name; g_dom.spotlight.lowStat.textContent=`Completed ${habits[0].completions}x`; g_dom.spotlight.lowIcon.innerHTML=lowHabit.icon.replace('h-5 w-5', `h-8 w-8 mx-auto text-[${lowHabit.iconColor}]`) }
+}
+
+
+// --- 9. EVENT HANDLERS & DATA LOGIC ---
+
+/**
+ * NEW: Draw constellation lines connecting completed essential tasks due today.
+ */
+function drawConstellation() {
+    g_dom.connectionLayer.innerHTML = ''; // Clear previous lines
+    g_dom.connectionLayer.style.display = 'block';
+
+    // Find essential tasks that ARE due on the viewing date
+    const essentialDueTasks = TASK_DEFINITIONS.filter(t => t.isEssential && isTaskDueOnViewingDate(t));
+    if (essentialDueTasks.length < 2) {
+        clearConstellation(); // Not enough points
+        return;
+    }
+
+    // Check if ALL essential tasks due today are completed
+    const allEssentialDueCompleted = essentialDueTasks.every(task => g_appState.completedTasksToday.has(task.id));
+
+    if (!allEssentialDueCompleted) {
+         clearConstellation(); // Don't draw if not all are done
+         return;
+    }
+
+    // Get positions of all completed essential tasks ONLY
+    const positions = [];
+    essentialDueTasks.forEach(task => {
+        // Only look for this specific essential task
+        if (g_appState.completedTasksToday.has(task.id)) {
+            const allNodes = g_dom.mapWrapper.querySelectorAll('.island-node');
+            for (let node of allNodes) {
+                const label = node.querySelector('.island-label');
+                if (label && label.textContent.trim() === task.name) {
+                    const rect = node.getBoundingClientRect();
+                    const mapRect = g_dom.mapWrapper.getBoundingClientRect();
+                    positions.push({
+                        id: task.id,
+                        x: rect.left - mapRect.left + rect.width / 2,
+                        y: rect.top - mapRect.top + rect.height / 2,
+                        task: task
+                    });
+                    break;
+                }
+            }
+        }
+    });
+
+    if (positions.length < 2) {
+        clearConstellation();
+        return;
+    }
+
+    // Draw lines connecting ALL essential completed tasks (full mesh)
+    for (let i = 0; i < positions.length; i++) {
+        for (let j = i + 1; j < positions.length; j++) {
+            createLine(positions[i], positions[j]);
+        }
+    }
+    
+    // Trigger celebration animation!
+    triggerCelebration();
+}
+
+/**
+ * NEW: Helper to create an SVG line element.
+ */
+function createLine(pos1, pos2) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', pos1.x);
+    line.setAttribute('y1', pos1.y);
+    line.setAttribute('x2', pos2.x);
+    line.setAttribute('y2', pos2.y);
+    line.setAttribute('class', 'connection-line');
+    g_dom.connectionLayer.appendChild(line);
+}
+
+/**
+ * NEW: Trigger celebration confetti animation
+ */
+function triggerCelebration() {
+    // Check if we already celebrated (prevent multiple triggers)
+    if (document.querySelector('.confetti-container')) return;
+    
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+    
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a29bfe', '#fd79a8', '#fdcb6e', '#ff9ff3', '#54a0ff'];
+    const confettiCount = 60;
+    
+    // Create confetti burst
+    for (let i = 0; i < confettiCount; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            const startX = 30 + Math.random() * 40; // Start from center-ish area
+            confetti.style.left = startX + '%';
+            confetti.style.setProperty('--drift', (Math.random() - 0.5) * 200 + 'px');
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.width = (Math.random() * 12 + 6) + 'px';
+            confetti.style.height = (Math.random() * 12 + 6) + 'px';
+            confetti.style.animationDuration = (Math.random() * 1.5 + 2.5) + 's';
+            confetti.style.animationDelay = '0s';
+            
+            // Random shapes - circles, squares, and rectangles
+            const shapeRand = Math.random();
+            if (shapeRand > 0.66) {
+                confetti.style.borderRadius = '50%';
+            } else if (shapeRand > 0.33) {
+                confetti.style.borderRadius = '2px';
+            }
+            
+            container.appendChild(confetti);
+            
+            // Remove confetti after animation
+            setTimeout(() => {
+                confetti.remove();
+            }, 4000);
+        }, i * 25);
+    }
+    
+    // Add sparkles around completed islands
+    const completedNodes = g_dom.mapWrapper.querySelectorAll('.island-node.completed');
+    completedNodes.forEach((node, index) => {
+        setTimeout(() => {
+            for (let i = 0; i < 8; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                const rect = node.getBoundingClientRect();
+                sparkle.style.left = rect.left + rect.width / 2 + (Math.random() - 0.5) * 60 + 'px';
+                sparkle.style.top = rect.top + rect.height / 2 + (Math.random() - 0.5) * 60 + 'px';
+                sparkle.style.color = colors[Math.floor(Math.random() * colors.length)];
+                sparkle.style.animationDelay = (i * 0.1) + 's';
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => sparkle.remove(), 1000);
+            }
+        }, index * 100);
+    });
+    
+    // Remove container after all confetti is done
+    setTimeout(() => {
+        container.remove();
+    }, 5000);
+}
+
+/**
+ * NEW: Hide and clear constellation lines.
+ */
+function clearConstellation() {
+    g_dom.connectionLayer.style.display = 'none'; // Hide layer
+    g_dom.connectionLayer.innerHTML = ''; // Clear lines
+    // Remove any existing confetti
+    const existingConfetti = document.querySelector('.confetti-container');
+    if (existingConfetti) existingConfetti.remove();
+}
+
+
+/**
+* Logs a task change to the Google Sheet (No changes needed here)
+*/
+async function logTaskChangeToSheet(taskId, timestamp, action) {
+  if (!GOOGLE_SCRIPT_URL) { console.error("GOOGLE_SCRIPT_URL is not set."); return; }
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', cache: 'no-cache', redirect: 'follow', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ action: action, taskId: taskId, timestamp: timestamp }), });
+    console.log(`Task change (${action}) sent for ${taskId} via no-cors. Assuming success.`);
+  } catch (error) { console.error("Failed to fetch/log task change:", error); }
+}
+
+/**
+* Called when "I've Completed This" is clicked.
+*/
+function handleCompleteTask() {
+if (g_appState.currentTask) {
+const taskId = g_appState.currentTask.id;
+const timestamp = new Date(g_appState.viewingDate).setHours(12, 0, 0, 0);
+g_appState.completedTasksToday.add(taskId);
+if (!g_appState.taskHistory[taskId]) g_appState.taskHistory[taskId] = [];
+const dayStart = getStartOfDay(g_appState.viewingDate).getTime();
+const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
+if (!g_appState.taskHistory[taskId].some(ts => ts >= dayStart && ts <= dayEnd)) {
+    g_appState.taskHistory[taskId].push(timestamp);
+    logTaskChangeToSheet(taskId, timestamp, 'add');
+}
+hideFocusCard(); // This will call checkAllTasksDone(true)
+renderTodayView();
+}
+}
+
+/**
+* Called when a completed island is clicked.
+*/
+function handleUncompleteTask(task) {
+if (!task || !isTaskDueOnViewingDate(task)) return; // Only uncomplete if due
+const taskId = task.id;
+const dayStart = getStartOfDay(g_appState.viewingDate).getTime();
+const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
+let timestampToRemove = null;
+if (g_appState.taskHistory[taskId]) {
+const tsIndex = g_appState.taskHistory[taskId].findIndex(ts => ts >= dayStart && ts <= dayEnd);
+if (tsIndex > -1) {
+  timestampToRemove = g_appState.taskHistory[taskId][tsIndex];
+  g_appState.taskHistory[taskId].splice(tsIndex, 1);
+}
+}
+g_appState.completedTasksToday.delete(taskId);
+if (timestampToRemove) {
+  logTaskChangeToSheet(taskId, timestampToRemove, 'remove');
+}
+renderTodayView(); // This will re-render map and call checkAllTasksDone
+}
+
+
+/**
+* Checks if all tasks due today (based on mode) are completed.
+* Draws or clears constellation lines accordingly.
+*/
+function checkAllTasksDone(calledFromHideCard = false) {
+    // Filter tasks based on current mode AND due date for the viewing date
+    const tasksToCheck = TASK_DEFINITIONS.filter(task => {
+        const isDue = isTaskDueOnViewingDate(task);
+        const isMiniMode = g_appState.todayMode === 'mini';
+        return isDue && (!isMiniMode || (isMiniMode && task.isEssential));
+    });
+
+    const allDone = tasksToCheck.length > 0 && tasksToCheck.every(task => g_appState.completedTasksToday.has(task.id));
+
+    if (allDone) {
+        // Update progress text differently if all done
+        g_dom.progressText.textContent = `You've explored the entire ${g_appState.todayMode === 'mini' ? 'Short Trip' : 'Full Voyage'} for ${formatDate(g_appState.viewingDate)}! Amazing!`;
+        drawConstellation(); // Draw lines when all done
+    } else {
+        clearConstellation(); // Clear lines if not all done
+        // Update progress text normally (done in renderMap)
+    }
+}
+
+
+/**
+* Handles changing the "Today" view mode
+*/
+function setTodayMode(mode) {
+if (g_appState.todayMode === mode) return;
+g_appState.todayMode = mode;
+clearConstellation(); // Clear lines when changing mode
+renderTodayView(); // Re-renders map and checks tasks again
+}
+
+/**
+* Handles changing the "Progress" view period (No changes needed)
+*/
+function setPeriod(period) {
+g_appState.currentPeriod = period;
+g_dom.periodFilter.dataset.period = period;
+document.querySelectorAll('.period-filter-btn').forEach(btn => { btn.classList.add('inactive'); btn.classList.remove('active'); });
+document.getElementById(`filter-${period}`).classList.add('active');
+document.getElementById(`filter-${period}`).classList.remove('inactive');
+updateAllCharts();
+}
+
+/**
+* Toggles light/dark mode (No changes needed)
+*/
+function toggleTheme() {
+g_appState.isDark = !g_appState.isDark;
+document.documentElement.classList.toggle('dark');
+if (g_appState.currentView === 'progress') { updateAllCharts(); }
+// Redraw constellation lines if visible after theme change
+checkAllTasksDone();
+}
+
+/**
+* Date navigation handlers
+*/
+function handleDatePrev() {
+g_appState.viewingDate.setDate(g_appState.viewingDate.getDate() - 1);
+loadCompletionsForDate(g_appState.viewingDate);
+clearConstellation(); // Clear lines when changing date
+renderTodayView();
+}
+function handleDateNext() {
+if (isSameDay(g_appState.viewingDate, g_appState.today)) return;
+g_appState.viewingDate.setDate(g_appState.viewingDate.getDate() + 1);
+loadCompletionsForDate(g_appState.viewingDate);
+clearConstellation(); // Clear lines when changing date
+renderTodayView();
+}
+function handleGoToToday() {
+if (isSameDay(g_appState.viewingDate, g_appState.today)) return;
+g_appState.viewingDate = new Date(g_appState.today);
+loadCompletionsForDate(g_appState.viewingDate);
+clearConstellation(); // Clear lines when changing date
+renderTodayView();
+}
+
+
+/**
+* Create animated particles (No changes needed)
+*/
+function createParticles() {
+const darkWrapper = g_dom.animationWrapper.querySelector('.hidden'); const lightWrapper = g_dom.animationWrapper.querySelector('.block'); darkWrapper.innerHTML=''; lightWrapper.innerHTML=''; const particleCount=20; for(let i=0;i<particleCount;i++){ const star=document.createElement('div'); star.className='particle star'; const starSize=Math.random()*2+1; star.style.width=`${starSize}px`; star.style.height=`${starSize}px`; star.style.setProperty('--start-x', `${Math.random()*100}vw`); star.style.setProperty('--start-y', `${Math.random()*100}vh`); star.style.setProperty('--end-x', `${Math.random()*100}vw`); star.style.setProperty('--end-y', `${Math.random()*100}vh`); star.style.animationDelay=`${Math.random()*-15}s`; darkWrapper.appendChild(star); const mote=document.createElement('div'); mote.className='particle mote'; const moteSize=Math.random()*4+2; mote.style.width=`${moteSize}px`; mote.style.height=`${moteSize}px`; mote.style.setProperty('--start-x', `${Math.random()*100}vw`); mote.style.setProperty('--start-y', `${Math.random()*100+100}vh`); mote.style.animationDelay=`${Math.random()*-20}s`; lightWrapper.appendChild(mote) }
+}
+
+
+// --- 10. APP INITIALIZATION ---
+
+/**
+* Loads all task history from Google Sheet
+*/
+async function loadDataFromSheet() {
+    if (!GOOGLE_SCRIPT_URL) {
+        console.error("GOOGLE_SCRIPT_URL is not set.");
+        alert("Error: Google Script URL not configured.");
+        g_dom.loadingOverlay.classList.add('hidden');
+        return;
+    }
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'GET', mode: 'cors' });
+        if (!response.ok) {
+            if (response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308) {
+                console.warn(`Redirect (Status: ${response.status}) during data load.`);
+                throw new Error(`Redirect detected (Status: ${response.status}). Check Apps Script URL/permissions.`);
+            }
+            throw new Error(`Network response error: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        if (data.error) {
+            throw new Error(`Apps Script Error: ${data.error}`);
+        }
+        g_appState.taskHistory = data;
+        console.log("Loaded data from Google Sheet:", g_appState.taskHistory);
+    } catch (error) {
+        console.error("Failed to load data from sheet:", error);
+        alert(`Failed to load data. Check console/Apps Script setup.\nError: ${error.message}`);
+        g_appState.taskHistory = {};
+    } finally {
+        // This block ensures the UI becomes interactive even if there are errors
+        try {
+            loadCompletionsForDate(g_appState.viewingDate);
+            renderTodayView(); // Try to render with whatever data we have
+        } catch (renderError) {
+            console.error("Critical error during initial render:", renderError);
+            alert("A critical error occurred while displaying your data. The app may not function correctly. Please check the developer console.");
+        }
+        g_dom.loadingOverlay.classList.add('hidden'); // Always hide the overlay
+    }
+}
+
+
+/**
+* Main App Load Function
+*/
+document.addEventListener('DOMContentLoaded', () => {
+const today = getStartOfDay(new Date());
+g_appState.today = today;
+g_appState.viewingDate = new Date(today);
+
+// Bind Event Listeners
+g_dom.navToday.addEventListener('click', () => navigateTo('today'));
+g_dom.navProgress.addEventListener('click', () => navigateTo('progress'));
+g_dom.themeToggle.addEventListener('click', toggleTheme);
+g_dom.themeToggleProgress.addEventListener('click', toggleTheme);
+g_dom.toggleFullBtn.addEventListener('click', () => setTodayMode('full'));
+g_dom.toggleMiniBtn.addEventListener('click', () => setTodayMode('mini'));
+g_dom.navDatePrev.addEventListener('click', handleDatePrev);
+g_dom.navDateNext.addEventListener('click', handleDateNext);
+g_dom.currentDateDisplay.addEventListener('click', handleGoToToday); // Use updated ID
+g_dom.filter7d.addEventListener('click', () => setPeriod('7d'));
+g_dom.filter30d.addEventListener('click', () => setPeriod('30d'));
+g_dom.filter90d.addEventListener('click', () => setPeriod('90d'));
+
+createParticles();
+loadDataFromSheet(); // Load data and do initial render
+
+// Task Manager Event Listeners
+document.getElementById('task-manager-btn').addEventListener('click', openTaskManager);
+document.getElementById('task-manager-btn-progress').addEventListener('click', openTaskManager);
+document.getElementById('close-task-manager').addEventListener('click', closeTaskManager);
+document.getElementById('add-task-btn').addEventListener('click', () => openTaskEditModal(null));
+document.getElementById('cancel-edit-btn').addEventListener('click', closeTaskEditModal);
+document.getElementById('save-edit-btn').addEventListener('click', saveTaskEdit);
+
+// Frequency change listener
+document.getElementById('edit-task-frequency').addEventListener('change', function() {
+    const freq = this.value;
+    const daysSelector = document.getElementById('days-selector');
+    if (freq === 'daily') {
+        daysSelector.classList.add('hidden');
+    } else {
+        daysSelector.classList.remove('hidden');
+    }
+});
+});
+
+// --- TASK MANAGEMENT SYSTEM ---
+let g_customTasks = [];
+let g_editingTaskIndex = null;
+
+// Icon library for task picker
+const ICON_LIBRARY = [
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>`, // Check
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.98 9.11c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>`, // Star
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, // Smile
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`, // Pencil
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>`, // Book
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>`, // Lightbulb
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>`, // Lightning
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, // Globe
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, // Clock
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>`, // Heart
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>`, // Music
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>`, // Video
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>`, // Speaker
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, // Play
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>`, // Eye
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>`, // Chat
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17.25l.038-.038M9.75 17.25H4.5a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 014.5 4.5h15A2.25 2.25 0 0121.75 6.75v6a2.25 2.25 0 01-2.25 2.25h-5.25l-3 3z" /></svg>`, // Message
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>`, // Edit
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>`, // Chart
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, // Check Circle
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>`, // Plus
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>`, // Trending Up
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>`, // Users
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, // Info
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>`, // User Group
+    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>`, // Flag
+];
+
+// Load custom tasks from localStorage
+function loadCustomTasks() {
+    const saved = localStorage.getItem('customTasks');
+    if (saved) {
+        try {
+            g_customTasks = JSON.parse(saved);
+            // Merge with TASK_DEFINITIONS
+            TASK_DEFINITIONS.length = 0;
+            TASK_DEFINITIONS.push(...getDefaultTasks(), ...g_customTasks);
+        } catch (e) {
+            console.error('Error loading custom tasks:', e);
+        }
+    }
+}
+
+// Save custom tasks to localStorage
+function saveCustomTasks() {
+    localStorage.setItem('customTasks', JSON.stringify(g_customTasks));
+}
+
+// Get default tasks
+function getDefaultTasks() {
+    return [
+        { id: 'reading', name: 'Sage\'s Library', time: '20 min Reading', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>`, iconColor: '#c084fc', baseColor: '#9333ea', glowColor: '#C084FC', isEssential: false, x: 20, y: 25, frequency: 'daily', daysDue: [0,1,2,3,4,5,6], skill: 'Mindfulness', skillColor: '#6366f1', isDefault: true },
+        { id: 'meditation', name: 'Isle of Calm', time: '10 min Meditation', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, iconColor: '#22d3ee', baseColor: '#0891b2', glowColor: '#22D3EE', isEssential: true, x: 50, y: 15, frequency: 'daily', daysDue: [0,1,2,3,4,5,6], skill: 'Mindfulness', skillColor: '#6366f1', isDefault: true },
+        { id: 'walk', name: 'Wanderer\'s Path', time: '10 min Walk', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`, iconColor: '#34d399', baseColor: '#059669', glowColor: '#34D399', isEssential: false, x: 80, y: 25, frequency: 'daily', daysDue: [0,1,2,3,4,5,6], skill: 'Mindfulness', skillColor: '#6366f1', isDefault: true },
+        { id: 'journaling', name: 'Reflective Peak', time: '10 min Journaling', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>`, iconColor: '#f472b6', baseColor: '#db2777', glowColor: '#F472B6', isEssential: true, x: 15, y: 60, frequency: 'daily', daysDue: [0,1,2,3,4,5,6], skill: 'Mindfulness', skillColor: '#6366f1', isDefault: true },
+        { id: 'coding', name: 'Forge of Logic', time: '30 min Coding', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>`, iconColor: '#facc15', baseColor: '#d97706', glowColor: '#FACC15', isEssential: false, x: 50, y: 85, frequency: '3x-weekly', daysDue: [1, 3, 5], skill: 'Discipline', skillColor: '#f59e0b', isDefault: true },
+        { id: 'language', name: 'Babel\'s Spire', time: 'Language Class', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>`, iconColor: '#60a5fa', baseColor: '#2563eb', glowColor: '#60A5FA', isEssential: false, x: 85, y: 60, frequency: '2x-weekly', daysDue: [2, 4], skill: 'Learning', skillColor: '#34d399', isDefault: true },
+        { id: 'exercise', name: 'Mount Olympus', time: '30 min Exercise', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>`, iconColor: '#fb923c', baseColor: '#f97316', glowColor: '#FB923C', isEssential: true, x: 50, y: 50, frequency: 'daily', daysDue: [0,1,2,3,4,5,6], skill: 'Discipline', skillColor: '#f59e0b', isDefault: true },
+    ];
+}
+
+// Open task manager modal
+function openTaskManager() {
+    document.getElementById('task-manager-modal').classList.remove('hidden');
+    renderTaskList();
+}
+
+// Close task manager modal
+function closeTaskManager() {
+    document.getElementById('task-manager-modal').classList.add('hidden');
+}
+
+// Render task list in manager
+function renderTaskList() {
+    const container = document.getElementById('task-list-container');
+    const allTasks = TASK_DEFINITIONS;
+    
+    document.getElementById('task-count').textContent = allTasks.length;
+    
+    container.innerHTML = allTasks.map((task, index) => `
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-2 flex items-center justify-between">
+            <div class="flex-1">
+                <div class="flex items-center space-x-2">
+                    <div style="color: ${task.iconColor}">${task.icon}</div>
+                    <div>
+                        <p class="font-semibold text-gray-900 dark:text-white text-sm">${task.name}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">${task.time}</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 mt-1">
+                    ${task.isEssential ? '<span class="text-[10px] bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-0.5 rounded">Essential</span>' : ''}
+                    <span class="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">${getFrequencyLabel(task)}</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="openTaskEditModal(${index})" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </button>
+                ${!task.isDefault ? `<button onclick="deleteTask(${index})" class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900 text-red-600 dark:text-red-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+// Render icon picker
+function renderIconPicker(selectedIndex = 0) {
+    const picker = document.getElementById('icon-picker');
+    picker.innerHTML = ICON_LIBRARY.map((icon, index) => `
+        <button type="button" onclick="selectIcon(${index})" class="icon-picker-btn ${index === selectedIndex ? 'selected' : ''} p-2 rounded-lg border-2 ${index === selectedIndex ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900' : 'border-gray-300 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-700'} transition-colors">
+            <div class="text-gray-700 dark:text-gray-300">${icon}</div>
+        </button>
+    `).join('');
+}
+
+// Select icon
+function selectIcon(index) {
+    document.getElementById('selected-icon-index').value = index;
+    renderIconPicker(index);
+}
+
+// Open task edit modal
+function openTaskEditModal(index) {
+    g_editingTaskIndex = index;
+    const modal = document.getElementById('task-edit-modal');
+    const title = document.getElementById('edit-modal-title');
+    const daysSelector = document.getElementById('days-selector');
+    
+    if (index === null) {
+        // Adding new task
+        if (TASK_DEFINITIONS.length >= 20) {
+            alert('Maximum 20 tasks allowed!');
+            return;
+        }
+        title.textContent = 'Add New Task';
+        document.getElementById('edit-task-name').value = '';
+        document.getElementById('edit-task-time').value = '';
+        document.getElementById('edit-task-frequency').value = 'daily';
+        document.getElementById('edit-task-mode').value = 'both';
+        document.getElementById('edit-task-essential').checked = false;
+        document.getElementById('selected-icon-index').value = '0';
+        daysSelector.classList.add('hidden');
+        
+        // Uncheck all days
+        document.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = false);
+        
+        renderIconPicker(0);
+    } else {
+        // Editing existing task
+        const task = TASK_DEFINITIONS[index];
+        title.textContent = 'Edit Task';
+        document.getElementById('edit-task-name').value = task.name;
+        document.getElementById('edit-task-time').value = task.time;
+        document.getElementById('edit-task-frequency').value = task.frequency || 'daily';
+        
+        // Show/hide days selector based on frequency
+        if (task.frequency === 'daily') {
+            daysSelector.classList.add('hidden');
+        } else {
+            daysSelector.classList.remove('hidden');
+            // Set selected days
+            document.querySelectorAll('.day-checkbox').forEach(cb => {
+                cb.checked = task.daysDue && task.daysDue.includes(parseInt(cb.value));
+            });
+        }
+        
+        // Determine mode based on isEssential (essential tasks are in Short Trip)
+        if (task.isEssential) {
+            document.getElementById('edit-task-mode').value = 'short';
+        } else {
+            document.getElementById('edit-task-mode').value = 'full';
+        }
+        
+        document.getElementById('edit-task-essential').checked = task.isEssential || false;
+        
+        // Find icon index
+        const iconIndex = ICON_LIBRARY.findIndex(icon => icon === task.icon) || 0;
+        document.getElementById('selected-icon-index').value = iconIndex;
+        renderIconPicker(iconIndex);
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+// Close task edit modal
+function closeTaskEditModal() {
+    document.getElementById('task-edit-modal').classList.add('hidden');
+    g_editingTaskIndex = null;
+}
+
+// Save task edit
+function saveTaskEdit() {
+    const name = document.getElementById('edit-task-name').value.trim();
+    const time = document.getElementById('edit-task-time').value.trim();
+    const frequency = document.getElementById('edit-task-frequency').value;
+    const mode = document.getElementById('edit-task-mode').value;
+    const isEssential = document.getElementById('edit-task-essential').checked;
+    const iconIndex = parseInt(document.getElementById('selected-icon-index').value) || 0;
+    
+    if (!name || !time) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    // Get selected days
+    let daysDue = [0,1,2,3,4,5,6]; // Default to all days
+    if (frequency !== 'daily') {
+        daysDue = Array.from(document.querySelectorAll('.day-checkbox:checked')).map(cb => parseInt(cb.value));
+        if (daysDue.length === 0) {
+            alert('Please select at least one day for this frequency');
+            return;
+        }
+    }
+    
+    const colors = ['#22d3ee', '#facc15', '#f472b6', '#34d399', '#c084fc', '#818cf8', '#fb7185', '#fb923c', '#ef4444', '#a78bfa', '#60a5fa'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    
+    // Generate random position
+    const x = 20 + Math.random() * 60;
+    const y = 20 + Math.random() * 60;
+    
+    const taskData = {
+        id: g_editingTaskIndex === null ? 'custom-' + Date.now() : TASK_DEFINITIONS[g_editingTaskIndex].id,
+        name: name,
+        time: time,
+        icon: ICON_LIBRARY[iconIndex],
+        iconColor: randomColor,
+        baseColor: randomColor,
+        glowColor: randomColor,
+        isEssential: isEssential,
+        x: x,
+        y: y,
+        frequency: frequency,
+        daysDue: daysDue,
+        skill: 'Mindfulness', // Default to Mindfulness for new tasks
+        skillColor: '#6366f1',
+        isDefault: false
+    };
+    
+    if (g_editingTaskIndex === null) {
+        // Adding new task
+        TASK_DEFINITIONS.push(taskData);
+        g_customTasks.push(taskData);
+    } else {
+        // Editing existing task
+        const task = TASK_DEFINITIONS[g_editingTaskIndex];
+        task.name = name;
+        task.time = time;
+        task.frequency = frequency;
+        task.daysDue = daysDue;
+        task.isEssential = isEssential;
+        task.icon = ICON_LIBRARY[iconIndex];
+        
+        if (!task.isDefault) {
+            // Update in custom tasks array
+            const customIndex = g_customTasks.findIndex(t => t.id === task.id);
+            if (customIndex !== -1) {
+                g_customTasks[customIndex] = task;
+            }
+        }
+    }
+    
+    saveCustomTasks();
+    closeTaskEditModal();
+    renderTaskList();
+    renderTodayView(); // Refresh the map
+}
+
+// Delete task
+function deleteTask(index) {
+    if (confirm('Are you sure you want to delete this task?')) {
+        const task = TASK_DEFINITIONS[index];
+        TASK_DEFINITIONS.splice(index, 1);
+        
+        // Remove from custom tasks
+        const customIndex = g_customTasks.findIndex(t => t.id === task.id);
+        if (customIndex !== -1) {
+            g_customTasks.splice(customIndex, 1);
+        }
+        
+        saveCustomTasks();
+        renderTaskList();
+        renderTodayView(); // Refresh the map
+    }
+}
+
+// Initialize custom tasks on load
+loadCustomTasks();
+
+// --- CALENDAR HEATMAP ---
+function renderCalendarHeatmap() {
+    const container = document.getElementById('calendar-heatmap');
+    if (!container) return;
+    
+    const today = new Date();
+    const days = 90;
+    
+    const dateCompletions = {};
+    let maxCompletions = 0;
+    let totalDays = 0;
+    let totalCompletions = 0;
+    
+    const progressData = getDynamicProgressData(90);
+    
+    if (progressData && progressData.completions) {
+        progressData.completions.forEach(completion => {
+            const dateStr = new Date(completion.ts).toISOString().split('T')[0];
+            if (!dateCompletions[dateStr]) {
+                dateCompletions[dateStr] = 0;
+            }
+            dateCompletions[dateStr]++;
+        });
+    }
+    
+    const heatmapData = [];
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        const count = dateCompletions[dateStr] || 0;
+        
+        if (count > 0) totalDays++;
+        totalCompletions += count;
+        if (count > maxCompletions) maxCompletions = count;
+        
+        heatmapData.push({
+            date: date,
+            dateStr: dateStr,
+            count: count,
+            dayOfWeek: date.getDay()
+        });
+    }
+    
+    const avgCompletions = totalDays > 0 ? (totalCompletions / totalDays).toFixed(1) : 0;
+    const totalDaysEl = document.getElementById('calendar-total-days');
+    const bestDayEl = document.getElementById('calendar-best-day');
+    const avgEl = document.getElementById('calendar-avg');
+    
+    if (totalDaysEl) totalDaysEl.textContent = totalDays;
+    if (bestDayEl) bestDayEl.textContent = maxCompletions;
+    if (avgEl) avgEl.textContent = avgCompletions;
+    
+    const weeks = [];
+    for (let w = 0; w < 13; w++) {
+        const week = [];
+        for (let d = 0; d < 7; d++) {
+            const index = w * 7 + d;
+            if (index < heatmapData.length) {
+                week.push(heatmapData[index]);
+            } else {
+                week.push(null);
+            }
+        }
+        weeks.push(week);
+    }
+    
+    function getColor(count) {
+        if (count === 0) return 'bg-gray-200 dark:bg-gray-700';
+        if (maxCompletions === 0) return 'bg-gray-200 dark:bg-gray-700';
+        
+        const percent = (count / maxCompletions) * 100;
+        if (percent <= 25) return 'bg-green-200 dark:bg-green-900';
+        if (percent <= 50) return 'bg-green-400 dark:bg-green-700';
+        if (percent <= 75) return 'bg-green-600 dark:bg-green-500';
+        return 'bg-green-800 dark:bg-green-400';
+    }
+    
+    const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    
+    container.innerHTML = `
+        <div class="flex gap-2">
+            <div class="flex flex-col justify-around text-[10px] text-gray-500 dark:text-gray-400">
+                ${dayLabels.map(day => `<div class="h-3 leading-3">${day}</div>`).join('')}
+            </div>
+            
+            <div class="flex-1 overflow-x-auto">
+                <div class="flex gap-1">
+                    ${weeks.map(week => `
+                        <div class="flex flex-col gap-1">
+                            ${week.map(day => {
+                                if (!day) {
+                                    return '<div class="w-3 h-3"></div>';
+                                }
+                                return `<div class="w-3 h-3 rounded-sm ${getColor(day.count)} cursor-pointer hover:ring-1 hover:ring-indigo-500 transition-all" title="${day.date.toLocaleDateString()}: ${day.count} tasks"></div>`;
+                            }).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+</script>
+</body>
+</html>
