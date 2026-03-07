@@ -1144,11 +1144,19 @@ pointer-events: none;
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
 <div>
 <label for="custom-start-date" class="text-xs font-medium text-gray-600 dark:text-gray-300">From</label>
-<input type="text" id="custom-start-date" inputmode="numeric" autocomplete="off" placeholder="YYYY-MM-DD or DD/MM/YYYY" class="mt-1 w-full text-xs rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-2 py-1.5">
+<div class="mt-1 flex items-center gap-2">
+<input type="text" id="custom-start-date" inputmode="numeric" autocomplete="off" placeholder="YYYY-MM-DD or DD/MM/YYYY" class="flex-1 text-xs rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-2 py-1.5">
+<button id="custom-start-picker-btn" type="button" class="text-xs font-semibold rounded-md border border-gray-300 dark:border-slate-600 px-2 py-1.5 text-gray-600 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700">Pick</button>
+<input type="date" id="custom-start-date-native" class="sr-only" aria-hidden="true" tabindex="-1">
+</div>
 </div>
 <div>
 <label for="custom-end-date" class="text-xs font-medium text-gray-600 dark:text-gray-300">To</label>
-<input type="text" id="custom-end-date" inputmode="numeric" autocomplete="off" placeholder="YYYY-MM-DD or DD/MM/YYYY" class="mt-1 w-full text-xs rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-2 py-1.5">
+<div class="mt-1 flex items-center gap-2">
+<input type="text" id="custom-end-date" inputmode="numeric" autocomplete="off" placeholder="YYYY-MM-DD or DD/MM/YYYY" class="flex-1 text-xs rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-2 py-1.5">
+<button id="custom-end-picker-btn" type="button" class="text-xs font-semibold rounded-md border border-gray-300 dark:border-slate-600 px-2 py-1.5 text-gray-600 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700">Pick</button>
+<input type="date" id="custom-end-date-native" class="sr-only" aria-hidden="true" tabindex="-1">
+</div>
 </div>
 </div>
 <p id="custom-date-error" class="hidden text-xs text-rose-500"></p>
@@ -1611,6 +1619,10 @@ filterCustom: document.getElementById('filter-custom'),
 customDatePanel: document.getElementById('custom-date-panel'),
 customStartDate: document.getElementById('custom-start-date'),
 customEndDate: document.getElementById('custom-end-date'),
+customStartDateNative: document.getElementById('custom-start-date-native'),
+customEndDateNative: document.getElementById('custom-end-date-native'),
+customStartPickerBtn: document.getElementById('custom-start-picker-btn'),
+customEndPickerBtn: document.getElementById('custom-end-picker-btn'),
 customDateError: document.getElementById('custom-date-error'),
 scopeAll: document.getElementById('progress-scope-all'),
 scopeCore: document.getElementById('progress-scope-core'),
@@ -1843,6 +1855,29 @@ function parseDateInputValue(value) {
 
 function formatDateInputValue(date) {
     return getLocalDateKey(getStartOfDay(date));
+}
+
+function openNativeDatePicker(inputEl) {
+    if (!inputEl) return;
+    if (typeof inputEl.showPicker === 'function') {
+        inputEl.showPicker();
+        return;
+    }
+    inputEl.click();
+}
+
+function syncNativeDateInputValues() {
+    const todayValue = formatDateInputValue(g_appState.today);
+    if (g_dom.customStartDateNative) {
+        const parsedStart = parseDateInputValue(g_appState.progressFilters.customStartDate);
+        g_dom.customStartDateNative.max = todayValue;
+        g_dom.customStartDateNative.value = parsedStart ? formatDateInputValue(parsedStart) : '';
+    }
+    if (g_dom.customEndDateNative) {
+        const parsedEnd = parseDateInputValue(g_appState.progressFilters.customEndDate);
+        g_dom.customEndDateNative.max = todayValue;
+        g_dom.customEndDateNative.value = parsedEnd ? formatDateInputValue(parsedEnd) : '';
+    }
 }
 
 function setCustomDateError(message = '') {
@@ -2931,6 +2966,7 @@ if (g_dom.customStartDate) {
 if (g_dom.customEndDate) {
     g_dom.customEndDate.value = g_appState.progressFilters.customEndDate || '';
 }
+syncNativeDateInputValues();
 if (g_dom.scopeAll && g_dom.scopeCore) {
     const isCore = g_appState.progressFilters.scope === 'core';
     g_dom.scopeAll.classList.toggle('active', !isCore);
@@ -3094,6 +3130,28 @@ if (g_dom.filterCustom) {
 }
 if (g_dom.customStartDate) g_dom.customStartDate.addEventListener('change', handleCustomDateInput);
 if (g_dom.customEndDate) g_dom.customEndDate.addEventListener('change', handleCustomDateInput);
+if (g_dom.customStartPickerBtn && g_dom.customStartDateNative) {
+    g_dom.customStartPickerBtn.addEventListener('click', () => openNativeDatePicker(g_dom.customStartDateNative));
+}
+if (g_dom.customEndPickerBtn && g_dom.customEndDateNative) {
+    g_dom.customEndPickerBtn.addEventListener('click', () => openNativeDatePicker(g_dom.customEndDateNative));
+}
+if (g_dom.customStartDateNative && g_dom.customStartDate) {
+    g_dom.customStartDateNative.addEventListener('change', () => {
+        if (g_dom.customStartDateNative.value) {
+            g_dom.customStartDate.value = g_dom.customStartDateNative.value;
+            handleCustomDateInput();
+        }
+    });
+}
+if (g_dom.customEndDateNative && g_dom.customEndDate) {
+    g_dom.customEndDateNative.addEventListener('change', () => {
+        if (g_dom.customEndDateNative.value) {
+            g_dom.customEndDate.value = g_dom.customEndDateNative.value;
+            handleCustomDateInput();
+        }
+    });
+}
 if (g_dom.scopeAll) g_dom.scopeAll.addEventListener('click', () => setProgressScope('all'));
 if (g_dom.scopeCore) g_dom.scopeCore.addEventListener('click', () => setProgressScope('core'));
 if (g_dom.includeArchived) g_dom.includeArchived.addEventListener('change', (event) => setIncludeArchived(event.target.checked));
@@ -3969,8 +4027,11 @@ function getEarliestHistoryDateForTasks(taskIds = []) {
     return minTimestamp === null ? null : getStartOfDay(new Date(minTimestamp));
 }
 
-function getCalendarBrowsingBounds(scopedTasks, selectedHabit, fallbackEndDate) {
-    const maxDate = getStartOfDay(g_appState.today || fallbackEndDate || new Date());
+function getCalendarBrowsingBounds(scopedTasks, selectedHabit, activeRange) {
+    const today = getStartOfDay(g_appState.today || new Date());
+    const rangeStart = getStartOfDay(activeRange.start);
+    const rangeEnd = getStartOfDay(activeRange.end);
+    const maxDate = rangeEnd > today ? today : rangeEnd;
     const relevantTasks = selectedHabit ? [selectedHabit] : scopedTasks;
     const relevantTaskIds = relevantTasks.map(task => task.id);
 
@@ -3988,9 +4049,18 @@ function getCalendarBrowsingBounds(scopedTasks, selectedHabit, fallbackEndDate) 
         minDate.setMonth(minDate.getMonth() - 11);
     }
 
+    let startDate = minDate;
+    let endDate = today;
+    if (activeRange.mode === 'custom') {
+        startDate = rangeStart;
+        endDate = maxDate;
+    } else if (rangeStart < startDate) {
+        startDate = new Date(rangeStart);
+    }
+
     return {
-        start: new Date(minDate.getFullYear(), minDate.getMonth(), 1),
-        end: new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate())
+        start: new Date(startDate.getFullYear(), startDate.getMonth(), 1),
+        end: new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
     };
 }
 
@@ -4198,7 +4268,7 @@ function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
     g_appState.calendarViewMode = isSevenDayPreset ? 'week' : 'month';
     const calendarBounds = isSevenDayPreset
         ? { start: fullRangeStart, end: fullRangeEnd }
-        : getCalendarBrowsingBounds(scopedTasks, selectedHabit, fullRangeEnd);
+        : getCalendarBrowsingBounds(scopedTasks, selectedHabit, activeRange);
 
     let pageMeta = null;
     let activePage = null;
