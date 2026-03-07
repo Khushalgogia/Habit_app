@@ -1100,6 +1100,16 @@ pointer-events: none;
 </button>
 </div>
 </header>
+<div id="sync-status-bar" class="mb-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-600 dark:text-gray-300">
+<div class="flex flex-wrap items-center gap-2">
+<span id="sync-status-text" class="font-medium">Sync: checking...</span>
+<span id="sync-user-id" class="px-1.5 py-0.5 rounded bg-gray-200/70 dark:bg-slate-700/70 text-[10px] font-mono"></span>
+<span id="sync-last-sync"></span>
+</div>
+<button id="sync-now-btn" type="button" class="px-2 py-1 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-[11px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700">
+Sync now
+</button>
+</div>
 
 <!-- View 1: Map View (Today) -->
 <div id="map-view" class="view flex-1 flex flex-col items-center">
@@ -1496,7 +1506,7 @@ Save
 
 // --- 0. CONFIGURATION ---
 // ⬇️ !!! PASTE YOUR GOOGLE APPS SCRIPT URL HERE !!! ⬇️
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHQwnYysj-5ihzXnLgFuHTOoG5UFVREmxIlpnyXYUyRUFTWC00T7clGx-IdRYWI5Pn/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyv6OEpO8Ti-pJX9rtaMWOCpNdtHmPjk4JpEJm1ZbeYEZAqTO1WuRUlita8_nobWRqB_w/exec";
 // ⬆️ !!! PASTE YOUR GOOGLE APPS SCRIPT URL HERE !!! ⬆️
 const LOCAL_STORAGE_KEYS = {
 taskHistory: 'habitAppTaskHistoryV1',
@@ -1572,7 +1582,14 @@ calendarTooltip: {
 undoAction: null,
 undoTimer: null,
 pendingRemoveTaskIndex: null,
-pendingRemoveAction: null
+pendingRemoveAction: null,
+sync: {
+    isSyncing: false,
+    backendCompatible: true,
+    lastSuccessAt: null,
+    lastError: '',
+    cloudTasksEmpty: false
+}
 };
 
 // --- 3. DOM ELEMENT REFERENCES ---
@@ -1628,6 +1645,10 @@ scopeAll: document.getElementById('progress-scope-all'),
 scopeCore: document.getElementById('progress-scope-core'),
 includeArchived: document.getElementById('progress-include-archived'),
 dashboardSubtitle: document.getElementById('dashboard-subtitle'),
+syncStatusText: document.getElementById('sync-status-text'),
+syncUserId: document.getElementById('sync-user-id'),
+syncLastSync: document.getElementById('sync-last-sync'),
+syncNowBtn: document.getElementById('sync-now-btn'),
 statStreak: document.getElementById('stat-streak'),
 statCompletions: document.getElementById('stat-completions'),
 cadenceChartCanvas: document.getElementById('cadence-chart'),
@@ -1742,6 +1763,207 @@ function getOrCreateUserId() {
     // Single-user default for reliable cross-device sync.
     localStorage.setItem(LOCAL_STORAGE_KEYS.userId, DEFAULT_SYNC_USER_ID);
     return DEFAULT_SYNC_USER_ID;
+}
+
+function formatSyncTimestamp(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+    });
+}
+
+function renderSyncStatus() {
+    if (g_dom.syncStatusText) {
+        if (!GOOGLE_SCRIPT_URL) {
+            g_dom.syncStatusText.textContent = 'Sync: disabled (missing script URL)';
+            g_dom.syncStatusText.className = 'font-medium text-rose-500';
+        } else if (g_appState.sync.isSyncing) {
+            g_dom.syncStatusText.textContent = 'Sync: syncing...';
+            g_dom.syncStatusText.className = 'font-medium text-indigo-600 dark:text-indigo-300';
+        } else if (!g_appState.sync.backendCompatible) {
+            g_dom.syncStatusText.textContent = 'Sync: backend incompatible';
+            g_dom.syncStatusText.className = 'font-medium text-rose-500';
+        } else if (g_appState.sync.lastError) {
+            g_dom.syncStatusText.textContent = `Sync: failed - ${g_appState.sync.lastError}`;
+            g_dom.syncStatusText.className = 'font-medium text-rose-500';
+        } else if (g_appState.sync.cloudTasksEmpty) {
+            g_dom.syncStatusText.textContent = 'Sync: cloud tasks empty (save an edit to seed)';
+            g_dom.syncStatusText.className = 'font-medium text-amber-500';
+        } else if (g_appState.sync.lastSuccessAt) {
+            g_dom.syncStatusText.textContent = 'Sync: synced';
+            g_dom.syncStatusText.className = 'font-medium text-emerald-600 dark:text-emerald-300';
+        } else {
+            g_dom.syncStatusText.textContent = 'Sync: waiting for first cloud response';
+            g_dom.syncStatusText.className = 'font-medium text-gray-600 dark:text-gray-300';
+        }
+    }
+    if (g_dom.syncUserId) {
+        g_dom.syncUserId.textContent = `uid:${g_appState.userId || DEFAULT_SYNC_USER_ID}`;
+    }
+    if (g_dom.syncLastSync) {
+        const last = formatSyncTimestamp(g_appState.sync.lastSuccessAt);
+        g_dom.syncLastSync.textContent = last ? `Last sync: ${last}` : '';
+    }
+    if (g_dom.syncNowBtn) {
+        g_dom.syncNowBtn.disabled = g_appState.sync.isSyncing;
+        g_dom.syncNowBtn.classList.toggle('opacity-60', g_appState.sync.isSyncing);
+        g_dom.syncNowBtn.classList.toggle('pointer-events-none', g_appState.sync.isSyncing);
+    }
+}
+
+function setSyncState(partial = {}) {
+    g_appState.sync = {
+        ...g_appState.sync,
+        ...partial
+    };
+    renderSyncStatus();
+}
+
+function ensureHabitEditingAllowed(actionLabel = 'edit habits') {
+    if (!g_appState.sync.backendCompatible) {
+        alert(`Cloud sync backend is incompatible. Cannot ${actionLabel} until Apps Script V2 is deployed correctly.`);
+        return false;
+    }
+    return true;
+}
+
+function hashTaskDefinitions(tasks) {
+    try {
+        return JSON.stringify(tasks || []);
+    } catch (_error) {
+        return '';
+    }
+}
+
+function hashTaskHistory(history) {
+    try {
+        return JSON.stringify(history || {});
+    } catch (_error) {
+        return '';
+    }
+}
+
+async function fetchCloudSnapshot() {
+    if (!GOOGLE_SCRIPT_URL) {
+        return { ok: false, type: 'config', message: 'Google Script URL is missing.' };
+    }
+    try {
+        const url = `${GOOGLE_SCRIPT_URL}?action=loadAll&userId=${encodeURIComponent(g_appState.userId || getOrCreateUserId())}&_ts=${Date.now()}`;
+        const response = await fetch(url, { method: 'GET', mode: 'cors', cache: 'no-store' });
+        if (!response.ok) {
+            return { ok: false, type: 'network', message: `Load failed: ${response.status} ${response.statusText}` };
+        }
+        const payload = await response.json();
+        if (payload && payload.error) {
+            return { ok: false, type: 'backend', message: String(payload.error) };
+        }
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+            return { ok: false, type: 'incompatible', message: 'Unexpected response payload from Apps Script.' };
+        }
+        const hasTaskHistory = Object.prototype.hasOwnProperty.call(payload, 'taskHistory');
+        const hasTasks = Object.prototype.hasOwnProperty.call(payload, 'tasks');
+        if (!hasTaskHistory || !hasTasks) {
+            return { ok: false, type: 'incompatible', message: 'Apps Script must return { taskHistory, tasks }.' };
+        }
+        return {
+            ok: true,
+            taskHistory: sanitizeTaskHistory(payload.taskHistory || {}),
+            tasks: Array.isArray(payload.tasks) ? payload.tasks : []
+        };
+    } catch (error) {
+        return { ok: false, type: 'network', message: error?.message || 'Failed to load cloud snapshot.' };
+    }
+}
+
+function applyCloudSnapshot(snapshot, options = {}) {
+    const source = options.source || 'load';
+    let changed = false;
+
+    if (Array.isArray(snapshot.tasks) && snapshot.tasks.length > 0) {
+        const remoteTasks = sanitizeTaskDefinitions(snapshot.tasks);
+        if (hashTaskDefinitions(remoteTasks) !== hashTaskDefinitions(TASK_DEFINITIONS)) {
+            applyTaskDefinitions(remoteTasks);
+            saveTasksLocally();
+            changed = true;
+        }
+        setSyncState({ cloudTasksEmpty: false });
+    } else {
+        setSyncState({ cloudTasksEmpty: true });
+    }
+
+    const remoteHistory = sanitizeTaskHistory(snapshot.taskHistory || {});
+    const hasRemoteHistory = Object.keys(remoteHistory).length > 0;
+    if (hasRemoteHistory) {
+        if (hashTaskHistory(remoteHistory) !== hashTaskHistory(g_appState.taskHistory)) {
+            g_appState.taskHistory = remoteHistory;
+            saveTaskHistoryLocally();
+            changed = true;
+        }
+    } else if (source === 'initial') {
+        const localHistory = loadTaskHistoryFromLocal();
+        g_appState.taskHistory = localHistory;
+        saveTaskHistoryLocally();
+    }
+
+    ensureOrphanHistoryTasks();
+    saveTasksLocally();
+    return changed;
+}
+
+async function pullCloudSnapshotAndMerge(options = {}) {
+    const source = options.source || 'refresh';
+    const silent = Boolean(options.silent);
+    const renderAfterMerge = Boolean(options.renderAfterMerge);
+    if (g_appState.sync.isSyncing && !options.force) {
+        return { ok: false, skipped: true };
+    }
+
+    setSyncState({
+        isSyncing: true,
+        ...(silent ? {} : { lastError: '' })
+    });
+
+    const snapshot = await fetchCloudSnapshot();
+    if (!snapshot.ok) {
+        if (snapshot.type === 'incompatible') {
+            setSyncState({
+                isSyncing: false,
+                backendCompatible: false,
+                lastError: snapshot.message || 'Backend is incompatible.'
+            });
+        } else {
+            setSyncState({
+                isSyncing: false,
+                lastError: snapshot.message || 'Cloud sync failed.'
+            });
+        }
+        return snapshot;
+    }
+
+    const changed = applyCloudSnapshot(snapshot, { source });
+    setSyncState({
+        isSyncing: false,
+        backendCompatible: true,
+        lastError: '',
+        lastSuccessAt: Date.now()
+    });
+
+    if (changed && renderAfterMerge) {
+        loadCompletionsForDate(g_appState.viewingDate);
+        renderTodayView();
+        if (g_appState.currentView === 'progress') updateAllCharts();
+        const taskManagerModal = document.getElementById('task-manager-modal');
+        if (taskManagerModal && !taskManagerModal.classList.contains('hidden')) {
+            renderTaskList();
+        }
+    }
+
+    return { ok: true, changed };
 }
 
 function getLocalDateKey(date) {
@@ -2784,13 +3006,14 @@ async function postPayloadToScript(payload) {
     }
     const body = await response.text();
     if (body) {
+      let parsed = null;
       try {
-        const parsed = JSON.parse(body);
-        if (parsed && parsed.error) {
-          throw new Error(parsed.error);
-        }
+        parsed = JSON.parse(body);
       } catch (_parseError) {
-        // Some deployments return plain text; non-JSON response is tolerated.
+        parsed = null;
+      }
+      if (parsed && parsed.error) {
+        throw new Error(parsed.error);
       }
     }
     return true;
@@ -2826,8 +3049,16 @@ async function logTaskChangeToSheet(taskId, timestamp, action) {
     });
     if (ok) {
       console.log(`Task change (${action}) synced for ${taskId}.`);
+      setSyncState({
+        lastSuccessAt: Date.now(),
+        lastError: '',
+        backendCompatible: true
+      });
     } else {
       console.warn(`Task change (${action}) could not be synced for ${taskId}.`);
+      setSyncState({
+        lastError: 'Completion sync failed.'
+      });
     }
   } catch (error) { console.error("Failed to fetch/log task change:", error); }
 }
@@ -3064,6 +3295,18 @@ function createParticles() {
 const darkWrapper = g_dom.animationWrapper.querySelector('.hidden'); const lightWrapper = g_dom.animationWrapper.querySelector('.block'); darkWrapper.innerHTML=''; lightWrapper.innerHTML=''; const particleCount=20; for(let i=0;i<particleCount;i++){ const star=document.createElement('div'); star.className='particle star'; const starSize=Math.random()*2+1; star.style.width=`${starSize}px`; star.style.height=`${starSize}px`; star.style.setProperty('--start-x', `${Math.random()*100}vw`); star.style.setProperty('--start-y', `${Math.random()*100}vh`); star.style.setProperty('--end-x', `${Math.random()*100}vw`); star.style.setProperty('--end-y', `${Math.random()*100}vh`); star.style.animationDelay=`${Math.random()*-15}s`; darkWrapper.appendChild(star); const mote=document.createElement('div'); mote.className='particle mote'; const moteSize=Math.random()*4+2; mote.style.width=`${moteSize}px`; mote.style.height=`${moteSize}px`; mote.style.setProperty('--start-x', `${Math.random()*100}vw`); mote.style.setProperty('--start-y', `${Math.random()*100+100}vh`); mote.style.animationDelay=`${Math.random()*-20}s`; lightWrapper.appendChild(mote) }
 }
 
+async function refreshCloudSnapshot(reason = 'refresh') {
+    if (!GOOGLE_SCRIPT_URL) return;
+    const result = await pullCloudSnapshotAndMerge({
+        source: reason,
+        silent: true,
+        renderAfterMerge: true
+    });
+    if (result.ok && result.changed) {
+        console.log('Cloud snapshot refreshed and applied.', reason);
+    }
+}
+
 
 // --- 10. APP INITIALIZATION ---
 
@@ -3073,61 +3316,45 @@ const darkWrapper = g_dom.animationWrapper.querySelector('.hidden'); const light
 async function loadDataFromSheet() {
     if (!GOOGLE_SCRIPT_URL) {
         console.error("GOOGLE_SCRIPT_URL is not set.");
+        setSyncState({
+            backendCompatible: false,
+            lastError: 'Google Script URL is missing.'
+        });
         loadCompletionsForDate(g_appState.viewingDate);
         renderTodayView();
         g_dom.loadingOverlay.classList.add('hidden');
         return;
     }
     try {
-        const url = `${GOOGLE_SCRIPT_URL}?action=loadAll&userId=${encodeURIComponent(g_appState.userId || getOrCreateUserId())}&_ts=${Date.now()}`;
-        const response = await fetch(url, { method: 'GET', mode: 'cors' });
-        if (!response.ok) {
-            if (response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308) {
-                console.warn(`Redirect (Status: ${response.status}) during data load.`);
-                throw new Error(`Redirect detected (Status: ${response.status}). Check Apps Script URL/permissions.`);
-            }
-            throw new Error(`Network response error: ${response.status} ${response.statusText}`);
-        }
-        const payload = await response.json();
-        if (payload.error) {
-            throw new Error(`Apps Script Error: ${payload.error}`);
-        }
-
-        let remoteTaskHistory = {};
-        let remoteTasks = null;
-
-        if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
-            if (payload.taskHistory || payload.tasks) {
-                remoteTaskHistory = sanitizeTaskHistory(payload.taskHistory || {});
-                remoteTasks = Array.isArray(payload.tasks) ? payload.tasks : null;
+        const result = await pullCloudSnapshotAndMerge({ source: 'initial', force: true });
+        if (!result.ok) {
+            if (result.type === 'incompatible') {
+                console.error('Backend incompatible for task sync:', result.message);
             } else {
-                remoteTaskHistory = sanitizeTaskHistory(payload);
+                console.error('Failed to load cloud snapshot:', result.message);
             }
-        }
-
-        if (remoteTasks && remoteTasks.length > 0) {
-            applyTaskDefinitions(remoteTasks);
+            g_appState.taskHistory = loadTaskHistoryFromLocal();
+            ensureOrphanHistoryTasks();
             saveTasksLocally();
+            saveTaskHistoryLocally();
+        } else {
+            console.log('Loaded cloud snapshot successfully.');
         }
-
-        const localTaskHistory = loadTaskHistoryFromLocal();
-        const hasRemoteHistory = Object.keys(remoteTaskHistory).length > 0;
-        const hasLocalHistory = Object.keys(localTaskHistory).length > 0;
-        g_appState.taskHistory = hasRemoteHistory ? remoteTaskHistory : (hasLocalHistory ? localTaskHistory : {});
-        ensureOrphanHistoryTasks();
-        saveTasksLocally();
-        saveTaskHistoryLocally();
-        console.log("Loaded data from Google Sheet:", { taskHistory: g_appState.taskHistory, tasks: remoteTasks ? remoteTasks.length : 0 });
     } catch (error) {
         console.error("Failed to load data from sheet:", error);
         g_appState.taskHistory = loadTaskHistoryFromLocal();
         ensureOrphanHistoryTasks();
+        saveTaskHistoryLocally();
         saveTasksLocally();
+        setSyncState({
+            lastError: error?.message || 'Failed to load from cloud.'
+        });
     } finally {
         // This block ensures the UI becomes interactive even if there are errors
         try {
             loadCompletionsForDate(g_appState.viewingDate);
             renderTodayView(); // Try to render with whatever data we have
+            if (g_appState.currentView === 'progress') updateAllCharts();
         } catch (renderError) {
             console.error("Critical error during initial render:", renderError);
             alert("A critical error occurred while displaying your data. The app may not function correctly. Please check the developer console.");
@@ -3146,6 +3373,7 @@ g_appState.today = today;
 g_appState.viewingDate = new Date(today);
 g_appState.userId = getOrCreateUserId();
 console.log('Sync user ID:', g_appState.userId);
+renderSyncStatus();
 g_appState.calendarHabitId = localStorage.getItem(LOCAL_STORAGE_KEYS.calendarHabit) || CALENDAR_ALL_HABITS;
 loadProgressFiltersFromLocal();
 initializeTaskState();
@@ -3205,6 +3433,17 @@ if (g_dom.calendarHabitSelect) {
         renderCalendarHeatmap();
     });
 }
+if (g_dom.syncNowBtn) {
+    g_dom.syncNowBtn.addEventListener('click', async () => {
+        await refreshCloudSnapshot('manual');
+    });
+}
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshCloudSnapshot('visibility');
+});
+window.addEventListener('focus', () => {
+    refreshCloudSnapshot('focus');
+});
 
 createParticles();
 loadDataFromSheet(); // Load data and do initial render
@@ -3504,6 +3743,11 @@ function persistTaskDefinitions(syncCloud = true) {
 
 async function syncTaskDefinitionsToSheet() {
     if (!GOOGLE_SCRIPT_URL) return;
+    if (!g_appState.sync.backendCompatible) {
+        setSyncState({ lastError: 'Backend incompatible: Apps Script must return { taskHistory, tasks }.' });
+        return;
+    }
+    setSyncState({ isSyncing: true, lastError: '' });
     try {
         const ok = await postPayloadToScript({
             entity: 'tasks',
@@ -3513,11 +3757,26 @@ async function syncTaskDefinitionsToSheet() {
         });
         if (ok) {
             console.log('Task definitions synced to Google Sheet endpoint.');
+            setSyncState({
+                isSyncing: false,
+                lastError: '',
+                lastSuccessAt: Date.now(),
+                cloudTasksEmpty: false,
+                backendCompatible: true
+            });
         } else {
             console.warn('Task definitions failed to sync to Google Sheet endpoint.');
+            setSyncState({
+                isSyncing: false,
+                lastError: 'Failed to save habits to cloud.'
+            });
         }
     } catch (error) {
         console.error('Failed to sync task definitions to Google Sheet:', error);
+        setSyncState({
+            isSyncing: false,
+            lastError: error?.message || 'Failed to sync task definitions.'
+        });
     }
 }
 
@@ -3563,6 +3822,7 @@ function closeTaskManager() {
 }
 
 function askRemoveHabit(index) {
+    if (!ensureHabitEditingAllowed('remove habits')) return;
     g_appState.pendingRemoveTaskIndex = index;
     openRemoveHabitModal(index);
 }
@@ -3709,6 +3969,7 @@ function updateCategoryColorFromSkillInput() {
 
 // Open task edit modal
 function openTaskEditModal(index) {
+    if (!ensureHabitEditingAllowed(index === null ? 'add habits' : 'edit habits')) return;
     g_editingTaskIndex = index;
     const modal = document.getElementById('task-edit-modal');
     const title = document.getElementById('edit-modal-title');
@@ -3788,6 +4049,7 @@ function closeTaskEditModal() {
 
 // Save task edit
 function saveTaskEdit() {
+    if (!ensureHabitEditingAllowed('save habit changes')) return;
     const name = document.getElementById('edit-task-name').value.trim();
     const time = document.getElementById('edit-task-time').value.trim();
     const frequency = document.getElementById('edit-task-frequency').value;
@@ -3895,6 +4157,7 @@ function saveTaskEdit() {
 }
 
 function archiveTask(index) {
+    if (!ensureHabitEditingAllowed('archive habits')) return;
     const task = TASK_DEFINITIONS[index];
     if (!task) return;
     const activeTasks = TASK_DEFINITIONS.filter(t => isTaskActive(t));
@@ -3912,6 +4175,7 @@ function archiveTask(index) {
 }
 
 function hardDeleteTask(index) {
+    if (!ensureHabitEditingAllowed('delete habits')) return;
     const task = TASK_DEFINITIONS[index];
     if (!task) return;
     const activeTasks = TASK_DEFINITIONS.filter(t => isTaskActive(t));
@@ -3933,6 +4197,7 @@ function hardDeleteTask(index) {
 }
 
 function restoreHabit(index) {
+    if (!ensureHabitEditingAllowed('restore habits')) return;
     const task = TASK_DEFINITIONS[index];
     if (!task) return;
     task.status = TASK_STATUS.active;
