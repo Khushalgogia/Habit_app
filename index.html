@@ -1554,7 +1554,7 @@ progressFilters: {
     scope: 'all',
     includeArchived: false
 },
-calendarPageIndex: 0,
+calendarPageIndex: -1,
 calendarViewMode: 'month',
 calendarTooltip: {
     open: false,
@@ -2822,7 +2822,7 @@ function setPeriod(period) {
 g_appState.currentPeriod = period;
 g_appState.progressFilters.periodPreset = period;
 g_appState.progressFilters.mode = 'preset';
-g_appState.calendarPageIndex = 0;
+g_appState.calendarPageIndex = -1;
 saveProgressFiltersLocally();
 syncProgressFilterUI();
 updateAllCharts();
@@ -2831,7 +2831,7 @@ updateAllCharts();
 function setCustomDateMode() {
 g_appState.progressFilters.mode = 'custom';
 ensureDefaultCustomRange();
-g_appState.calendarPageIndex = 0;
+g_appState.calendarPageIndex = -1;
 saveProgressFiltersLocally();
 syncProgressFilterUI();
 updateAllCharts();
@@ -2839,7 +2839,7 @@ updateAllCharts();
 
 function setProgressScope(scope) {
 g_appState.progressFilters.scope = scope === 'core' ? 'core' : 'all';
-g_appState.calendarPageIndex = 0;
+g_appState.calendarPageIndex = -1;
 saveProgressFiltersLocally();
 syncProgressFilterUI();
 updateAllCharts();
@@ -2847,7 +2847,7 @@ updateAllCharts();
 
 function setIncludeArchived(includeArchived) {
 g_appState.progressFilters.includeArchived = Boolean(includeArchived);
-g_appState.calendarPageIndex = 0;
+g_appState.calendarPageIndex = -1;
 saveProgressFiltersLocally();
 populateCalendarHabitSelector();
 syncProgressFilterUI();
@@ -2859,7 +2859,7 @@ if (!g_dom.customStartDate || !g_dom.customEndDate) return;
 g_appState.progressFilters.customStartDate = g_dom.customStartDate.value || '';
 g_appState.progressFilters.customEndDate = g_dom.customEndDate.value || '';
 g_appState.progressFilters.mode = 'custom';
-g_appState.calendarPageIndex = 0;
+g_appState.calendarPageIndex = -1;
 saveProgressFiltersLocally();
 syncProgressFilterUI();
 updateAllCharts();
@@ -3907,6 +3907,62 @@ function buildCalendarDayStateMap(range, taskIds = [], selectedHabit = null) {
     return { dayStateMap, metrics };
 }
 
+function getCalendarDayStateForDate(date, taskIds = [], selectedHabit = null) {
+    const dayState = {
+        date: getStartOfDay(date),
+        dateStr: getLocalDateKey(date),
+        count: 0,
+        status: 'not-due'
+    };
+    if (!selectedHabit) {
+        dayState.count = countCompletionsOnDate(dayState.date, taskIds);
+    } else {
+        const due = isTaskDueOnDate(selectedHabit, dayState.date);
+        const completed = due && isTaskCompletedOnDate(selectedHabit.id, dayState.date);
+        dayState.status = due ? (completed ? 'completed' : 'missed') : 'not-due';
+    }
+    return dayState;
+}
+
+function getEarliestHistoryDateForTasks(taskIds = []) {
+    let minTimestamp = null;
+    taskIds.forEach((taskId) => {
+        const timestamps = g_appState.taskHistory[taskId];
+        if (!Array.isArray(timestamps) || timestamps.length === 0) return;
+        timestamps.forEach((ts) => {
+            if (!Number.isFinite(Number(ts))) return;
+            const numericTs = Number(ts);
+            if (minTimestamp === null || numericTs < minTimestamp) minTimestamp = numericTs;
+        });
+    });
+    return minTimestamp === null ? null : getStartOfDay(new Date(minTimestamp));
+}
+
+function getCalendarBrowsingBounds(scopedTasks, selectedHabit, fallbackEndDate) {
+    const maxDate = getStartOfDay(g_appState.today || fallbackEndDate || new Date());
+    const relevantTasks = selectedHabit ? [selectedHabit] : scopedTasks;
+    const relevantTaskIds = relevantTasks.map(task => task.id);
+
+    let minDate = getEarliestHistoryDateForTasks(relevantTaskIds);
+    if (!minDate) {
+        const createdDates = relevantTasks
+            .map(task => (typeof task.createdAt === 'number' ? getStartOfDay(new Date(task.createdAt)) : null))
+            .filter(Boolean);
+        if (createdDates.length > 0) {
+            minDate = new Date(Math.min(...createdDates.map(date => date.getTime())));
+        }
+    }
+    if (!minDate) {
+        minDate = new Date(maxDate);
+        minDate.setMonth(minDate.getMonth() - 11);
+    }
+
+    return {
+        start: new Date(minDate.getFullYear(), minDate.getMonth(), 1),
+        end: new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate())
+    };
+}
+
 function buildMonthPagesForRange(range) {
     const pages = [];
     let cursor = new Date(range.start.getFullYear(), range.start.getMonth(), 1);
@@ -4097,7 +4153,7 @@ function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
     const fullRangeEnd = getStartOfDay(activeRange.end);
 
     const allRangeTaskIds = selectedHabit ? [selectedHabit.id] : scopedTaskIds;
-    const { dayStateMap, metrics } = buildCalendarDayStateMap(
+    const { dayStateMap: summaryDayStateMap, metrics } = buildCalendarDayStateMap(
         { start: fullRangeStart, end: fullRangeEnd },
         allRangeTaskIds,
         selectedHabit
@@ -4109,21 +4165,25 @@ function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
     const completedDueDays = metrics.completedDueDays;
     const isSevenDayPreset = activeRange.mode === 'preset' && activeRange.dayCount === 7;
     g_appState.calendarViewMode = isSevenDayPreset ? 'week' : 'month';
+    const calendarBounds = isSevenDayPreset
+        ? { start: fullRangeStart, end: fullRangeEnd }
+        : getCalendarBrowsingBounds(scopedTasks, selectedHabit, fullRangeEnd);
 
     let pageMeta = null;
     let activePage = null;
     if (!isSevenDayPreset) {
-        const pages = buildMonthPagesForRange({ start: fullRangeStart, end: fullRangeEnd });
+        const pages = buildMonthPagesForRange(calendarBounds);
         if (pages.length > 0) {
-            if (g_appState.calendarPageIndex < 0) g_appState.calendarPageIndex = 0;
-            if (g_appState.calendarPageIndex >= pages.length) g_appState.calendarPageIndex = pages.length - 1;
+            if (g_appState.calendarPageIndex < 0 || g_appState.calendarPageIndex >= pages.length) {
+                g_appState.calendarPageIndex = pages.length - 1;
+            }
             activePage = pages[g_appState.calendarPageIndex];
             pageMeta = { pages, currentIndex: g_appState.calendarPageIndex, label: activePage.label };
         } else {
-            g_appState.calendarPageIndex = 0;
+            g_appState.calendarPageIndex = -1;
         }
     } else {
-        g_appState.calendarPageIndex = 0;
+        g_appState.calendarPageIndex = -1;
     }
 
     if (g_dom.calendarLegend) {
@@ -4146,10 +4206,18 @@ function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
 
     if (g_dom.calendarSubtitle) {
         const activeLabel = getRangeLabel({ start: fullRangeStart, end: fullRangeEnd });
-        const pagingSuffix = pageMeta && pageMeta.pages.length > 1 ? ` Viewing ${pageMeta.label} (${pageMeta.currentIndex + 1}/${pageMeta.pages.length}).` : '';
-        g_dom.calendarSubtitle.textContent = selectedHabit
-            ? `${selectedHabit.name}: day-by-day consistency for ${activeLabel}.${pagingSuffix}`
-            : `Your daily completion intensity for ${activeLabel}.${pagingSuffix}`;
+        if (isSevenDayPreset) {
+            g_dom.calendarSubtitle.textContent = selectedHabit
+                ? `${selectedHabit.name}: day-by-day consistency for ${activeLabel}.`
+                : `Your daily completion intensity for ${activeLabel}.`;
+        } else {
+            const pagingSuffix = pageMeta && pageMeta.pages.length > 1
+                ? ` Viewing ${pageMeta.label} (${pageMeta.currentIndex + 1}/${pageMeta.pages.length}).`
+                : '';
+            g_dom.calendarSubtitle.textContent = selectedHabit
+                ? `${selectedHabit.name}: monthly calendar view. Summary stats use ${activeLabel}.${pagingSuffix}`
+                : `Monthly calendar view with history browsing. Summary stats use ${activeLabel}.${pagingSuffix}`;
+        }
     }
 
     if (!selectedHabit) {
@@ -4176,8 +4244,22 @@ function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
         day: 'numeric',
         year: 'numeric'
     });
-    const rangeStartLabel = fullRangeStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const rangeEndLabel = fullRangeEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const displayStart = isSevenDayPreset
+        ? fullRangeStart
+        : new Date(
+            activePage ? activePage.year : fullRangeEnd.getFullYear(),
+            activePage ? activePage.month : fullRangeEnd.getMonth(),
+            1
+        );
+    const displayEnd = isSevenDayPreset
+        ? fullRangeEnd
+        : new Date(
+            activePage ? activePage.year : fullRangeEnd.getFullYear(),
+            (activePage ? activePage.month : fullRangeEnd.getMonth()) + 1,
+            0
+        );
+    const rangeStartLabel = displayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const rangeEndLabel = displayEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const showPager = Boolean(pageMeta && pageMeta.pages.length > 1);
     const pagerMarkup = showPager
         ? `<div class="calendar-pager">
@@ -4199,7 +4281,7 @@ function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
                 <div class="calendar-week-strip">
                     ${weekDates.map((date) => {
                         const dateKey = getLocalDateKey(date);
-                        const dayState = dayStateMap[dateKey];
+                        const dayState = summaryDayStateMap[dateKey];
                         const colorClass = selectedHabit
                             ? getCalendarHabitColorClass(dayState.status)
                             : getCalendarAggregateColorClass(dayState.count, maxCompletions);
@@ -4222,12 +4304,13 @@ function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
                 </div>
             </div>
         `;
-        bindCalendarCellTooltipEvents(container, dayStateMap, selectedHabit);
+        bindCalendarCellTooltipEvents(container, summaryDayStateMap, selectedHabit);
         return;
     }
 
-    const monthMatrix = buildMonthMatrix(activePage || { year: fullRangeStart.getFullYear(), month: fullRangeStart.getMonth() });
+    const monthMatrix = buildMonthMatrix(activePage || { start: fullRangeEnd, year: fullRangeEnd.getFullYear(), month: fullRangeEnd.getMonth() });
     const weekdayLabels = getCalendarWeekdayLabelsMondayFirst();
+    const displayDayStateMap = {};
 
     container.innerHTML = `
         <div class="calendar-shell" data-view="month">
@@ -4239,14 +4322,9 @@ function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
             <div class="calendar-month-grid">
                 ${monthMatrix.flat().map((date) => {
                     const dateKey = getLocalDateKey(date);
-                    const dayState = dayStateMap[dateKey] || {
-                        date,
-                        dateStr: dateKey,
-                        count: 0,
-                        status: 'not-due',
-                        insideRange: false
-                    };
-                    const inRange = date >= fullRangeStart && date <= fullRangeEnd;
+                    const dayState = getCalendarDayStateForDate(date, allRangeTaskIds, selectedHabit);
+                    displayDayStateMap[dateKey] = dayState;
+                    const inRange = date >= calendarBounds.start && date <= calendarBounds.end;
                     const inPageMonth = activePage
                         ? date.getMonth() === activePage.start.getMonth() && date.getFullYear() === activePage.start.getFullYear()
                         : true;
@@ -4257,7 +4335,7 @@ function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
                         : 'state-neutral';
                     const title = inRange
                         ? `${formatLongDate(date)}: ${describeCalendarDay(dayState, selectedHabit)}`
-                        : `${formatLongDate(date)}: Outside selected range`;
+                        : `${formatLongDate(date)}: Outside calendar history`;
                     const badgeMarkup = !selectedHabit && inRange && dayState.count > 0
                         ? `<span class="calendar-count-badge">${dayState.count}</span>`
                         : '';
@@ -4279,7 +4357,7 @@ function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
         </div>
     `;
 
-    bindCalendarCellTooltipEvents(container, dayStateMap, selectedHabit);
+    bindCalendarCellTooltipEvents(container, displayDayStateMap, selectedHabit);
     if (showPager) {
         attachCalendarPageHandlers(pageMeta, activeRange, scopedTasks);
     }
