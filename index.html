@@ -1737,15 +1737,11 @@ function getOrCreateUserId() {
     const queryParams = new URLSearchParams(window.location.search);
     const queryUserId = (queryParams.get(USER_ID_QUERY_PARAM) || '').trim();
     if (queryUserId) {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.userId, queryUserId);
         return queryUserId;
     }
-    let userId = localStorage.getItem(LOCAL_STORAGE_KEYS.userId);
-    if (!userId) {
-        userId = DEFAULT_SYNC_USER_ID;
-        localStorage.setItem(LOCAL_STORAGE_KEYS.userId, userId);
-    }
-    return userId;
+    // Single-user default for reliable cross-device sync.
+    localStorage.setItem(LOCAL_STORAGE_KEYS.userId, DEFAULT_SYNC_USER_ID);
+    return DEFAULT_SYNC_USER_ID;
 }
 
 function getLocalDateKey(date) {
@@ -2769,24 +2765,70 @@ function clearConstellation() {
 /**
 * Logs a task change to the Google Sheet (No changes needed here)
 */
+async function postPayloadToScript(payload) {
+  if (!GOOGLE_SCRIPT_URL) return false;
+  const serialized = JSON.stringify(payload);
+
+  // Primary path: CORS + simple text payload so Apps Script receives JSON safely.
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'cors',
+      cache: 'no-cache',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: serialized
+    });
+    if (!response.ok) {
+      throw new Error(`POST failed: ${response.status} ${response.statusText}`);
+    }
+    const body = await response.text();
+    if (body) {
+      try {
+        const parsed = JSON.parse(body);
+        if (parsed && parsed.error) {
+          throw new Error(parsed.error);
+        }
+      } catch (_parseError) {
+        // Some deployments return plain text; non-JSON response is tolerated.
+      }
+    }
+    return true;
+  } catch (primaryError) {
+    console.warn('CORS POST sync failed, falling back to no-cors:', primaryError);
+  }
+
+  // Fallback path for restrictive deployments.
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      cache: 'no-cache',
+      redirect: 'follow',
+      body: serialized
+    });
+    return true;
+  } catch (fallbackError) {
+    console.error('Fallback no-cors sync failed:', fallbackError);
+    return false;
+  }
+}
+
 async function logTaskChangeToSheet(taskId, timestamp, action) {
   if (!GOOGLE_SCRIPT_URL) { console.error("GOOGLE_SCRIPT_URL is not set."); return; }
   try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        cache: 'no-cache',
-        redirect: 'follow',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            entity: 'completion',
-            action: action,
-            taskId: taskId,
-            timestamp: timestamp,
-            userId: g_appState.userId || getOrCreateUserId()
-        })
+    const ok = await postPayloadToScript({
+      entity: 'completion',
+      action: action,
+      taskId: taskId,
+      timestamp: timestamp,
+      userId: g_appState.userId || getOrCreateUserId()
     });
-    console.log(`Task change (${action}) sent for ${taskId} via no-cors. Assuming success.`);
+    if (ok) {
+      console.log(`Task change (${action}) synced for ${taskId}.`);
+    } else {
+      console.warn(`Task change (${action}) could not be synced for ${taskId}.`);
+    }
   } catch (error) { console.error("Failed to fetch/log task change:", error); }
 }
 
@@ -3037,7 +3079,7 @@ async function loadDataFromSheet() {
         return;
     }
     try {
-        const url = `${GOOGLE_SCRIPT_URL}?action=loadAll&userId=${encodeURIComponent(g_appState.userId || getOrCreateUserId())}`;
+        const url = `${GOOGLE_SCRIPT_URL}?action=loadAll&userId=${encodeURIComponent(g_appState.userId || getOrCreateUserId())}&_ts=${Date.now()}`;
         const response = await fetch(url, { method: 'GET', mode: 'cors' });
         if (!response.ok) {
             if (response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308) {
@@ -3103,6 +3145,7 @@ const today = getStartOfDay(new Date());
 g_appState.today = today;
 g_appState.viewingDate = new Date(today);
 g_appState.userId = getOrCreateUserId();
+console.log('Sync user ID:', g_appState.userId);
 g_appState.calendarHabitId = localStorage.getItem(LOCAL_STORAGE_KEYS.calendarHabit) || CALENDAR_ALL_HABITS;
 loadProgressFiltersFromLocal();
 initializeTaskState();
@@ -3462,20 +3505,17 @@ function persistTaskDefinitions(syncCloud = true) {
 async function syncTaskDefinitionsToSheet() {
     if (!GOOGLE_SCRIPT_URL) return;
     try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            cache: 'no-cache',
-            redirect: 'follow',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                entity: 'tasks',
-                action: 'saveTasks',
-                userId: g_appState.userId || getOrCreateUserId(),
-                tasks: TASK_DEFINITIONS
-            })
+        const ok = await postPayloadToScript({
+            entity: 'tasks',
+            action: 'saveTasks',
+            userId: g_appState.userId || getOrCreateUserId(),
+            tasks: TASK_DEFINITIONS
         });
-        console.log('Task definitions synced to Google Sheet endpoint.');
+        if (ok) {
+            console.log('Task definitions synced to Google Sheet endpoint.');
+        } else {
+            console.warn('Task definitions failed to sync to Google Sheet endpoint.');
+        }
     } catch (error) {
         console.error('Failed to sync task definitions to Google Sheet:', error);
     }
