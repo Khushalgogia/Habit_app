@@ -1144,11 +1144,11 @@ pointer-events: none;
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
 <div>
 <label for="custom-start-date" class="text-xs font-medium text-gray-600 dark:text-gray-300">From</label>
-<input type="date" id="custom-start-date" class="mt-1 w-full text-xs rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-2 py-1.5">
+<input type="text" id="custom-start-date" inputmode="numeric" autocomplete="off" placeholder="YYYY-MM-DD or DD/MM/YYYY" class="mt-1 w-full text-xs rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-2 py-1.5">
 </div>
 <div>
 <label for="custom-end-date" class="text-xs font-medium text-gray-600 dark:text-gray-300">To</label>
-<input type="date" id="custom-end-date" class="mt-1 w-full text-xs rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-2 py-1.5">
+<input type="text" id="custom-end-date" inputmode="numeric" autocomplete="off" placeholder="YYYY-MM-DD or DD/MM/YYYY" class="mt-1 w-full text-xs rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-2 py-1.5">
 </div>
 </div>
 <p id="custom-date-error" class="hidden text-xs text-rose-500"></p>
@@ -1808,10 +1808,36 @@ function getProgressTasks(options = {}) {
 
 function parseDateInputValue(value) {
     if (!value) return null;
-    const [year, month, day] = String(value).split('-').map(Number);
+    const raw = String(value).trim();
+    if (!raw) return null;
+    let year = null;
+    let month = null;
+    let day = null;
+
+    const ymdMatch = raw.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+    const dmyMatch = raw.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (ymdMatch) {
+        year = Number(ymdMatch[1]);
+        month = Number(ymdMatch[2]);
+        day = Number(ymdMatch[3]);
+    } else if (dmyMatch) {
+        day = Number(dmyMatch[1]);
+        month = Number(dmyMatch[2]);
+        year = Number(dmyMatch[3]);
+    } else {
+        return null;
+    }
+
     if (!year || !month || !day) return null;
     const parsed = new Date(year, month - 1, day);
     if (Number.isNaN(parsed.getTime())) return null;
+    if (
+        parsed.getFullYear() !== year ||
+        parsed.getMonth() !== month - 1 ||
+        parsed.getDate() !== day
+    ) {
+        return null;
+    }
     return getStartOfDay(parsed);
 }
 
@@ -1841,7 +1867,14 @@ function getProgressRange() {
         const end = parseDateInputValue(g_appState.progressFilters.customEndDate);
         const today = getStartOfDay(g_appState.today);
         if (!start || !end) {
-            setCustomDateError('Choose both start and end dates.');
+            const hasAnyDateInput = Boolean(
+                String(g_appState.progressFilters.customStartDate || '').trim() ||
+                String(g_appState.progressFilters.customEndDate || '').trim()
+            );
+            setCustomDateError(hasAnyDateInput
+                ? 'Use YYYY-MM-DD or DD/MM/YYYY for both dates.'
+                : 'Choose both start and end dates.'
+            );
             return null;
         }
         if (start > end) {
@@ -2894,11 +2927,9 @@ if (g_dom.customDatePanel) {
 if (g_dom.customStartDate) {
     ensureDefaultCustomRange();
     g_dom.customStartDate.value = g_appState.progressFilters.customStartDate || '';
-    g_dom.customStartDate.max = formatDateInputValue(g_appState.today);
 }
 if (g_dom.customEndDate) {
     g_dom.customEndDate.value = g_appState.progressFilters.customEndDate || '';
-    g_dom.customEndDate.max = formatDateInputValue(g_appState.today);
 }
 if (g_dom.scopeAll && g_dom.scopeCore) {
     const isCore = g_appState.progressFilters.scope === 'core';
