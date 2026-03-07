@@ -477,7 +477,7 @@ html.dark .period-filter-btn.active { color: #E5E7EB; }
 html.dark .period-filter-btn.inactive { color: #9CA3AF; }
 #period-filter-slider {
 position: absolute; top: 2px; bottom: 2px;
-width: calc(33.33% - 1.33px);
+width: calc(25% - 1.5px);
 background-color: #ffffff; /* white */
 border-radius: 0.5rem; /* rounded-lg */
 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -491,13 +491,63 @@ background-color: #4F46E5; /* indigo-600 */
 transform: translateX(0%);
 }
 .period-filter-bg[data-period="30d"] #period-filter-slider {
-transform: translateX(calc(100% - 1px));
+transform: translateX(calc(100% - 1.5px));
 }
 .period-filter-bg[data-period="90d"] #period-filter-slider {
-transform: translateX(calc(200% - 2px));
+transform: translateX(calc(200% - 3px));
+}
+.period-filter-bg[data-period="custom"] #period-filter-slider {
+transform: translateX(calc(300% - 4.5px));
 }
 
-/* --- Skill Focus Donut Chart --- */
+/* --- Progress Filter Additions --- */
+.progress-option-btn {
+    transition: all 0.2s ease-in-out;
+    border-radius: 0.5rem;
+    font-size: 0.72rem;
+    padding: 0.3rem 0.6rem;
+}
+.progress-option-btn.active {
+    background: #4f46e5;
+    color: #ffffff;
+}
+.progress-option-btn.inactive {
+    background: rgba(148, 163, 184, 0.18);
+    color: #475569;
+}
+html.dark .progress-option-btn.inactive {
+    background: rgba(71, 85, 105, 0.35);
+    color: #cbd5e1;
+}
+
+#custom-date-panel.hidden {
+    display: none;
+}
+
+/* --- Undo Toast --- */
+#undo-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1rem;
+    transform: translate(-50%, 130%);
+    transition: transform 0.25s ease-in-out;
+    z-index: 2100;
+    width: calc(100% - 2rem);
+    max-width: 360px;
+}
+#undo-toast.visible {
+    transform: translate(-50%, 0);
+}
+
+/* --- Remove Habit Action Sheet --- */
+#remove-habit-modal {
+    z-index: 2101;
+}
+#remove-habit-modal.hidden {
+    display: none;
+}
+
+/* --- Category Mix Donut Chart --- */
 #skill-chart-container {
 position: relative;
 width: 100%;
@@ -535,11 +585,12 @@ color: #9ca3af; /* gray-400 */
 /* --- Activity Calendar Redesign --- */
 .calendar-host {
     width: 100%;
+    position: relative;
 }
 .calendar-shell {
     width: 100%;
     border-radius: 0.875rem;
-    padding: 0.75rem;
+    padding: 0.8rem;
     background: rgba(255, 255, 255, 0.55);
     border: 1px solid rgba(148, 163, 184, 0.25);
 }
@@ -548,122 +599,325 @@ html.dark .calendar-shell {
     border-color: rgba(100, 116, 139, 0.35);
 }
 .calendar-range {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     line-height: 1rem;
     color: #64748b;
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.55rem;
 }
 html.dark .calendar-range {
     color: #94a3b8;
 }
-.calendar-month-row {
-    display: grid;
-    gap: 0.25rem;
-    margin-bottom: 0.3rem;
-    padding-left: 1.65rem;
-    min-height: 0.95rem;
-}
-.calendar-month-label {
-    font-size: 0.62rem;
-    line-height: 0.9rem;
-    color: #64748b;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-}
-html.dark .calendar-month-label {
-    color: #9ca3af;
-}
-.calendar-grid-layout {
-    display: grid;
-    grid-template-columns: 1.4rem minmax(0, 1fr);
-    gap: 0.35rem;
-    align-items: stretch;
-}
-.calendar-day-labels {
-    display: grid;
-    grid-template-rows: repeat(7, minmax(0, 1fr));
-    gap: 0.25rem;
-    align-items: center;
-}
-.calendar-day-label {
-    height: 100%;
+.calendar-pager {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    color: #64748b;
-    user-select: none;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.55rem;
 }
-html.dark .calendar-day-label {
+.calendar-page-btn {
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 0.5rem;
+    padding: 0.22rem 0.55rem;
+    font-size: 0.72rem;
+    line-height: 1rem;
+    color: #334155;
+    background: rgba(226, 232, 240, 0.75);
+    transition: all 0.2s ease;
+}
+.calendar-page-btn:hover {
+    background: rgba(203, 213, 225, 0.95);
+}
+.calendar-page-btn:disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+html.dark .calendar-page-btn {
+    color: #cbd5e1;
+    background: rgba(51, 65, 85, 0.65);
+    border-color: rgba(100, 116, 139, 0.55);
+}
+html.dark .calendar-page-btn:hover {
+    background: rgba(71, 85, 105, 0.85);
+}
+.calendar-page-label {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+html.dark .calendar-page-label {
     color: #94a3b8;
 }
-.calendar-week-grid {
+.calendar-weekday-header {
     display: grid;
-    gap: 0.25rem;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.35rem;
+    margin-bottom: 0.35rem;
 }
-.calendar-week-col {
+.calendar-weekday-cell {
+    text-align: right;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 0.01em;
+    user-select: none;
+}
+html.dark .calendar-weekday-cell {
+    color: #94a3b8;
+}
+.calendar-month-grid {
     display: grid;
-    grid-template-rows: repeat(7, minmax(0, 1fr));
-    gap: 0.25rem;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.35rem;
 }
-.calendar-cell {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 0.28rem;
-    border: 1px solid transparent;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+.calendar-week-strip {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.35rem;
 }
-.calendar-cell:hover {
+.calendar-date-cell {
+    position: relative;
+    min-height: 4.15rem;
+    border-radius: 0.6rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    padding: 0.38rem 0.42rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    overflow: hidden;
+}
+.calendar-date-cell.calendar-cell-in-range {
+    cursor: pointer;
+}
+.calendar-date-cell.calendar-cell-in-range:hover {
     transform: translateY(-1px);
     box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.35);
 }
-.calendar-cell.outside-range {
-    opacity: 0;
-    pointer-events: none;
+.calendar-date-cell.calendar-cell-outside-range {
+    opacity: 0.5;
 }
-.calendar-cell.state-neutral {
+.calendar-date-cell.calendar-cell-other-month .calendar-date-num {
+    opacity: 0.75;
+}
+.calendar-cell-weekday {
+    font-size: 0.62rem;
+    line-height: 0.78rem;
+    color: #64748b;
+    font-weight: 500;
+}
+html.dark .calendar-cell-weekday {
+    color: #94a3b8;
+}
+.calendar-date-num {
+    font-size: 0.9rem;
+    line-height: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+html.dark .calendar-date-num {
+    color: #e2e8f0;
+}
+.calendar-count-badge {
+    align-self: flex-start;
+    margin-top: 0.25rem;
+    font-size: 0.62rem;
+    line-height: 0.82rem;
+    padding: 0.12rem 0.34rem;
+    border-radius: 9999px;
+    background: rgba(15, 23, 42, 0.12);
+    color: #0f172a;
+    font-weight: 600;
+}
+html.dark .calendar-count-badge {
+    background: rgba(15, 23, 42, 0.45);
+    color: #e2e8f0;
+}
+.calendar-status-dot {
+    align-self: flex-start;
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 9999px;
+    margin-top: 0.32rem;
+    background: rgba(15, 23, 42, 0.35);
+}
+.calendar-date-cell.state-done .calendar-status-dot {
+    background: #065f46;
+}
+.calendar-date-cell.state-missed .calendar-status-dot {
+    background: #881337;
+}
+html.dark .calendar-date-cell.state-done .calendar-status-dot {
+    background: #dcfce7;
+}
+html.dark .calendar-date-cell.state-missed .calendar-status-dot {
+    background: #ffe4e6;
+}
+.calendar-date-cell.state-neutral,
+.calendar-legend-dot.state-neutral {
     background: #dbe3ef;
     border-color: rgba(148, 163, 184, 0.22);
 }
-html.dark .calendar-cell.state-neutral {
+html.dark .calendar-date-cell.state-neutral,
+html.dark .calendar-legend-dot.state-neutral {
     background: #334155;
     border-color: rgba(148, 163, 184, 0.18);
 }
-.calendar-cell.state-aggregate-low {
+.calendar-date-cell.state-aggregate-low,
+.calendar-legend-dot.state-aggregate-low {
     background: #c7f3d7;
+    border-color: rgba(13, 148, 136, 0.22);
 }
-.calendar-cell.state-aggregate-mid {
+.calendar-date-cell.state-aggregate-mid,
+.calendar-legend-dot.state-aggregate-mid {
     background: #67d89a;
+    border-color: rgba(5, 150, 105, 0.28);
 }
-.calendar-cell.state-aggregate-high {
+.calendar-date-cell.state-aggregate-high,
+.calendar-legend-dot.state-aggregate-high {
     background: #17a35f;
+    border-color: rgba(4, 120, 87, 0.35);
 }
-.calendar-cell.state-aggregate-peak {
+.calendar-date-cell.state-aggregate-peak,
+.calendar-legend-dot.state-aggregate-peak {
     background: #0a7b46;
+    border-color: rgba(4, 120, 87, 0.45);
 }
-html.dark .calendar-cell.state-aggregate-low {
+html.dark .calendar-date-cell.state-aggregate-low,
+html.dark .calendar-legend-dot.state-aggregate-low {
     background: #135c3b;
 }
-html.dark .calendar-cell.state-aggregate-mid {
+html.dark .calendar-date-cell.state-aggregate-mid,
+html.dark .calendar-legend-dot.state-aggregate-mid {
     background: #18864e;
 }
-html.dark .calendar-cell.state-aggregate-high {
+html.dark .calendar-date-cell.state-aggregate-high,
+html.dark .calendar-legend-dot.state-aggregate-high {
     background: #1ca75f;
 }
-html.dark .calendar-cell.state-aggregate-peak {
+html.dark .calendar-date-cell.state-aggregate-peak,
+html.dark .calendar-legend-dot.state-aggregate-peak {
     background: #2dd57e;
 }
-.calendar-cell.state-done {
+.calendar-date-cell.state-done,
+.calendar-legend-dot.state-done {
     background: #34d399;
+    border-color: rgba(5, 150, 105, 0.34);
 }
-.calendar-cell.state-missed {
+.calendar-date-cell.state-missed,
+.calendar-legend-dot.state-missed {
     background: #fb7185;
+    border-color: rgba(225, 29, 72, 0.34);
 }
-html.dark .calendar-cell.state-done {
+html.dark .calendar-date-cell.state-done,
+html.dark .calendar-legend-dot.state-done {
     background: #10b981;
 }
-html.dark .calendar-cell.state-missed {
+html.dark .calendar-date-cell.state-missed,
+html.dark .calendar-legend-dot.state-missed {
     background: #f43f5e;
+}
+.calendar-date-cell.state-aggregate-high .calendar-date-num,
+.calendar-date-cell.state-aggregate-peak .calendar-date-num,
+.calendar-date-cell.state-missed .calendar-date-num {
+    color: #f8fafc;
+}
+.calendar-date-cell.state-aggregate-high .calendar-count-badge,
+.calendar-date-cell.state-aggregate-peak .calendar-count-badge,
+.calendar-date-cell.state-missed .calendar-count-badge {
+    background: rgba(248, 250, 252, 0.25);
+    color: #f8fafc;
+}
+.calendar-tooltip {
+    position: fixed;
+    z-index: 2150;
+    width: min(17rem, calc(100vw - 1.25rem));
+    border-radius: 0.75rem;
+    border: 1px solid rgba(99, 102, 241, 0.22);
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.22);
+    padding: 0.55rem 0.65rem;
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+}
+html.dark .calendar-tooltip {
+    background: rgba(15, 23, 42, 0.95);
+    border-color: rgba(129, 140, 248, 0.4);
+    box-shadow: 0 16px 34px rgba(2, 6, 23, 0.5);
+}
+.calendar-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+.calendar-tooltip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.18rem;
+}
+.calendar-tooltip-date {
+    font-size: 0.73rem;
+    font-weight: 700;
+    color: #334155;
+}
+html.dark .calendar-tooltip-date {
+    color: #e2e8f0;
+}
+.calendar-tooltip-close {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 9999px;
+    color: #64748b;
+    font-size: 1rem;
+    line-height: 1rem;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+.calendar-tooltip-close:hover {
+    background: rgba(148, 163, 184, 0.2);
+}
+html.dark .calendar-tooltip-close {
+    color: #cbd5e1;
+}
+.calendar-tooltip-body {
+    font-size: 0.72rem;
+    color: #475569;
+}
+html.dark .calendar-tooltip-body {
+    color: #cbd5e1;
+}
+@media (max-width: 640px) {
+    .calendar-shell {
+        padding: 0.65rem;
+    }
+    .calendar-weekday-cell {
+        font-size: 0.62rem;
+    }
+    .calendar-month-grid,
+    .calendar-week-strip {
+        gap: 0.25rem;
+    }
+    .calendar-date-cell {
+        min-height: 3.2rem;
+        border-radius: 0.5rem;
+        padding: 0.28rem 0.32rem;
+    }
+    .calendar-date-num {
+        font-size: 0.78rem;
+        line-height: 0.95rem;
+    }
+    .calendar-cell-weekday {
+        font-size: 0.57rem;
+    }
+    .calendar-count-badge {
+        font-size: 0.55rem;
+        line-height: 0.7rem;
+        padding: 0.1rem 0.3rem;
+    }
 }
 .calendar-legend-chip {
     display: inline-flex;
@@ -680,6 +934,7 @@ html.dark .calendar-legend-chip {
     width: 0.72rem;
     height: 0.72rem;
     border-radius: 0.2rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 /* --- Cadence Line Chart --- */
@@ -689,13 +944,13 @@ height: 180px;
 width: 100%;
 }
 
-/* --- Skill Web (Radar Chart) --- */
+/* --- Category Radar Chart --- */
 #skill-web-container {
 position: relative;
 height: 250px; /* Give it space */
 width: 100%;
 }
-/* --- Habit Deep Dive (Sparklines) --- */
+/* --- Habit Breakdown (Sparklines) --- */
 .sparkline {
 width: 80px; /* Fixed width for the mini-chart */
 height: 30px;
@@ -800,7 +1055,7 @@ pointer-events: none;
 </svg>
 </button>
 <!-- Google Sheets Button -->
-<a href="https://docs.google.com/spreadsheets/d/1AwggGgh6vXfIuPZG0fPYv0fhrdyLTSUD6nt0wuw6h3c/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Open Google Sheet">
+<a href="https://docs.google.com/spreadsheets/d/119oVJoEAXccYfJcz1u-6Tw6FI6KMJ1MKNld1It3J4WQ/edit?gid=1646199208#gid=1646199208" target="_blank" rel="noopener noreferrer" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Open Google Sheet">
 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3h5v2h-5V6zm0 4h5v2h-5v-2zm0 4h5v2h-5v-2zM7 6h3v2H7V6zm0 4h3v2H7v-2zm0 4h3v2H7v-2z"/>
 </svg>
@@ -821,7 +1076,7 @@ pointer-events: none;
 <!-- Header (Progress Tab) -->
 <header id="header-progress" class="hidden justify-between items-center mb-3 flex-shrink-0">
 <div>
-<h1 class="text-lg font-bold text-gray-900 dark:text-white">Growth Dashboard</h1>
+<h1 class="text-lg font-bold text-gray-900 dark:text-white">Progress Overview</h1>
 <p id="dashboard-subtitle" class="text-xs text-gray-600 dark:text-gray-400">Your 30-day analysis.</p>
 </div>
 <!-- Icons -->
@@ -833,7 +1088,7 @@ pointer-events: none;
 </svg>
 </button>
 <!-- Google Sheets Button -->
-<a href="https://docs.google.com/spreadsheets/d/119oVJoEAXccYfJcz1u-6Tw6FI6KMJ1MKNld1It3J4WQ/edit?gid=1249215034#gid=1249215034" target="_blank" rel="noopener noreferrer" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Open Google Sheet">
+<a href="https://docs.google.com/spreadsheets/d/119oVJoEAXccYfJcz1u-6Tw6FI6KMJ1MKNld1It3J4WQ/edit?gid=1646199208#gid=1646199208" target="_blank" rel="noopener noreferrer" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Open Google Sheet">
 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3h5v2h-5V6zm0 4h5v2h-5v-2zm0 4h5v2h-5v-2zM7 6h3v2H7V6zm0 4h3v2H7v-2zm0 4h3v2H7v-2z"/>
 </svg>
@@ -859,8 +1114,8 @@ pointer-events: none;
 <div class="w-full max-w-xs mx-auto my-3 flex-shrink-0">
 <div id="flow-toggle" data-mode="full" class="flow-toggle-bg relative flex w-full p-0.5 rounded-lg shadow-inner">
 <div id="flow-toggle-slider"></div>
-<button id="toggle-full" class="flow-toggle-btn active w-1/2 py-1.5 text-xs font-semibold rounded-lg">Full Voyage</button>
-<button id="toggle-mini" class="flow-toggle-btn inactive w-1/2 py-1.5 text-xs font-semibold rounded-lg">Short Trip</button>
+<button id="toggle-full" class="flow-toggle-btn active w-1/2 py-1.5 text-xs font-semibold rounded-lg">Standard Day</button>
+<button id="toggle-mini" class="flow-toggle-btn inactive w-1/2 py-1.5 text-xs font-semibold rounded-lg">Lite Day</button>
 </div>
 </div>
 
@@ -879,10 +1134,34 @@ pointer-events: none;
 <div class="w-full max-w-xs mx-auto mb-4 flex-shrink-0">
 <div id="period-filter" data-period="30d" class="period-filter-bg relative flex w-full p-0.5 rounded-lg shadow-inner">
 <div id="period-filter-slider"></div>
-<button id="filter-7d" class="period-filter-btn inactive w-1/3 font-semibold rounded-lg">7 Days</button>
-<button id="filter-30d" class="period-filter-btn active w-1/3 font-semibold rounded-lg">30 Days</button>
-<button id="filter-90d" class="period-filter-btn inactive w-1/3 font-semibold rounded-lg">90 Days</button>
+<button id="filter-7d" class="period-filter-btn inactive w-1/4 font-semibold rounded-lg">7 Days</button>
+<button id="filter-30d" class="period-filter-btn active w-1/4 font-semibold rounded-lg">30 Days</button>
+<button id="filter-90d" class="period-filter-btn inactive w-1/4 font-semibold rounded-lg">90 Days</button>
+<button id="filter-custom" class="period-filter-btn inactive w-1/4 font-semibold rounded-lg">Custom</button>
 </div>
+</div>
+<div id="custom-date-panel" class="hidden w-full mb-4 glass-card">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+<div>
+<label for="custom-start-date" class="text-xs font-medium text-gray-600 dark:text-gray-300">From</label>
+<input type="date" id="custom-start-date" class="mt-1 w-full text-xs rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-2 py-1.5">
+</div>
+<div>
+<label for="custom-end-date" class="text-xs font-medium text-gray-600 dark:text-gray-300">To</label>
+<input type="date" id="custom-end-date" class="mt-1 w-full text-xs rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-2 py-1.5">
+</div>
+</div>
+<p id="custom-date-error" class="hidden text-xs text-rose-500"></p>
+</div>
+<div class="flex items-center justify-between mb-4 gap-2">
+<div class="inline-flex items-center gap-1">
+<button id="progress-scope-all" class="progress-option-btn active">All Habits</button>
+<button id="progress-scope-core" class="progress-option-btn inactive">Core Habits</button>
+</div>
+<label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+<input id="progress-include-archived" type="checkbox" class="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500">
+Include archived
+</label>
 </div>
 <!-- Key Stats -->
 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -907,6 +1186,13 @@ pointer-events: none;
 <div id="calendar-heatmap" class="calendar-host">
 <!-- Calendar will be rendered here -->
 </div>
+<div id="calendar-tooltip" class="calendar-tooltip hidden" role="dialog" aria-live="polite">
+<div class="calendar-tooltip-header">
+<p id="calendar-tooltip-date" class="calendar-tooltip-date"></p>
+<button id="calendar-tooltip-close" class="calendar-tooltip-close" type="button" aria-label="Close day details">×</button>
+</div>
+<p id="calendar-tooltip-body" class="calendar-tooltip-body"></p>
+</div>
 <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-gray-600 dark:text-gray-400">
 <div>
 <span class="font-semibold" id="calendar-total-days">0</span> <span id="calendar-total-days-label">days tracked</span>
@@ -923,65 +1209,43 @@ pointer-events: none;
 <!-- Skill Cadence (Line Chart) -->
 <div class="glass-card">
 <div class="flex justify-between items-center mb-1">
-<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Skill Cadence</h3>
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Category Cadence</h3>
 <p id="cadence-comparison" class="text-sm font-medium text-green-500"></p>
 </div>
-<p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Your skill focus over time.</p>
+<p class="text-xs text-gray-500 dark:text-gray-400 mb-3">How your categories trend over time.</p>
 <div id="cadence-chart-container">
 <canvas id="cadence-chart"></canvas>
 </div>
 </div>
-<!-- Habit Deep Dive -->
+<!-- Habit Breakdown -->
 <div class="glass-card">
-<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Habit Deep Dive</h3>
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Habit Breakdown</h3>
 <ul id="habit-list" class="divide-y divide-gray-200 dark:divide-slate-700">
 <!-- JS will inject habits here -->
 </ul>
 </div>
 <!-- Insights Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<!-- Skill Focus (Donut) -->
+<!-- Category Mix (Donut) -->
 <div class="glass-card">
-<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Skill Focus</h3>
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Category Mix</h3>
 <div id="skill-chart-container">
 <svg id="skill-chart-svg" width="120" height="120" viewBox="0 0 150 150">
-<circle cx="75" cy="75" r="60" fill="none" stroke-width="16" class="text-gray-200 dark:text-slate-700" />
-<circle id="chart-mindfulness" class="donut-segment" cx="75" cy="75" r="60" stroke="#6366f1" />
-<circle id="chart-discipline" class="donut-segment" cx="75" cy="75" r="60" stroke="#f59e0b" />
-<circle id="chart-learning" class="donut-segment" cx="75" cy="75" r="60" stroke="#34d399" />
+<circle id="skill-chart-track" cx="75" cy="75" r="60" fill="none" stroke-width="16" class="text-gray-200 dark:text-slate-700" />
+<g id="skill-chart-segments"></g>
 </svg>
 <div id="skill-chart-center-text">
 <span id="skill-chart-total" class="text-2xl font-bold">...</span>
 <span class="block text-xs text-gray-600 dark:text-gray-400">Total</span>
 </div>
 </div>
-<div class="space-y-2 mt-3">
-<div class="flex">
-<span class="h-3 w-3 rounded-full bg-[#6366f1] mr-2 mt-1 flex-shrink-0"></span>
-<div>
-<span id="legend-mindfulness" class="text-xs font-medium text-gray-900 dark:text-white">Mindfulness (...)</span>
-<p class="legend-description">Meditation, Journaling, Reading, Walk</p>
+<div id="skill-chart-legend" class="space-y-2 mt-3">
+<!-- Dynamic legend -->
 </div>
 </div>
-<div class="flex">
-<span class="h-3 w-3 rounded-full bg-[#f59e0b] mr-2 mt-1 flex-shrink-0"></span>
-<div>
-<span id="legend-discipline" class="text-xs font-medium text-gray-900 dark:text-white">Discipline (...)</span>
-<p class="legend-description">Exercise, Coding</p>
-</div>
-</div>
-<div class="flex">
-<span class="h-3 w-3 rounded-full bg-[#34d399] mr-2 mt-1 flex-shrink-0"></span>
-<div>
-<span id="legend-learning" class="text-xs font-medium text-gray-900 dark:text-white">Learning (...)</span>
-<p class="legend-description">Language Class</p>
-</div>
-</div>
-</div>
-</div>
-<!-- Skill Web (Radar) -->
+<!-- Category Radar -->
 <div class="glass-card">
-<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Skill Web</h3>
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Category Radar</h3>
 <div id="skill-web-container">
 <canvas id="skill-web-chart"></canvas>
 </div>
@@ -1000,9 +1264,9 @@ pointer-events: none;
 <p id="spotlight-top-name" class="text-sm font-semibold text-gray-900 dark:text-white">...</p>
 <span id="spotlight-top-stat" class="text-xs font-semibold text-orange-500">... 🔥</span>
 </div>
-<!-- Needs Focus -->
+<!-- Needs Attention -->
 <div class="bg-white/50 dark:bg-slate-800/50 p-3 rounded-lg text-center shadow-inner">
-<span class="text-xs text-gray-600 dark:text-gray-400">Needs Focus</span>
+<span class="text-xs text-gray-600 dark:text-gray-400">Needs Attention</span>
 <div id="spotlight-low-icon" class="my-2">
 <!-- Icon will be set by JS -->
 </div>
@@ -1048,7 +1312,7 @@ pointer-events: none;
 <span>Add New Task</span>
 </button>
 <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-<span id="task-count">0</span>/20 tasks
+<span id="task-count">0</span>/20 active habits
 </p>
 </div>
 </div>
@@ -1072,6 +1336,18 @@ pointer-events: none;
 <div>
 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
 <input type="text" id="edit-task-time" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="10-15 min Meditation">
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category / Skill</label>
+<input type="text" id="edit-task-skill" list="edit-skill-options" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Mindfulness">
+<datalist id="edit-skill-options"></datalist>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">You can type a new category or pick an existing one.</p>
+</div>
+
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category Color</label>
+<input type="color" id="edit-task-skill-color" class="w-full h-10 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
 </div>
 
 <div>
@@ -1127,17 +1403,17 @@ pointer-events: none;
 </div>
 
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mode</label>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Scope</label>
 <select id="edit-task-mode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-<option value="both">Both (Short Trip & Full Voyage)</option>
-<option value="full">Full Voyage Only</option>
-<option value="short">Short Trip Only</option>
+<option value="both">Both Scopes</option>
+<option value="full">Standard Day Only</option>
+<option value="short">Lite Day Only</option>
 </select>
 </div>
 
 <div class="flex items-center space-x-2">
 <input type="checkbox" id="edit-task-essential" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-<label for="edit-task-essential" class="text-sm font-medium text-gray-700 dark:text-gray-300">Essential Task (for constellation)</label>
+<label for="edit-task-essential" class="text-sm font-medium text-gray-700 dark:text-gray-300">Core Habit (for constellation)</label>
 </div>
 </div>
 
@@ -1150,6 +1426,43 @@ Cancel
 Save
 </button>
 </div>
+</div>
+</div>
+
+<!-- Remove Habit Modal -->
+<div id="remove-habit-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center p-4">
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+<div class="p-4 border-b border-gray-200 dark:border-gray-700">
+<h3 class="text-base font-semibold text-gray-900 dark:text-white">Remove Habit</h3>
+<p id="remove-habit-modal-name" class="text-xs text-gray-600 dark:text-gray-400 mt-1">Choose how to remove this habit.</p>
+</div>
+<div class="p-4 space-y-2">
+<button id="archive-habit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-colors">Archive Habit</button>
+<button id="delete-habit-btn" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-colors">Delete Permanently</button>
+<button id="cancel-remove-habit-btn" class="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-colors">Cancel</button>
+</div>
+</div>
+</div>
+
+<!-- Remove Confirm Modal -->
+<div id="remove-confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[2102] flex items-center justify-center p-4">
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm">
+<div class="p-4 border-b border-gray-200 dark:border-gray-700">
+<h3 id="remove-confirm-title" class="text-base font-semibold text-gray-900 dark:text-white">Confirm</h3>
+<p id="remove-confirm-message" class="text-xs text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+<div class="p-4 flex space-x-2">
+<button id="remove-confirm-cancel" class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white text-sm font-semibold py-2 px-3 rounded-lg transition-colors">Cancel</button>
+<button id="remove-confirm-continue" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-3 rounded-lg transition-colors">Continue</button>
+</div>
+</div>
+</div>
+
+<!-- Undo Toast -->
+<div id="undo-toast" class="bg-gray-900/95 text-white rounded-xl shadow-xl px-4 py-3">
+<div class="flex items-center justify-between gap-3">
+<p id="undo-toast-message" class="text-xs">Updated</p>
+<button id="undo-toast-btn" class="text-xs font-semibold text-indigo-300 hover:text-indigo-200">Undo</button>
 </div>
 </div>
 
@@ -1182,11 +1495,24 @@ taskHistory: 'habitAppTaskHistoryV1',
 tasks: 'habitAppTasksV1',
 legacyCustomTasks: 'customTasks',
 calendarHabit: 'habitAppCalendarHabitV1',
-userId: 'habitAppUserIdV1'
+userId: 'habitAppUserIdV1',
+progressFilters: 'habitAppProgressFiltersV1'
 };
 const CALENDAR_ALL_HABITS = '__all_habits__';
 const DEFAULT_SYNC_USER_ID = 'habit-app-primary-user';
 const USER_ID_QUERY_PARAM = 'uid';
+const UNCATEGORIZED_SKILL = 'Uncategorized';
+const SKILL_COLOR_PALETTE = ['#6366f1', '#f59e0b', '#34d399', '#ec4899', '#06b6d4', '#f97316', '#8b5cf6', '#ef4444', '#14b8a6', '#84cc16', '#3b82f6', '#d946ef'];
+const MAX_SKILL_SERIES = 6;
+const TASK_STATUS = {
+    active: 'active',
+    archived: 'archived',
+    deleted: 'deleted'
+};
+const DAY_MODE_LABELS = {
+    full: 'Standard Day',
+    mini: 'Lite Day'
+};
 
 
 // --- 1. TASK DEFINITIONS (Single Source of Truth) ---
@@ -1211,7 +1537,7 @@ const getTaskById = (id) => TASK_DEFINITIONS.find(task => task.id === id);
 const g_appState = {
 currentView: 'today', // 'today' or 'progress'
 todayMode: 'full', // 'full' or 'mini'
-currentPeriod: '30d', // '7d', '30d', '90d'
+currentPeriod: '30d', // kept for backward compatibility with existing controls
 currentTask: null, // Task being focused on
 completedTasksToday: new Set(), // Set of task IDs completed *for the viewingDate*
 taskHistory: {}, // { 'meditation': [timestamp1, timestamp2], ... }
@@ -1219,7 +1545,26 @@ isDark: document.documentElement.classList.contains('dark'),
 today: getStartOfDay(new Date()), // The actual current date
 viewingDate: getStartOfDay(new Date()), // The date the user is looking at
 calendarHabitId: CALENDAR_ALL_HABITS,
-userId: null
+userId: null,
+progressFilters: {
+    periodPreset: '30d',
+    mode: 'preset',
+    customStartDate: '',
+    customEndDate: '',
+    scope: 'all',
+    includeArchived: false
+},
+calendarPageIndex: 0,
+calendarViewMode: 'month',
+calendarTooltip: {
+    open: false,
+    dateKey: '',
+    anchorRect: null
+},
+undoAction: null,
+undoTimer: null,
+pendingRemoveTaskIndex: null,
+pendingRemoveAction: null
 };
 
 // --- 3. DOM ELEMENT REFERENCES ---
@@ -1262,6 +1607,14 @@ periodFilter: document.getElementById('period-filter'),
 filter7d: document.getElementById('filter-7d'),
 filter30d: document.getElementById('filter-30d'),
 filter90d: document.getElementById('filter-90d'),
+filterCustom: document.getElementById('filter-custom'),
+customDatePanel: document.getElementById('custom-date-panel'),
+customStartDate: document.getElementById('custom-start-date'),
+customEndDate: document.getElementById('custom-end-date'),
+customDateError: document.getElementById('custom-date-error'),
+scopeAll: document.getElementById('progress-scope-all'),
+scopeCore: document.getElementById('progress-scope-core'),
+includeArchived: document.getElementById('progress-include-archived'),
 dashboardSubtitle: document.getElementById('dashboard-subtitle'),
 statStreak: document.getElementById('stat-streak'),
 statCompletions: document.getElementById('stat-completions'),
@@ -1276,15 +1629,16 @@ calendarAvg: document.getElementById('calendar-avg'),
 calendarTotalDaysLabel: document.getElementById('calendar-total-days-label'),
 calendarBestDayLabel: document.getElementById('calendar-best-day-label'),
 calendarAvgLabel: document.getElementById('calendar-avg-label'),
+calendarTooltip: document.getElementById('calendar-tooltip'),
+calendarTooltipDate: document.getElementById('calendar-tooltip-date'),
+calendarTooltipBody: document.getElementById('calendar-tooltip-body'),
+calendarTooltipClose: document.getElementById('calendar-tooltip-close'),
 habitList: document.getElementById('habit-list'),
 skillChart: {
-mindfulness: document.getElementById('chart-mindfulness'),
-discipline: document.getElementById('chart-discipline'),
-learning: document.getElementById('chart-learning'),
+track: document.getElementById('skill-chart-track'),
+segments: document.getElementById('skill-chart-segments'),
 total: document.getElementById('skill-chart-total'),
-legendMindfulness: document.getElementById('legend-mindfulness'),
-legendDiscipline: document.getElementById('legend-discipline'),
-legendLearning: document.getElementById('legend-learning')
+legend: document.getElementById('skill-chart-legend')
 },
 skillWebChartCanvas: document.getElementById('skill-web-chart'),
 spotlight: {
@@ -1294,7 +1648,20 @@ topStat: document.getElementById('spotlight-top-stat'),
 lowIcon: document.getElementById('spotlight-low-icon'),
 lowName: document.getElementById('spotlight-low-name'),
 lowStat: document.getElementById('spotlight-low-stat')
-}
+},
+undoToast: document.getElementById('undo-toast'),
+undoToastMessage: document.getElementById('undo-toast-message'),
+undoToastBtn: document.getElementById('undo-toast-btn'),
+removeHabitModal: document.getElementById('remove-habit-modal'),
+removeHabitModalName: document.getElementById('remove-habit-modal-name'),
+archiveHabitBtn: document.getElementById('archive-habit-btn'),
+deleteHabitBtn: document.getElementById('delete-habit-btn'),
+cancelRemoveHabitBtn: document.getElementById('cancel-remove-habit-btn'),
+removeConfirmModal: document.getElementById('remove-confirm-modal'),
+removeConfirmTitle: document.getElementById('remove-confirm-title'),
+removeConfirmMessage: document.getElementById('remove-confirm-message'),
+removeConfirmCancel: document.getElementById('remove-confirm-cancel'),
+removeConfirmContinue: document.getElementById('remove-confirm-continue')
 };
 
 // --- 4. CHART.JS INSTANCES ---
@@ -1396,190 +1763,413 @@ function isTaskDueOnDate(task, date) {
     return task.daysDue.includes(date.getDay());
 }
 
+function normalizeTaskStatus(status) {
+    if (status === TASK_STATUS.archived || status === TASK_STATUS.deleted) {
+        return status;
+    }
+    return TASK_STATUS.active;
+}
+
+function isTaskActive(task) {
+    return normalizeTaskStatus(task.status) === TASK_STATUS.active;
+}
+
+function isTaskArchived(task) {
+    return normalizeTaskStatus(task.status) === TASK_STATUS.archived;
+}
+
+function isTaskDeleted(task) {
+    return normalizeTaskStatus(task.status) === TASK_STATUS.deleted;
+}
+
+function getTodayTasks() {
+    return TASK_DEFINITIONS.filter(task => {
+        if (!isTaskActive(task)) return false;
+        if (g_appState.todayMode === 'mini' && !task.isEssential) return false;
+        return true;
+    });
+}
+
+function getProgressTasks(options = {}) {
+    const scope = options.scope || g_appState.progressFilters.scope;
+    const includeArchived = options.includeArchived ?? g_appState.progressFilters.includeArchived;
+    const includeDeleted = options.includeDeleted || false;
+    return TASK_DEFINITIONS.filter(task => {
+        const status = normalizeTaskStatus(task.status);
+        if (status === TASK_STATUS.deleted && !includeDeleted) return false;
+        if (status === TASK_STATUS.archived && !includeArchived) return false;
+        if (status === TASK_STATUS.active || status === TASK_STATUS.archived || includeDeleted) {
+            if (scope === 'core' && !task.isEssential) return false;
+            return true;
+        }
+        return false;
+    });
+}
+
+function parseDateInputValue(value) {
+    if (!value) return null;
+    const [year, month, day] = String(value).split('-').map(Number);
+    if (!year || !month || !day) return null;
+    const parsed = new Date(year, month - 1, day);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return getStartOfDay(parsed);
+}
+
+function formatDateInputValue(date) {
+    return getLocalDateKey(getStartOfDay(date));
+}
+
+function setCustomDateError(message = '') {
+    if (!g_dom.customDateError) return;
+    g_dom.customDateError.textContent = message;
+    g_dom.customDateError.classList.toggle('hidden', !message);
+}
+
+function ensureDefaultCustomRange() {
+    if (g_appState.progressFilters.customStartDate && g_appState.progressFilters.customEndDate) return;
+    const end = getStartOfDay(g_appState.today);
+    const start = new Date(end);
+    start.setDate(start.getDate() - 29);
+    g_appState.progressFilters.customStartDate = formatDateInputValue(start);
+    g_appState.progressFilters.customEndDate = formatDateInputValue(end);
+}
+
+function getProgressRange() {
+    if (g_appState.progressFilters.mode === 'custom') {
+        ensureDefaultCustomRange();
+        const start = parseDateInputValue(g_appState.progressFilters.customStartDate);
+        const end = parseDateInputValue(g_appState.progressFilters.customEndDate);
+        const today = getStartOfDay(g_appState.today);
+        if (!start || !end) {
+            setCustomDateError('Choose both start and end dates.');
+            return null;
+        }
+        if (start > end) {
+            setCustomDateError('Start date must be before end date.');
+            return null;
+        }
+        if (end > today) {
+            setCustomDateError('End date cannot be in the future.');
+            return null;
+        }
+        setCustomDateError('');
+        return {
+            mode: 'custom',
+            start,
+            end,
+            dayCount: Math.max(1, Math.round((getStartOfDay(end).getTime() - getStartOfDay(start).getTime()) / (24 * 60 * 60 * 1000)) + 1)
+        };
+    }
+
+    const periodDays = parseInt(g_appState.progressFilters.periodPreset.replace('d', ''), 10) || 30;
+    const end = getStartOfDay(g_appState.today);
+    const start = new Date(end);
+    start.setDate(start.getDate() - (periodDays - 1));
+    setCustomDateError('');
+    return {
+        mode: 'preset',
+        start,
+        end,
+        dayCount: periodDays
+    };
+}
+
+function getRangeLabel(range) {
+    if (!range) return '';
+    const startLabel = range.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const endLabel = range.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `${startLabel} - ${endLabel}`;
+}
+
+function showUndoToast(message, undoFn) {
+    if (!g_dom.undoToast || !g_dom.undoToastMessage) return;
+    if (g_appState.undoTimer) {
+        clearTimeout(g_appState.undoTimer);
+        g_appState.undoTimer = null;
+    }
+    g_appState.undoAction = typeof undoFn === 'function' ? undoFn : null;
+    g_dom.undoToastMessage.textContent = message;
+    g_dom.undoToast.classList.add('visible');
+    g_appState.undoTimer = setTimeout(() => {
+        g_dom.undoToast.classList.remove('visible');
+        g_appState.undoAction = null;
+        g_appState.undoTimer = null;
+    }, 6000);
+}
+
+function hideUndoToast() {
+    if (!g_dom.undoToast) return;
+    if (g_appState.undoTimer) {
+        clearTimeout(g_appState.undoTimer);
+        g_appState.undoTimer = null;
+    }
+    g_dom.undoToast.classList.remove('visible');
+    g_appState.undoAction = null;
+}
+
+function normalizeSkillName(skill) {
+    const normalized = typeof skill === 'string' ? skill.trim() : '';
+    return normalized || UNCATEGORIZED_SKILL;
+}
+
+function normalizeHexColor(color) {
+    if (typeof color !== 'string') return null;
+    const value = color.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(value)) return value;
+    return null;
+}
+
+function getDeterministicColorForSkill(skillName) {
+    const key = normalizeSkillName(skillName);
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) {
+        hash = ((hash << 5) - hash) + key.charCodeAt(i);
+        hash |= 0;
+    }
+    const index = Math.abs(hash) % SKILL_COLOR_PALETTE.length;
+    return SKILL_COLOR_PALETTE[index];
+}
+
+function getSkillColorMap(tasks = TASK_DEFINITIONS) {
+    const map = {};
+    tasks.forEach(task => {
+        if (isTaskDeleted(task)) return;
+        const skill = normalizeSkillName(task.skill);
+        const color = normalizeHexColor(task.skillColor) || getDeterministicColorForSkill(skill);
+        if (!map[skill]) {
+            map[skill] = color;
+        }
+    });
+    if (!map[UNCATEGORIZED_SKILL]) {
+        map[UNCATEGORIZED_SKILL] = getDeterministicColorForSkill(UNCATEGORIZED_SKILL);
+    }
+    return map;
+}
+
+function getSkillCountsTemplate(tasks = TASK_DEFINITIONS) {
+    const template = {};
+    Object.keys(getSkillColorMap(tasks)).forEach(skill => {
+        template[skill] = 0;
+    });
+    return template;
+}
+
+function buildSkillSeries(skillCounts, skillColorMap, maxSeries = MAX_SKILL_SERIES) {
+    const entries = Object.entries(skillCounts || {})
+        .map(([name, value]) => ({ name, value: Number(value) || 0, color: skillColorMap[name] || getDeterministicColorForSkill(name) }))
+        .filter(entry => entry.value > 0)
+        .sort((a, b) => b.value - a.value);
+
+    if (entries.length === 0) {
+        return [{
+            name: UNCATEGORIZED_SKILL,
+            value: 0,
+            color: skillColorMap[UNCATEGORIZED_SKILL] || getDeterministicColorForSkill(UNCATEGORIZED_SKILL)
+        }];
+    }
+
+    if (entries.length <= maxSeries) {
+        return entries;
+    }
+
+    const primaryCount = Math.max(1, maxSeries - 1);
+    const primary = entries.slice(0, primaryCount);
+    const remaining = entries.slice(primaryCount);
+    const otherValue = remaining.reduce((sum, item) => sum + item.value, 0);
+    primary.push({
+        name: 'Other',
+        value: otherValue,
+        color: '#94a3b8'
+    });
+    return primary;
+}
+
+function getSkillTaskNames(skillName, tasks = TASK_DEFINITIONS) {
+    const names = tasks
+        .filter(task => !isTaskDeleted(task))
+        .filter(task => normalizeSkillName(task.skill) === skillName)
+        .map(task => task.name);
+    if (names.length === 0) return 'No habits';
+    if (names.length <= 3) return names.join(', ');
+    return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`;
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function createSkillCountMapFromList(skillList) {
+    const counts = {};
+    skillList.forEach(skill => {
+        counts[skill] = 0;
+    });
+    return counts;
+}
+
 
 /**
 * Calculates all dynamic data for the Progress tab based on the current period.
 */
-function getDynamicProgressData(periodDays) {
-const now = g_appState.today.getTime() + (24*60*60*1000 - 1); // End of today
-const periodStart = getStartOfDay(g_appState.today);
-periodStart.setDate(periodStart.getDate() - (periodDays - 1));
-const periodStartTs = periodStart.getTime();
+function getDynamicProgressData(range, tasks) {
+const selectedTasks = Array.isArray(tasks) ? tasks : [];
+const safeRange = range || getProgressRange();
+const rangeStart = safeRange ? getStartOfDay(safeRange.start) : getStartOfDay(g_appState.today);
+const rangeEnd = safeRange ? getStartOfDay(safeRange.end) : getStartOfDay(g_appState.today);
+const rangeStartTs = rangeStart.getTime();
+const rangeEndTs = rangeEnd.getTime() + (24 * 60 * 60 * 1000 - 1);
+const dayCount = safeRange ? safeRange.dayCount : 1;
+const skillColorMap = getSkillColorMap(selectedTasks);
 
 const data = {
-completions: [], // { ts, task }
-skillCounts: { Mindfulness: 0, Discipline: 0, Learning: 0 },
+completions: [],
+skillCounts: getSkillCountsTemplate(selectedTasks),
 taskCounts: {},
 totalCompletions: 0,
 currentStreak: 0,
 habitData: {},
 cadence: {
 labels: [],
-datasets: { Mindfulness: [], Discipline: [], Learning: [] }
+datasets: {},
+skillOrder: []
 }
 };
 
-// 1. Filter history for the selected period
-TASK_DEFINITIONS.forEach(task => {
-data.taskCounts[task.id] = 0;
-data.habitData[task.id] = {
-id: task.id,
-name: task.name,
-skill: task.skill,
-color: task.skillColor,
-completions: 0,
-streak: 0,
-sparkline: []
-};
-if (g_appState.taskHistory[task.id]) {
-g_appState.taskHistory[task.id].forEach(ts => {
-if (ts >= periodStartTs && ts <= now) {
-data.completions.push({ ts, task });
-if(data.skillCounts[task.skill] !== undefined) {
-    data.skillCounts[task.skill]++;
-}
-data.taskCounts[task.id]++;
-data.totalCompletions++;
-}
-});
-}
+Object.keys(data.skillCounts).forEach(skill => {
+    if (!skillColorMap[skill]) {
+        skillColorMap[skill] = getDeterministicColorForSkill(skill);
+    }
 });
 
-// 2. Calculate Current Streak (for all tasks)
+selectedTasks.forEach(task => {
+    data.taskCounts[task.id] = 0;
+    const normalizedSkill = normalizeSkillName(task.skill);
+    if (data.skillCounts[normalizedSkill] === undefined) {
+        data.skillCounts[normalizedSkill] = 0;
+    }
+    data.habitData[task.id] = {
+        id: task.id,
+        name: task.name,
+        skill: normalizedSkill,
+        color: normalizeHexColor(task.skillColor) || getDeterministicColorForSkill(normalizedSkill),
+        status: normalizeTaskStatus(task.status),
+        completions: 0,
+        streak: 0,
+        sparkline: []
+    };
+
+    const history = g_appState.taskHistory[task.id] || [];
+    history.forEach(ts => {
+        if (ts >= rangeStartTs && ts <= rangeEndTs) {
+            data.completions.push({ ts, task });
+            data.skillCounts[normalizedSkill] = (data.skillCounts[normalizedSkill] || 0) + 1;
+            data.taskCounts[task.id]++;
+            data.totalCompletions++;
+        }
+    });
+});
+
+const coreTasks = selectedTasks.filter(task => task.isEssential);
 let streak = 0;
-let today = getStartOfDay(g_appState.today);
-let checkDay = new Date(today);
-while (true) {
-const dayStart = checkDay.getTime();
-const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
-const completedEssentialDueTaskOnDay = TASK_DEFINITIONS.some(task => {
-    const isDueOnCheckDay = task.daysDue.includes(checkDay.getDay());
-    return task.isEssential &&
-           isDueOnCheckDay &&
-           g_appState.taskHistory[task.id] &&
-           g_appState.taskHistory[task.id].some(ts => ts >= dayStart && ts <= dayEnd);
-});
-
-if (completedEssentialDueTaskOnDay) {
+let streakCursor = new Date(rangeEnd);
+while (streakCursor >= rangeStart) {
+    const dayStart = getStartOfDay(streakCursor).getTime();
+    const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
+    const dueCoreTasks = coreTasks.filter(task => task.daysDue.includes(streakCursor.getDay()));
+    if (dueCoreTasks.length === 0) {
+        streakCursor.setDate(streakCursor.getDate() - 1);
+        continue;
+    }
+    const allCompleted = dueCoreTasks.every(task => (g_appState.taskHistory[task.id] || []).some(ts => ts >= dayStart && ts <= dayEnd));
+    if (!allCompleted) break;
     streak++;
-    checkDay.setDate(checkDay.getDate() - 1);
-} else {
-    break;
-}
+    streakCursor.setDate(streakCursor.getDate() - 1);
 }
 data.currentStreak = streak;
 
-// 3. Calculate Habit-Specific Streaks and Sparklines
-const sparklineLength = periodDays === 7 ? 7 : (periodDays === 30 ? 7 : 9);
-const sparklinePeriodDays = periodDays === 90 ? 10 : 1;
-const todayForSparkline = getStartOfDay(g_appState.today);
+const sparklineSegments = dayCount <= 14 ? dayCount : (dayCount <= 84 ? 12 : 18);
+const sparklinePeriodDays = Math.max(1, Math.ceil(dayCount / Math.max(1, sparklineSegments)));
 
-TASK_DEFINITIONS.forEach(task => {
-let habitStreak = 0;
-let checkDay = new Date(todayForSparkline);
-while (true) {
-    const dayStart = checkDay.getTime();
-    const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
-    const isDueOnCheckDay = task.daysDue.includes(checkDay.getDay());
-    const completedOnDay = g_appState.taskHistory[task.id] &&
-                           g_appState.taskHistory[task.id].some(ts => ts >= dayStart && ts <= dayEnd);
-
-    if (isDueOnCheckDay && completedOnDay) {
-        habitStreak++;
-        checkDay.setDate(checkDay.getDate() - 1);
-    } else if (completedOnDay && !isDueOnCheckDay) {
-         checkDay.setDate(checkDay.getDate() - 1);
-    } else {
-        break;
+selectedTasks.forEach(task => {
+    let habitStreak = 0;
+    let cursor = new Date(rangeEnd);
+    while (cursor >= rangeStart) {
+        const dayStart = getStartOfDay(cursor).getTime();
+        const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
+        const due = task.daysDue.includes(cursor.getDay());
+        const completed = (g_appState.taskHistory[task.id] || []).some(ts => ts >= dayStart && ts <= dayEnd);
+        if (due && completed) {
+            habitStreak++;
+        } else if (due && !completed) {
+            break;
+        }
+        cursor.setDate(cursor.getDate() - 1);
     }
-}
-data.habitData[task.id].streak = habitStreak;
-data.habitData[task.id].completions = data.taskCounts[task.id];
+    data.habitData[task.id].streak = habitStreak;
+    data.habitData[task.id].completions = data.taskCounts[task.id] || 0;
 
-
-let sparkline = [];
-let sparklineCheckDate = new Date(todayForSparkline);
-for (let i = 0; i < sparklineLength; i++) {
-const periodEnd = sparklineCheckDate.getTime() + 24 * 60 * 60 * 1000 - 1;
-const periodStart = new Date(sparklineCheckDate);
-periodStart.setDate(periodStart.getDate() - (sparklinePeriodDays - 1));
-const periodStartTs = getStartOfDay(periodStart).getTime();
-
-const completedInPeriod = g_appState.taskHistory[task.id] &&
-g_appState.taskHistory[task.id].some(ts => ts >= periodStartTs && ts <= periodEnd);
-sparkline.push(completedInPeriod ? 1 : 0);
-
-sparklineCheckDate.setDate(sparklineCheckDate.getDate() - sparklinePeriodDays);
-}
-data.habitData[task.id].sparkline = sparkline.reverse();
+    const sparkline = [];
+    let sparklineCursor = new Date(rangeEnd);
+    for (let i = 0; i < sparklineSegments; i++) {
+        const periodEnd = getStartOfDay(sparklineCursor).getTime() + (24 * 60 * 60 * 1000 - 1);
+        const periodStart = new Date(sparklineCursor);
+        periodStart.setDate(periodStart.getDate() - (sparklinePeriodDays - 1));
+        if (periodStart < rangeStart) periodStart.setTime(rangeStart.getTime());
+        const periodStartTs = getStartOfDay(periodStart).getTime();
+        const completedInPeriod = (g_appState.taskHistory[task.id] || []).some(ts => ts >= periodStartTs && ts <= periodEnd);
+        sparkline.push(completedInPeriod ? 1 : 0);
+        sparklineCursor.setDate(sparklineCursor.getDate() - sparklinePeriodDays);
+        if (sparklineCursor < rangeStart) break;
+    }
+    data.habitData[task.id].sparkline = sparkline.reverse();
 });
 
-// 4. Calculate Cadence (Line Chart data)
-const todayForCadence = getStartOfDay(g_appState.today);
-if (periodDays === 7) {
-let day = new Date(todayForCadence);
-for (let i = 0; i < 7; i++) {
-data.cadence.labels.push(day.toLocaleDateString('en-US', { weekday: 'short' }));
-const dayStart = getStartOfDay(day).getTime();
-const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
-let counts = { Mindfulness: 0, Discipline: 0, Learning: 0 };
-data.completions.forEach(c => {
-if (c.ts >= dayStart && c.ts <= dayEnd) {
-if(counts[c.task.skill] !== undefined) counts[c.task.skill]++;
-}
+const skillOrder = Object.keys(data.skillCounts);
+data.cadence.skillOrder = skillOrder;
+skillOrder.forEach(skill => {
+    data.cadence.datasets[skill] = [];
 });
-data.cadence.datasets.Mindfulness.push(counts.Mindfulness);
-data.cadence.datasets.Discipline.push(counts.Discipline);
-data.cadence.datasets.Learning.push(counts.Learning);
-day.setDate(day.getDate() - 1);
-}
-data.cadence.labels.reverse();
-data.cadence.datasets.Mindfulness.reverse();
-data.cadence.datasets.Discipline.reverse();
-data.cadence.datasets.Learning.reverse();
-} else if (periodDays === 30) {
-data.cadence.labels = ['Week 1', 'Week 2', 'Week 3', 'This Week'];
-let counts = [
-{ Mindfulness: 0, Discipline: 0, Learning: 0 },
-{ Mindfulness: 0, Discipline: 0, Learning: 0 },
-{ Mindfulness: 0, Discipline: 0, Learning: 0 },
-{ Mindfulness: 0, Discipline: 0, Learning: 0 }
-];
-let week3Start = new Date(todayForCadence); week3Start.setDate(week3Start.getDate() - 20);
-let week2Start = new Date(todayForCadence); week2Start.setDate(week2Start.getDate() - 13);
-let week1Start = new Date(todayForCadence); week1Start.setDate(week1Start.getDate() - 6);
-getStartOfDay(week3Start); getStartOfDay(week2Start); getStartOfDay(week1Start);
 
-data.completions.forEach(c => {
-    if(counts[0][c.task.skill] === undefined) return;
-    if(c.ts >= week1Start.getTime()) counts[3][c.task.skill]++;
-    else if (c.ts >= week2Start.getTime()) counts[2][c.task.skill]++;
-    else if (c.ts >= week3Start.getTime()) counts[1][c.task.skill]++;
-    else counts[0][c.task.skill]++;
-});
-data.cadence.datasets.Mindfulness = counts.map(c => c.Mindfulness);
-data.cadence.datasets.Discipline = counts.map(c => c.Discipline);
-data.cadence.datasets.Learning = counts.map(c => c.Learning);
-} else { // 90 Days
-data.cadence.labels = ['Month 1', 'Month 2', 'This Month'];
-let counts = [
-{ Mindfulness: 0, Discipline: 0, Learning: 0 },
-{ Mindfulness: 0, Discipline: 0, Learning: 0 },
-{ Mindfulness: 0, Discipline: 0, Learning: 0 }
-];
-let month2Start = new Date(todayForCadence); month2Start.setMonth(month2Start.getMonth() - 1);
-let month1Start = new Date(todayForCadence); month1Start.setMonth(month1Start.getMonth() - 2);
-getStartOfDay(month2Start); getStartOfDay(month1Start);
-data.completions.forEach(c => {
-    if(counts[0][c.task.skill] === undefined) return;
-    if(c.ts >= month2Start.getTime()) counts[2][c.task.skill]++;
-    else if (c.ts >= month1Start.getTime()) counts[1][c.task.skill]++;
-    else counts[0][c.task.skill]++;
-});
-data.cadence.datasets.Mindfulness = counts.map(c => c.Mindfulness);
-data.cadence.datasets.Discipline = counts.map(c => c.Discipline);
-data.cadence.datasets.Learning = counts.map(c => c.Learning);
+let bucketDays = 1;
+if (dayCount > 14 && dayCount <= 120) bucketDays = 7;
+if (dayCount > 120) bucketDays = Math.max(14, Math.ceil(dayCount / 12));
+const bucketCount = Math.max(1, Math.ceil(dayCount / bucketDays));
+const bucketCounts = Array.from({ length: bucketCount }, () => createSkillCountMapFromList(skillOrder));
+
+for (let i = 0; i < bucketCount; i++) {
+    const bucketStart = new Date(rangeStart);
+    bucketStart.setDate(bucketStart.getDate() + (i * bucketDays));
+    const bucketEnd = new Date(bucketStart);
+    bucketEnd.setDate(bucketEnd.getDate() + bucketDays - 1);
+    if (bucketEnd > rangeEnd) bucketEnd.setTime(rangeEnd.getTime());
+
+    let label = '';
+    if (bucketDays === 1) {
+        label = bucketStart.toLocaleDateString('en-US', { weekday: 'short' });
+    } else if (bucketDays <= 7) {
+        label = `Week ${i + 1}`;
+    } else {
+        label = bucketStart.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    }
+    data.cadence.labels.push(label);
+
+    const bucketStartTs = bucketStart.getTime();
+    const bucketEndTs = bucketEnd.getTime() + (24 * 60 * 60 * 1000 - 1);
+    data.completions.forEach(c => {
+        if (c.ts < bucketStartTs || c.ts > bucketEndTs) return;
+        const skill = normalizeSkillName(c.task.skill);
+        if (bucketCounts[i][skill] === undefined) bucketCounts[i][skill] = 0;
+        bucketCounts[i][skill]++;
+    });
 }
+
+skillOrder.forEach(skill => {
+    data.cadence.datasets[skill] = bucketCounts.map(bucket => bucket[skill] || 0);
+});
 
 return data;
 }
@@ -1592,6 +2182,7 @@ return data;
 */
 function navigateTo(viewName) {
 if (g_appState.currentView === viewName) return;
+if (g_appState.calendarTooltip.open) closeCalendarTooltip();
 
 g_appState.currentView = viewName;
 
@@ -1661,6 +2252,7 @@ const dayStart = getStartOfDay(date).getTime();
 const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
 
 TASK_DEFINITIONS.forEach(task => {
+if (!isTaskActive(task)) return;
 if (g_appState.taskHistory[task.id]) {
 if (g_appState.taskHistory[task.id].some(ts => ts >= dayStart && ts <= dayEnd)) {
 g_appState.completedTasksToday.add(task.id);
@@ -1679,7 +2271,8 @@ function renderMap() {
     let completedTodayCount = 0;
     let totalDueTodayCount = 0;
 
-    TASK_DEFINITIONS.forEach(task => {
+    const todayTasks = getTodayTasks();
+    todayTasks.forEach(task => {
         const isCompleted = g_appState.completedTasksToday.has(task.id);
         const isDue = isTaskDueOnViewingDate(task); // Use viewing date
         const isMiniMode = g_appState.todayMode === 'mini';
@@ -1715,11 +2308,8 @@ function renderMap() {
             <span class="island-frequency">${getFrequencyLabel(task)}</span>
         `;
 
-        if (isDue && !isCompleted) {
-            node.addEventListener('click', () => showFocusCard(task));
-        } else if (isDue && isCompleted) {
-            // Add listener to un-complete
-            node.addEventListener('click', () => handleUncompleteTask(task));
+        if (isDue) {
+            node.addEventListener('click', () => toggleTaskCompletion(task));
         } else { // Not due
             // Optional: Add listener to show "not due" message on tap
             node.addEventListener('click', () => {
@@ -1729,7 +2319,7 @@ function renderMap() {
         }
         g_dom.mapWrapper.appendChild(node);
     });
-    g_dom.progressText.textContent = `You've explored ${completedTodayCount} of ${totalDueTodayCount} destinations for ${formatDate(g_appState.viewingDate)}.`;
+    g_dom.progressText.textContent = `Completed ${completedTodayCount} of ${totalDueTodayCount} due habits for ${formatDate(g_appState.viewingDate)}.`;
     // Check if constellations should be drawn after rendering
     checkAllTasksDone();
 }
@@ -1750,14 +2340,14 @@ g_dom.focusCardView.innerHTML = `
 ${task.icon.replace('h-5 w-5', 'h-8 w-8')}
 </div>
 </div>
-<p class="text-gray-600 dark:text-gray-300 mb-5 text-xs">You are about to visit this island. Go to your preferred app or tool to complete this task. Tap below when you're done.</p>
+<p class="text-gray-600 dark:text-gray-300 mb-5 text-xs">You can still use this detail panel, but tap the island directly for one-tap completion.</p>
 
 <div class="flex space-x-3">
 <button id="cancel-btn" class="w-1/3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2.5 px-3 rounded-lg shadow-lg transition duration-200 ease-in-out text-sm">
 Cancel
 </button>
 <button id="complete-btn" class="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg transition duration-200 ease-in-out text-sm">
-I've Completed This
+Mark Complete
 </button>
 </div>
 </div>
@@ -1777,7 +2367,10 @@ g_dom.currentDateDisplay.textContent = formatDate(g_appState.viewingDate); // Us
 g_dom.navDateNext.disabled = isSameDay(g_appState.viewingDate, g_appState.today);
 
 // Update streak
-const streakData = getDynamicProgressData(90); // Get data to calculate streak
+const streakRangeEnd = getStartOfDay(g_appState.today);
+const streakRangeStart = new Date(streakRangeEnd);
+streakRangeStart.setDate(streakRangeStart.getDate() - 89);
+const streakData = getDynamicProgressData({ mode: 'preset', start: streakRangeStart, end: streakRangeEnd, dayCount: 90 }, getProgressTasks({ scope: 'all', includeArchived: false }));
 g_appState.currentStreak = streakData.currentStreak;
 g_dom.todayStreak.innerHTML = `
 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343m11.314 11.314a8 8 0 00-11.314-11.314m11.314 11.314L6.343 7.343" /></svg>
@@ -1803,88 +2396,143 @@ renderMap(); // This now implicitly calls checkAllTasksDone
 
 // --- 8. "PROGRESS" VIEW RENDER FUNCTIONS ---
 function updateAllCharts() {
-const periodDays = parseInt(g_appState.currentPeriod.replace('d', ''));
-g_dom.dashboardSubtitle.textContent = `Your ${periodDays}-day analysis.`;
-const data = getDynamicProgressData(periodDays);
+const range = getProgressRange();
+if (!range) return;
+const tasks = getProgressTasks();
+populateCalendarHabitSelector();
+const data = getDynamicProgressData(range, tasks);
+const scopeLabel = g_appState.progressFilters.scope === 'core' ? 'core habits' : 'all habits';
+const rangeLabel = range.mode === 'preset'
+    ? `${range.dayCount}-day`
+    : getRangeLabel(range);
+g_dom.dashboardSubtitle.textContent = `Your ${rangeLabel} analysis for ${scopeLabel}.`;
 
 // Render calendar heatmap
-renderCalendarHeatmap();
+renderCalendarHeatmap(range, tasks);
 g_dom.statStreak.textContent = `${data.currentStreak} Days 🔥`;
 g_dom.statCompletions.textContent = data.totalCompletions;
-renderSkillChart(data.skillCounts, data.totalCompletions);
-renderCadenceChart(data.cadence);
-renderSkillWeb(data.skillCounts);
+renderSkillChart(data.skillCounts, data.totalCompletions, tasks);
+renderCadenceChart(data.cadence, data.skillCounts, tasks);
+renderSkillWeb(data.skillCounts, tasks);
 renderHabitDeepDive(data.habitData);
 renderSpotlight(data.habitData);
 }
 
-function renderSkillChart(skillCounts, total) {
-    g_dom.skillChart.total.textContent = total;
-
-    // More robust percentage calculation to avoid rounding errors
-    let mindfulnessPct = total > 0 ? (skillCounts.Mindfulness / total) * 100 : 0;
-    let disciplinePct = total > 0 ? (skillCounts.Discipline / total) * 100 : 0;
-    let learningPct = total > 0 ? (skillCounts.Learning / total) * 100 : 0;
-    
-    const totalPct = mindfulnessPct + disciplinePct + learningPct;
-    if (totalPct > 0) {
-        const scale = 100 / totalPct;
-        mindfulnessPct *= scale;
-        disciplinePct *= scale;
-        learningPct *= scale;
-    }
-
-    const roundedMindfulness = Math.round(mindfulnessPct);
-    const roundedDiscipline = Math.round(disciplinePct);
-    const roundedLearning = 100 - roundedMindfulness - roundedDiscipline;
-
-    g_dom.skillChart.legendMindfulness.textContent = `Mindfulness (${roundedMindfulness}%)`;
-    g_dom.skillChart.legendDiscipline.textContent = `Discipline (${roundedDiscipline}%)`;
-    g_dom.skillChart.legendLearning.textContent = `Learning (${roundedLearning}%)`;
-
-    const radius = 60;
-    const circumference = 2 * Math.PI * radius;
-
-    let mindfulnessOffset = circumference * (1 - roundedMindfulness / 100);
-    let disciplineOffset = circumference * (1 - (roundedMindfulness + roundedDiscipline) / 100);
-    let learningOffset = 0; // This segment is last, so it fills the rest
-
-    g_dom.skillChart.mindfulness.setAttribute('stroke-dasharray', `${circumference} ${circumference}`);
-    g_dom.skillChart.discipline.setAttribute('stroke-dasharray', `${circumference} ${circumference}`);
-    g_dom.skillChart.learning.setAttribute('stroke-dasharray', `${circumference} ${circumference}`);
-
-    setTimeout(() => {
-        g_dom.skillChart.mindfulness.style.strokeDashoffset = mindfulnessOffset;
-        g_dom.skillChart.discipline.style.strokeDashoffset = disciplineOffset;
-        g_dom.skillChart.learning.style.strokeDashoffset = learningOffset;
-    }, 100);
+function hexToRgba(hex, alpha = 1) {
+    const normalized = normalizeHexColor(hex) || '#6366f1';
+    const r = parseInt(normalized.slice(1, 3), 16);
+    const g = parseInt(normalized.slice(3, 5), 16);
+    const b = parseInt(normalized.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-function renderCadenceChart(cadenceData) {
+function renderSkillChart(skillCounts, total, tasks = TASK_DEFINITIONS) {
+    g_dom.skillChart.total.textContent = total;
+    if (!g_dom.skillChart.segments || !g_dom.skillChart.legend) return;
+
+    const skillColorMap = getSkillColorMap(tasks);
+    const series = buildSkillSeries(skillCounts, skillColorMap, MAX_SKILL_SERIES);
+    const radius = 60;
+    const circumference = 2 * Math.PI * radius;
+    const totalValue = series.reduce((sum, item) => sum + item.value, 0);
+
+    g_dom.skillChart.segments.innerHTML = '';
+
+    if (g_dom.skillChart.track) {
+        g_dom.skillChart.track.setAttribute('stroke', g_appState.isDark ? '#334155' : '#e5e7eb');
+    }
+
+    let cumulativeRatio = 0;
+    if (totalValue > 0) {
+        series.forEach(item => {
+            const ratio = item.value / totalValue;
+            const segmentLength = Math.max(0, ratio * circumference);
+            const segment = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            segment.setAttribute('cx', '75');
+            segment.setAttribute('cy', '75');
+            segment.setAttribute('r', String(radius));
+            segment.setAttribute('fill', 'none');
+            segment.setAttribute('stroke-width', '16');
+            segment.setAttribute('stroke-linecap', 'butt');
+            segment.setAttribute('stroke', item.color);
+            segment.setAttribute('stroke-dasharray', `${segmentLength} ${circumference}`);
+            segment.style.transition = 'stroke-dashoffset 0.7s ease';
+            const segmentOffset = circumference * (1 - cumulativeRatio);
+            segment.style.strokeDashoffset = String(segmentOffset);
+            g_dom.skillChart.segments.appendChild(segment);
+            cumulativeRatio += ratio;
+        });
+    }
+
+    g_dom.skillChart.legend.innerHTML = series
+        .filter(item => item.value > 0 || totalValue === 0)
+        .map(item => {
+            const percent = totalValue > 0 ? Math.round((item.value / totalValue) * 100) : 0;
+            const summary = item.name === 'Other' ? 'Remaining categories' : getSkillTaskNames(item.name, tasks);
+            return `
+                <div class="flex">
+                    <span class="h-3 w-3 rounded-full mr-2 mt-1 flex-shrink-0" style="background:${item.color};"></span>
+                    <div>
+                        <span class="text-xs font-medium text-gray-900 dark:text-white">${escapeHtml(item.name)} (${percent}%)</span>
+                        <p class="legend-description">${escapeHtml(summary)}</p>
+                    </div>
+                </div>
+            `;
+        })
+        .join('');
+}
+
+function renderCadenceChart(cadenceData, skillCounts, tasks = TASK_DEFINITIONS) {
 const ctx = g_dom.cadenceChartCanvas.getContext('2d');
 const gridColor = g_appState.isDark ? 'rgba(209, 213, 219, 0.2)' : 'rgba(55, 65, 81, 0.2)';
 const textColor = g_appState.isDark ? '#e5e7eb' : '#1f2937';
-const chartData={labels: cadenceData.labels, datasets: [
-    { label: 'Mindfulness', data: cadenceData.datasets.Mindfulness, borderColor: '#6366f1', backgroundColor: '#6366f1', tension: .3, borderWidth: 3, pointRadius: 4 }, 
-    { label: 'Discipline', data: cadenceData.datasets.Discipline, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: .3, borderWidth: 3, pointRadius: 4 }, 
-    { label: 'Learning', data: cadenceData.datasets.Learning, borderColor: '#34d399', backgroundColor: '#34d399', tension: .3, borderWidth: 3, pointRadius: 4 }
-] };
+const skillColorMap = getSkillColorMap(tasks);
+const series = buildSkillSeries(skillCounts, skillColorMap, MAX_SKILL_SERIES);
+const categoryList = series.map(item => item.name);
+const chartDatasets = categoryList.map(category => {
+    let values = [];
+    if (category === 'Other') {
+        values = cadenceData.labels.map((_, index) => {
+            return Object.entries(cadenceData.datasets).reduce((sum, [skill, skillValues]) => {
+                if (categoryList.includes(skill)) return sum;
+                return sum + (skillValues[index] || 0);
+            }, 0);
+        });
+    } else {
+        values = cadenceData.datasets[category] || cadenceData.labels.map(() => 0);
+    }
+    const color = category === 'Other' ? '#94a3b8' : (skillColorMap[category] || getDeterministicColorForSkill(category));
+    return {
+        label: category,
+        data: values,
+        borderColor: color,
+        backgroundColor: color,
+        tension: .3,
+        borderWidth: 3,
+        pointRadius: 4
+    };
+});
+const chartData={labels: cadenceData.labels, datasets: chartDatasets};
 const options={ responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } }, y: { grid: { color: gridColor, drawBorder: false }, ticks: { color: textColor, font: { size: 10 }, stepSize: 1 }, beginAtZero: true } }, plugins: { legend: { position: 'bottom', align: 'start', labels: { color: textColor, font: { size: 12, family: 'Inter' }, usePointStyle: true, boxWidth: 8 } }, tooltip: { mode: 'index', intersect: false } }, animation: { duration: 500 } };
 if(g_cadenceChart){ g_cadenceChart.data=chartData; g_cadenceChart.options.scales.x.ticks.color=textColor; g_cadenceChart.options.scales.y.ticks.color=textColor; g_cadenceChart.options.scales.y.grid.color=gridColor; g_cadenceChart.options.plugins.legend.labels.color=textColor; g_cadenceChart.update() }else{ g_cadenceChart=new Chart(ctx,{ type: 'line', data: chartData, options: options }) }
 }
 
-function renderSkillWeb(skillCounts) {
+function renderSkillWeb(skillCounts, tasks = TASK_DEFINITIONS) {
 const ctx = g_dom.skillWebChartCanvas.getContext('2d');
 const gridColor = g_appState.isDark ? 'rgba(209, 213, 219, 0.2)' : 'rgba(55, 65, 81, 0.2)';
 const textColor = g_appState.isDark ? '#e5e7eb' : '#1f2937';
-const maxVal = Math.max(10, ...Object.values(skillCounts));
-const chartData={ labels: ['Mindfulness', 'Discipline', 'Learning'], datasets: [{ label: 'Skill Level', data: [skillCounts.Mindfulness, skillCounts.Discipline, skillCounts.Learning], fill: true, backgroundColor: 'rgba(99, 102, 241, 0.4)', borderColor: 'rgba(99, 102, 241, 1)', pointBackgroundColor: '#fff', pointBorderColor: 'rgba(99, 102, 241, 1)', pointRadius: 4 }] };
+const skillColorMap = getSkillColorMap(tasks);
+const series = buildSkillSeries(skillCounts, skillColorMap, MAX_SKILL_SERIES).filter(item => item.value > 0);
+const labels = series.length > 0 ? series.map(item => item.name) : [UNCATEGORIZED_SKILL];
+const values = series.length > 0 ? series.map(item => item.value) : [0];
+const maxVal = Math.max(10, ...values);
+const chartData={ labels: labels, datasets: [{ label: 'Category Level', data: values, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.32)', borderColor: 'rgba(99, 102, 241, 1)', pointBackgroundColor: '#fff', pointBorderColor: 'rgba(99, 102, 241, 1)', pointRadius: 4 }] };
 const options={ responsive: true, maintainAspectRatio: false, scales: { r: { angleLines: { color: gridColor }, grid: { color: gridColor }, pointLabels: { color: textColor, font: { size: 12, family: 'Inter', weight: 500 } }, ticks: { display: false, beginAtZero: true, max: maxVal, stepSize: Math.max(1, Math.round(maxVal / 5)) } } }, plugins: { legend: { display: false } }, animation: { duration: 500 } };
 if(g_skillWebChart){ g_skillWebChart.data=chartData; g_skillWebChart.options.scales.r.angleLines.color=gridColor; g_skillWebChart.options.scales.r.grid.color=gridColor; g_skillWebChart.options.scales.r.pointLabels.color=textColor; g_skillWebChart.options.scales.r.ticks.max=maxVal; g_skillWebChart.options.scales.r.ticks.stepSize=Math.max(1, Math.round(maxVal / 5)); g_skillWebChart.update() }else{ g_skillWebChart=new Chart(ctx,{ type: 'radar', data: chartData, options: options }) }
 }
 
 function renderHabitDeepDive(habitData) {
-g_dom.habitList.innerHTML=''; const habits=Object.values(habitData); habits.sort((a,b)=>a.name.localeCompare(b.name)); habits.forEach(habit=>{ const points=habit.sparkline.map((d,i)=>{ const x=(i/(habit.sparkline.length-1))*80; const y=(1-d)*20+5; return `${x},${y}` }).join(' '); const li=document.createElement('li'); li.className='flex items-center justify-between py-3'; li.innerHTML=`<div class="flex items-center"><span class="skill-tag" style="background-color: ${habit.color}20; color: ${habit.color}; border: 1px solid ${habit.color}50;"> ${habit.skill}</span><div><p class="text-sm font-medium text-gray-900 dark:text-white">${habit.name}</p> ${habit.streak>0?`<span class="text-xs font-semibold text-orange-500">${habit.streak}-day streak 🔥</span>`:`<span class="text-xs text-gray-500 dark:text-gray-400">No current streak</span>`}</div></div><svg class="sparkline" viewBox="0 0 80 30"><polyline class="sparkline-line" points="${points}" /></svg>`; g_dom.habitList.appendChild(li) })
+g_dom.habitList.innerHTML=''; const habits=Object.values(habitData); habits.sort((a,b)=>a.name.localeCompare(b.name)); habits.forEach(habit=>{ const sparklineLen=Math.max(1,habit.sparkline.length); const divider=Math.max(1,sparklineLen-1); const points=habit.sparkline.map((d,i)=>{ const x=(i/divider)*80; const y=(1-d)*20+5; return `${x},${y}` }).join(' '); const li=document.createElement('li'); li.className='flex items-center justify-between py-3'; li.innerHTML=`<div class="flex items-center"><span class="skill-tag" style="background-color: ${habit.color}20; color: ${habit.color}; border: 1px solid ${habit.color}50;"> ${habit.skill}</span><div><p class="text-sm font-medium text-gray-900 dark:text-white">${habit.name}${habit.status==='archived' ? ' <span class="text-[10px] text-slate-500">(Archived)</span>' : ''}</p> ${habit.streak>0?`<span class="text-xs font-semibold text-orange-500">${habit.streak}-day streak 🔥</span>`:`<span class="text-xs text-gray-500 dark:text-gray-400">No current streak</span>`}</div></div><svg class="sparkline" viewBox="0 0 80 30"><polyline class="sparkline-line" points="${points}" /></svg>`; g_dom.habitList.appendChild(li) })
 }
 
 function renderSpotlight(habitData) {
@@ -1902,7 +2550,7 @@ function drawConstellation() {
     g_dom.connectionLayer.style.display = 'block';
 
     // Find essential tasks that ARE due on the viewing date
-    const essentialDueTasks = TASK_DEFINITIONS.filter(t => t.isEssential && isTaskDueOnViewingDate(t));
+    const essentialDueTasks = getTodayTasks().filter(t => t.isEssential && isTaskDueOnViewingDate(t));
     if (essentialDueTasks.length < 2) {
         clearConstellation(); // Not enough points
         return;
@@ -2075,48 +2723,60 @@ async function logTaskChangeToSheet(taskId, timestamp, action) {
 }
 
 /**
-* Called when "I've Completed This" is clicked.
+* Applies a completion change and supports one-tap undo.
 */
-function handleCompleteTask() {
-if (g_appState.currentTask) {
-const taskId = g_appState.currentTask.id;
+function applyCompletionChange(task, shouldComplete, options = {}) {
+if (!task || !isTaskDueOnViewingDate(task)) return;
+const taskId = task.id;
 const timestamp = new Date(g_appState.viewingDate).setHours(12, 0, 0, 0);
-g_appState.completedTasksToday.add(taskId);
 if (!g_appState.taskHistory[taskId]) g_appState.taskHistory[taskId] = [];
 const dayStart = getStartOfDay(g_appState.viewingDate).getTime();
 const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
-if (!g_appState.taskHistory[taskId].some(ts => ts >= dayStart && ts <= dayEnd)) {
+const existingIndex = g_appState.taskHistory[taskId].findIndex(ts => ts >= dayStart && ts <= dayEnd);
+
+if (shouldComplete && existingIndex === -1) {
     g_appState.taskHistory[taskId].push(timestamp);
+    g_appState.completedTasksToday.add(taskId);
     saveTaskHistoryLocally();
-    logTaskChangeToSheet(taskId, timestamp, 'add');
+    if (!options.skipSync) logTaskChangeToSheet(taskId, timestamp, 'add');
+} else if (!shouldComplete && existingIndex > -1) {
+    const removedTs = g_appState.taskHistory[taskId][existingIndex];
+    g_appState.taskHistory[taskId].splice(existingIndex, 1);
+    g_appState.completedTasksToday.delete(taskId);
+    saveTaskHistoryLocally();
+    if (!options.skipSync) logTaskChangeToSheet(taskId, removedTs, 'remove');
 }
-hideFocusCard(); // This will call checkAllTasksDone(true)
+
+if (options.withUndo !== false) {
+    const undoMessage = shouldComplete ? `${task.name} marked complete` : `${task.name} marked incomplete`;
+    showUndoToast(undoMessage, () => {
+        applyCompletionChange(task, !shouldComplete, { withUndo: false, skipSync: false });
+        renderTodayView();
+        if (g_appState.currentView === 'progress') updateAllCharts();
+    });
+}
+
 renderTodayView();
-}
+if (g_appState.currentView === 'progress') updateAllCharts();
 }
 
 /**
-* Called when a completed island is clicked.
+* Handles one-tap completion toggle.
 */
+function toggleTaskCompletion(task) {
+if (!task || !isTaskDueOnViewingDate(task)) return;
+const isCompleted = g_appState.completedTasksToday.has(task.id);
+applyCompletionChange(task, !isCompleted, { withUndo: true });
+}
+
+function handleCompleteTask() {
+if (!g_appState.currentTask) return;
+applyCompletionChange(g_appState.currentTask, true, { withUndo: true });
+hideFocusCard();
+}
+
 function handleUncompleteTask(task) {
-if (!task || !isTaskDueOnViewingDate(task)) return; // Only uncomplete if due
-const taskId = task.id;
-const dayStart = getStartOfDay(g_appState.viewingDate).getTime();
-const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
-let timestampToRemove = null;
-if (g_appState.taskHistory[taskId]) {
-const tsIndex = g_appState.taskHistory[taskId].findIndex(ts => ts >= dayStart && ts <= dayEnd);
-if (tsIndex > -1) {
-  timestampToRemove = g_appState.taskHistory[taskId][tsIndex];
-  g_appState.taskHistory[taskId].splice(tsIndex, 1);
-}
-}
-g_appState.completedTasksToday.delete(taskId);
-if (timestampToRemove) {
-  saveTaskHistoryLocally();
-  logTaskChangeToSheet(taskId, timestampToRemove, 'remove');
-}
-renderTodayView(); // This will re-render map and call checkAllTasksDone
+toggleTaskCompletion(task);
 }
 
 
@@ -2126,7 +2786,7 @@ renderTodayView(); // This will re-render map and call checkAllTasksDone
 */
 function checkAllTasksDone(calledFromHideCard = false) {
     // Filter tasks based on current mode AND due date for the viewing date
-    const tasksToCheck = TASK_DEFINITIONS.filter(task => {
+    const tasksToCheck = getTodayTasks().filter(task => {
         const isDue = isTaskDueOnViewingDate(task);
         const isMiniMode = g_appState.todayMode === 'mini';
         return isDue && (!isMiniMode || (isMiniMode && task.isEssential));
@@ -2136,7 +2796,7 @@ function checkAllTasksDone(calledFromHideCard = false) {
 
     if (allDone) {
         // Update progress text differently if all done
-        g_dom.progressText.textContent = `You've explored the entire ${g_appState.todayMode === 'mini' ? 'Short Trip' : 'Full Voyage'} for ${formatDate(g_appState.viewingDate)}! Amazing!`;
+        g_dom.progressText.textContent = `Completed your entire ${g_appState.todayMode === 'mini' ? DAY_MODE_LABELS.mini : DAY_MODE_LABELS.full} for ${formatDate(g_appState.viewingDate)}. Great work!`;
         drawConstellation(); // Draw lines when all done
     } else {
         clearConstellation(); // Clear lines if not all done
@@ -2160,11 +2820,96 @@ renderTodayView(); // Re-renders map and checks tasks again
 */
 function setPeriod(period) {
 g_appState.currentPeriod = period;
-g_dom.periodFilter.dataset.period = period;
-document.querySelectorAll('.period-filter-btn').forEach(btn => { btn.classList.add('inactive'); btn.classList.remove('active'); });
-document.getElementById(`filter-${period}`).classList.add('active');
-document.getElementById(`filter-${period}`).classList.remove('inactive');
+g_appState.progressFilters.periodPreset = period;
+g_appState.progressFilters.mode = 'preset';
+g_appState.calendarPageIndex = 0;
+saveProgressFiltersLocally();
+syncProgressFilterUI();
 updateAllCharts();
+}
+
+function setCustomDateMode() {
+g_appState.progressFilters.mode = 'custom';
+ensureDefaultCustomRange();
+g_appState.calendarPageIndex = 0;
+saveProgressFiltersLocally();
+syncProgressFilterUI();
+updateAllCharts();
+}
+
+function setProgressScope(scope) {
+g_appState.progressFilters.scope = scope === 'core' ? 'core' : 'all';
+g_appState.calendarPageIndex = 0;
+saveProgressFiltersLocally();
+syncProgressFilterUI();
+updateAllCharts();
+}
+
+function setIncludeArchived(includeArchived) {
+g_appState.progressFilters.includeArchived = Boolean(includeArchived);
+g_appState.calendarPageIndex = 0;
+saveProgressFiltersLocally();
+populateCalendarHabitSelector();
+syncProgressFilterUI();
+updateAllCharts();
+}
+
+function handleCustomDateInput() {
+if (!g_dom.customStartDate || !g_dom.customEndDate) return;
+g_appState.progressFilters.customStartDate = g_dom.customStartDate.value || '';
+g_appState.progressFilters.customEndDate = g_dom.customEndDate.value || '';
+g_appState.progressFilters.mode = 'custom';
+g_appState.calendarPageIndex = 0;
+saveProgressFiltersLocally();
+syncProgressFilterUI();
+updateAllCharts();
+}
+
+function syncProgressFilterUI() {
+if (g_dom.periodFilter) {
+    g_dom.periodFilter.dataset.period = g_appState.progressFilters.mode === 'custom'
+        ? 'custom'
+        : g_appState.progressFilters.periodPreset;
+}
+document.querySelectorAll('.period-filter-btn').forEach(btn => {
+    btn.classList.add('inactive');
+    btn.classList.remove('active');
+});
+if (g_appState.progressFilters.mode === 'custom') {
+    if (g_dom.filterCustom) {
+        g_dom.filterCustom.classList.add('active');
+        g_dom.filterCustom.classList.remove('inactive');
+    }
+} else {
+    const activePresetBtn = document.getElementById(`filter-${g_appState.progressFilters.periodPreset}`);
+    if (activePresetBtn) {
+        activePresetBtn.classList.add('active');
+        activePresetBtn.classList.remove('inactive');
+    }
+}
+
+if (g_dom.customDatePanel) {
+    g_dom.customDatePanel.classList.toggle('hidden', g_appState.progressFilters.mode !== 'custom');
+}
+if (g_dom.customStartDate) {
+    ensureDefaultCustomRange();
+    g_dom.customStartDate.value = g_appState.progressFilters.customStartDate || '';
+    g_dom.customStartDate.max = formatDateInputValue(g_appState.today);
+}
+if (g_dom.customEndDate) {
+    g_dom.customEndDate.value = g_appState.progressFilters.customEndDate || '';
+    g_dom.customEndDate.max = formatDateInputValue(g_appState.today);
+}
+if (g_dom.scopeAll && g_dom.scopeCore) {
+    const isCore = g_appState.progressFilters.scope === 'core';
+    g_dom.scopeAll.classList.toggle('active', !isCore);
+    g_dom.scopeAll.classList.toggle('inactive', isCore);
+    g_dom.scopeCore.classList.toggle('active', isCore);
+    g_dom.scopeCore.classList.toggle('inactive', !isCore);
+}
+if (g_dom.includeArchived) {
+    g_dom.includeArchived.checked = Boolean(g_appState.progressFilters.includeArchived);
+}
 }
 
 /**
@@ -2260,11 +3005,15 @@ async function loadDataFromSheet() {
         const hasRemoteHistory = Object.keys(remoteTaskHistory).length > 0;
         const hasLocalHistory = Object.keys(localTaskHistory).length > 0;
         g_appState.taskHistory = hasRemoteHistory ? remoteTaskHistory : (hasLocalHistory ? localTaskHistory : {});
+        ensureOrphanHistoryTasks();
+        saveTasksLocally();
         saveTaskHistoryLocally();
         console.log("Loaded data from Google Sheet:", { taskHistory: g_appState.taskHistory, tasks: remoteTasks ? remoteTasks.length : 0 });
     } catch (error) {
         console.error("Failed to load data from sheet:", error);
         g_appState.taskHistory = loadTaskHistoryFromLocal();
+        ensureOrphanHistoryTasks();
+        saveTasksLocally();
     } finally {
         // This block ensures the UI becomes interactive even if there are errors
         try {
@@ -2288,9 +3037,13 @@ g_appState.today = today;
 g_appState.viewingDate = new Date(today);
 g_appState.userId = getOrCreateUserId();
 g_appState.calendarHabitId = localStorage.getItem(LOCAL_STORAGE_KEYS.calendarHabit) || CALENDAR_ALL_HABITS;
+loadProgressFiltersFromLocal();
 initializeTaskState();
 g_appState.taskHistory = loadTaskHistoryFromLocal();
+ensureOrphanHistoryTasks();
+saveTasksLocally();
 populateCalendarHabitSelector();
+syncProgressFilterUI();
 
 // Bind Event Listeners
 g_dom.navToday.addEventListener('click', () => navigateTo('today'));
@@ -2305,6 +3058,14 @@ g_dom.currentDateDisplay.addEventListener('click', handleGoToToday); // Use upda
 g_dom.filter7d.addEventListener('click', () => setPeriod('7d'));
 g_dom.filter30d.addEventListener('click', () => setPeriod('30d'));
 g_dom.filter90d.addEventListener('click', () => setPeriod('90d'));
+if (g_dom.filterCustom) {
+    g_dom.filterCustom.addEventListener('click', setCustomDateMode);
+}
+if (g_dom.customStartDate) g_dom.customStartDate.addEventListener('change', handleCustomDateInput);
+if (g_dom.customEndDate) g_dom.customEndDate.addEventListener('change', handleCustomDateInput);
+if (g_dom.scopeAll) g_dom.scopeAll.addEventListener('click', () => setProgressScope('all'));
+if (g_dom.scopeCore) g_dom.scopeCore.addEventListener('click', () => setProgressScope('core'));
+if (g_dom.includeArchived) g_dom.includeArchived.addEventListener('change', (event) => setIncludeArchived(event.target.checked));
 if (g_dom.calendarHabitSelect) {
     g_dom.calendarHabitSelect.addEventListener('change', (event) => {
         g_appState.calendarHabitId = event.target.value;
@@ -2333,6 +3094,62 @@ document.getElementById('edit-task-frequency').addEventListener('change', functi
     } else {
         daysSelector.classList.remove('hidden');
     }
+});
+
+const skillInput = document.getElementById('edit-task-skill');
+if (skillInput) {
+    skillInput.addEventListener('input', updateCategoryColorFromSkillInput);
+}
+
+if (g_dom.undoToastBtn) {
+    g_dom.undoToastBtn.addEventListener('click', () => {
+        if (typeof g_appState.undoAction === 'function') {
+            const undoFn = g_appState.undoAction;
+            hideUndoToast();
+            undoFn();
+        }
+    });
+}
+
+if (g_dom.cancelRemoveHabitBtn) g_dom.cancelRemoveHabitBtn.addEventListener('click', closeRemoveHabitModal);
+if (g_dom.archiveHabitBtn) g_dom.archiveHabitBtn.addEventListener('click', () => openRemoveConfirm('archive'));
+if (g_dom.deleteHabitBtn) g_dom.deleteHabitBtn.addEventListener('click', () => openRemoveConfirm('delete'));
+if (g_dom.removeConfirmCancel) g_dom.removeConfirmCancel.addEventListener('click', closeRemoveConfirmModal);
+if (g_dom.removeConfirmContinue) g_dom.removeConfirmContinue.addEventListener('click', executeRemoveHabitAction);
+if (g_dom.removeHabitModal) {
+    g_dom.removeHabitModal.addEventListener('click', (event) => {
+        if (event.target === g_dom.removeHabitModal) closeRemoveHabitModal();
+    });
+}
+if (g_dom.removeConfirmModal) {
+    g_dom.removeConfirmModal.addEventListener('click', (event) => {
+        if (event.target === g_dom.removeConfirmModal) closeRemoveConfirmModal();
+    });
+}
+
+if (g_dom.calendarTooltipClose) {
+    g_dom.calendarTooltipClose.addEventListener('click', (event) => {
+        event.stopPropagation();
+        closeCalendarTooltip();
+    });
+}
+
+document.addEventListener('click', (event) => {
+    if (!g_appState.calendarTooltip.open || !g_dom.calendarTooltip) return;
+    const target = event.target;
+    if (g_dom.calendarTooltip.contains(target)) return;
+    if (target && typeof target.closest === 'function' && target.closest('.calendar-date-cell[data-in-range="1"]')) return;
+    closeCalendarTooltip();
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && g_appState.calendarTooltip.open) {
+        closeCalendarTooltip();
+    }
+});
+
+window.addEventListener('resize', () => {
+    if (g_appState.calendarTooltip.open) closeCalendarTooltip();
 });
 });
 
@@ -2370,9 +3187,15 @@ const ICON_LIBRARY = [
 ];
 
 function cloneTask(task) {
+    const normalizedSkill = normalizeSkillName(task.skill);
+    const normalizedSkillColor = normalizeHexColor(task.skillColor) || getDeterministicColorForSkill(normalizedSkill);
     return {
         ...task,
-        daysDue: Array.isArray(task.daysDue) ? [...task.daysDue] : [0, 1, 2, 3, 4, 5, 6]
+        daysDue: Array.isArray(task.daysDue) ? [...task.daysDue] : [0, 1, 2, 3, 4, 5, 6],
+        skill: normalizedSkill,
+        skillColor: normalizedSkillColor,
+        status: normalizeTaskStatus(task.status),
+        createdAt: typeof task.createdAt === 'number' ? task.createdAt : Date.now()
     };
 }
 
@@ -2390,6 +3213,8 @@ function normalizeDaysDue(daysDue) {
 function normalizeTask(task, index) {
     if (!task || typeof task !== 'object') return null;
     const fallbackColor = '#6366f1';
+    const normalizedSkill = normalizeSkillName(task.skill);
+    const normalizedSkillColor = normalizeHexColor(task.skillColor) || getDeterministicColorForSkill(normalizedSkill);
     const normalized = {
         ...task,
         id: typeof task.id === 'string' && task.id.trim() ? task.id.trim() : `task-${Date.now()}-${index}`,
@@ -2404,9 +3229,13 @@ function normalizeTask(task, index) {
         y: typeof task.y === 'number' ? task.y : (20 + ((index * 17) % 60)),
         frequency: task.frequency || 'daily',
         daysDue: normalizeDaysDue(task.daysDue),
-        skill: task.skill || 'Mindfulness',
-        skillColor: task.skillColor || '#6366f1',
-        isDefault: Boolean(task.isDefault)
+        skill: normalizedSkill,
+        skillColor: normalizedSkillColor,
+        isDefault: Boolean(task.isDefault),
+        status: normalizeTaskStatus(task.status),
+        createdAt: typeof task.createdAt === 'number' ? task.createdAt : Date.now(),
+        archivedAt: typeof task.archivedAt === 'number' ? task.archivedAt : undefined,
+        deletedAt: typeof task.deletedAt === 'number' ? task.deletedAt : undefined
     };
     return normalized;
 }
@@ -2430,7 +3259,7 @@ function sanitizeTaskDefinitions(tasks) {
         seenIds.add(candidateId);
         result.push(normalized);
     });
-    return result.slice(0, 20);
+    return result.slice(0, 200);
 }
 
 function sanitizeTaskHistory(taskHistory) {
@@ -2451,10 +3280,38 @@ function sanitizeTaskHistory(taskHistory) {
     return cleaned;
 }
 
+function ensureOrphanHistoryTasks() {
+    const existingIds = new Set(TASK_DEFINITIONS.map(task => task.id));
+    const orphanIds = Object.keys(g_appState.taskHistory || {}).filter(taskId => !existingIds.has(taskId));
+    orphanIds.forEach((taskId, index) => {
+        const ghostTask = normalizeTask({
+            id: taskId,
+            name: `Deleted Habit (${taskId.slice(0, 6)})`,
+            time: 'Historical habit',
+            icon: ICON_LIBRARY[0],
+            iconColor: '#94a3b8',
+            baseColor: '#64748b',
+            glowColor: '#94a3b8',
+            isEssential: false,
+            x: 20 + ((index * 11) % 60),
+            y: 20 + ((index * 13) % 60),
+            frequency: 'daily',
+            daysDue: [0,1,2,3,4,5,6],
+            skill: UNCATEGORIZED_SKILL,
+            skillColor: '#94a3b8',
+            status: TASK_STATUS.deleted,
+            deletedAt: Date.now(),
+            isDefault: false
+        }, TASK_DEFINITIONS.length + index);
+        TASK_DEFINITIONS.push(ghostTask);
+    });
+}
+
 function applyTaskDefinitions(tasks) {
     const sanitizedTasks = sanitizeTaskDefinitions(tasks);
     TASK_DEFINITIONS.length = 0;
     TASK_DEFINITIONS.push(...sanitizedTasks);
+    ensureOrphanHistoryTasks();
     if (!TASK_DEFINITIONS.some(task => task.id === g_appState.calendarHabitId)) {
         g_appState.calendarHabitId = CALENDAR_ALL_HABITS;
     }
@@ -2478,6 +3335,28 @@ function saveTaskHistoryLocally() {
 
 function saveTasksLocally() {
     localStorage.setItem(LOCAL_STORAGE_KEYS.tasks, JSON.stringify(TASK_DEFINITIONS));
+}
+
+function loadProgressFiltersFromLocal() {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.progressFilters);
+    if (!raw) return;
+    try {
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return;
+        g_appState.progressFilters.periodPreset = ['7d', '30d', '90d'].includes(parsed.periodPreset) ? parsed.periodPreset : '30d';
+        g_appState.progressFilters.mode = parsed.mode === 'custom' ? 'custom' : 'preset';
+        g_appState.progressFilters.customStartDate = typeof parsed.customStartDate === 'string' ? parsed.customStartDate : '';
+        g_appState.progressFilters.customEndDate = typeof parsed.customEndDate === 'string' ? parsed.customEndDate : '';
+        g_appState.progressFilters.scope = parsed.scope === 'core' ? 'core' : 'all';
+        g_appState.progressFilters.includeArchived = Boolean(parsed.includeArchived);
+        g_appState.currentPeriod = g_appState.progressFilters.periodPreset;
+    } catch (error) {
+        console.error('Failed to parse stored progress filters:', error);
+    }
+}
+
+function saveProgressFiltersLocally() {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.progressFilters, JSON.stringify(g_appState.progressFilters));
 }
 
 function persistTaskDefinitions(syncCloud = true) {
@@ -2554,35 +3433,106 @@ function closeTaskManager() {
     document.getElementById('task-manager-modal').classList.add('hidden');
 }
 
+function askRemoveHabit(index) {
+    g_appState.pendingRemoveTaskIndex = index;
+    openRemoveHabitModal(index);
+}
+
+function openRemoveHabitModal(index) {
+    if (index === null || index === undefined || !TASK_DEFINITIONS[index]) return;
+    const task = TASK_DEFINITIONS[index];
+    g_appState.pendingRemoveTaskIndex = index;
+    if (g_dom.removeHabitModalName) {
+        g_dom.removeHabitModalName.textContent = `${task.name}: choose archive (reversible) or permanent delete.`;
+    }
+    if (g_dom.removeHabitModal) g_dom.removeHabitModal.classList.remove('hidden');
+}
+
+function closeRemoveHabitModal() {
+    if (g_dom.removeHabitModal) g_dom.removeHabitModal.classList.add('hidden');
+}
+
+function openRemoveConfirm(action) {
+    const index = g_appState.pendingRemoveTaskIndex;
+    const task = TASK_DEFINITIONS[index];
+    if (!task) return;
+    g_appState.pendingRemoveAction = action;
+    if (g_dom.removeConfirmTitle) {
+        g_dom.removeConfirmTitle.textContent = action === 'archive' ? 'Archive Habit' : 'Delete Habit Permanently';
+    }
+    if (g_dom.removeConfirmMessage) {
+        g_dom.removeConfirmMessage.textContent = action === 'archive'
+            ? `${task.name} will be removed from active routines, but history stays available.`
+            : `${task.name} will be permanently deleted from standard views. This cannot be undone automatically.`;
+    }
+    if (g_dom.removeConfirmContinue) {
+        g_dom.removeConfirmContinue.textContent = action === 'archive' ? 'Archive' : 'Delete';
+        g_dom.removeConfirmContinue.className = `flex-1 ${action === 'archive' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-rose-600 hover:bg-rose-700'} text-white text-sm font-semibold py-2 px-3 rounded-lg transition-colors`;
+    }
+    closeRemoveHabitModal();
+    if (g_dom.removeConfirmModal) g_dom.removeConfirmModal.classList.remove('hidden');
+}
+
+function closeRemoveConfirmModal() {
+    if (g_dom.removeConfirmModal) g_dom.removeConfirmModal.classList.add('hidden');
+    g_appState.pendingRemoveAction = null;
+}
+
+function executeRemoveHabitAction() {
+    const index = g_appState.pendingRemoveTaskIndex;
+    const action = g_appState.pendingRemoveAction;
+    const task = TASK_DEFINITIONS[index];
+    if (!task) {
+        closeRemoveConfirmModal();
+        return;
+    }
+    if (action === 'archive') {
+        archiveTask(index);
+    } else if (action === 'delete') {
+        hardDeleteTask(index);
+    }
+    g_appState.pendingRemoveTaskIndex = null;
+    g_appState.pendingRemoveAction = null;
+    closeRemoveConfirmModal();
+}
+
 // Render task list in manager
 function renderTaskList() {
     const container = document.getElementById('task-list-container');
-    const allTasks = TASK_DEFINITIONS;
+    const allTasks = TASK_DEFINITIONS
+        .map((task, index) => ({ task, index }))
+        .filter(item => !isTaskDeleted(item.task));
     
-    document.getElementById('task-count').textContent = allTasks.length;
+    const activeCount = allTasks.filter(item => isTaskActive(item.task)).length;
+    document.getElementById('task-count').textContent = activeCount;
     
-    container.innerHTML = allTasks.map((task, index) => `
+    container.innerHTML = allTasks.map(({ task, index }) => `
         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-2 flex items-center justify-between">
             <div class="flex-1">
                 <div class="flex items-center space-x-2">
                     <div style="color: ${task.iconColor}">${task.icon}</div>
                     <div>
-                        <p class="font-semibold text-gray-900 dark:text-white text-sm">${task.name}</p>
+                        <p class="font-semibold text-gray-900 dark:text-white text-sm">${task.name}${isTaskArchived(task) ? ' (Archived)' : ''}</p>
                         <p class="text-xs text-gray-600 dark:text-gray-400">${task.time}</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 mt-1">
-                    ${task.isEssential ? '<span class="text-[10px] bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-0.5 rounded">Essential</span>' : ''}
+                    ${task.isEssential ? '<span class="text-[10px] bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-0.5 rounded">Core</span>' : ''}
                     <span class="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">${getFrequencyLabel(task)}</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded border" style="color:${task.skillColor}; border-color:${task.skillColor}66; background:${task.skillColor}1A;">${task.skill || 'Uncategorized'}</span>
+                    ${isTaskArchived(task) ? '<span class="text-[10px] bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-slate-200 px-2 py-0.5 rounded">Archived</span>' : ''}
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="openTaskEditModal(${index})" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400">
+                ${isTaskArchived(task)
+                    ? `<button onclick="restoreHabit(${index})" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">Restore</button>`
+                    : `<button onclick="openTaskEditModal(${index})" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                </button>
-                <button onclick="deleteTask(${index})" class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900 text-red-600 dark:text-red-400">
+                </button>`
+                }
+                <button onclick="askRemoveHabit(${index})" class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900 text-red-600 dark:text-red-400">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
@@ -2608,6 +3558,26 @@ function selectIcon(index) {
     renderIconPicker(index);
 }
 
+function populateSkillOptions(selectedSkill = '') {
+    const optionsEl = document.getElementById('edit-skill-options');
+    if (!optionsEl) return;
+    const uniqueSkills = Array.from(new Set(TASK_DEFINITIONS.map(task => normalizeSkillName(task.skill)))).sort((a, b) => a.localeCompare(b));
+    optionsEl.innerHTML = uniqueSkills.map(skill => `<option value="${escapeHtml(skill)}"></option>`).join('');
+    const skillInput = document.getElementById('edit-task-skill');
+    if (skillInput && selectedSkill) {
+        skillInput.value = selectedSkill;
+    }
+}
+
+function updateCategoryColorFromSkillInput() {
+    const skillInput = document.getElementById('edit-task-skill');
+    const colorInput = document.getElementById('edit-task-skill-color');
+    if (!skillInput || !colorInput) return;
+    const typedSkill = normalizeSkillName(skillInput.value);
+    const existingSkillColorMap = getSkillColorMap();
+    colorInput.value = normalizeHexColor(existingSkillColorMap[typedSkill]) || getDeterministicColorForSkill(typedSkill);
+}
+
 // Open task edit modal
 function openTaskEditModal(index) {
     g_editingTaskIndex = index;
@@ -2617,8 +3587,9 @@ function openTaskEditModal(index) {
     
     if (index === null) {
         // Adding new task
-        if (TASK_DEFINITIONS.length >= 20) {
-            alert('Maximum 20 tasks allowed!');
+        const activeCount = TASK_DEFINITIONS.filter(task => isTaskActive(task)).length;
+        if (activeCount >= 20) {
+            alert('Maximum 20 active habits allowed!');
             return;
         }
         title.textContent = 'Add New Task';
@@ -2627,6 +3598,8 @@ function openTaskEditModal(index) {
         document.getElementById('edit-task-frequency').value = 'daily';
         document.getElementById('edit-task-mode').value = 'both';
         document.getElementById('edit-task-essential').checked = false;
+        document.getElementById('edit-task-skill').value = UNCATEGORIZED_SKILL;
+        document.getElementById('edit-task-skill-color').value = getDeterministicColorForSkill(UNCATEGORIZED_SKILL);
         document.getElementById('selected-icon-index').value = '0';
         daysSelector.classList.add('hidden');
         
@@ -2634,6 +3607,7 @@ function openTaskEditModal(index) {
         document.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = false);
         
         renderIconPicker(0);
+        populateSkillOptions(UNCATEGORIZED_SKILL);
     } else {
         // Editing existing task
         const task = TASK_DEFINITIONS[index];
@@ -2641,6 +3615,10 @@ function openTaskEditModal(index) {
         document.getElementById('edit-task-name').value = task.name;
         document.getElementById('edit-task-time').value = task.time;
         document.getElementById('edit-task-frequency').value = task.frequency || 'daily';
+        const taskSkill = normalizeSkillName(task.skill);
+        const taskSkillColor = normalizeHexColor(task.skillColor) || getDeterministicColorForSkill(taskSkill);
+        document.getElementById('edit-task-skill').value = taskSkill;
+        document.getElementById('edit-task-skill-color').value = taskSkillColor;
         
         // Show/hide days selector based on frequency
         if (task.frequency === 'daily') {
@@ -2653,7 +3631,7 @@ function openTaskEditModal(index) {
             });
         }
         
-        // Determine mode based on isEssential (essential tasks are in Short Trip)
+        // Determine scope mode based on core habit flag.
         if (task.isEssential) {
             document.getElementById('edit-task-mode').value = 'short';
         } else {
@@ -2667,6 +3645,7 @@ function openTaskEditModal(index) {
         const iconIndex = foundIconIndex >= 0 ? foundIconIndex : 0;
         document.getElementById('selected-icon-index').value = iconIndex;
         renderIconPicker(iconIndex);
+        populateSkillOptions(taskSkill);
     }
     
     modal.classList.remove('hidden');
@@ -2685,10 +3664,45 @@ function saveTaskEdit() {
     const frequency = document.getElementById('edit-task-frequency').value;
     const isEssential = document.getElementById('edit-task-essential').checked;
     const iconIndex = parseInt(document.getElementById('selected-icon-index').value) || 0;
+    const skill = normalizeSkillName(document.getElementById('edit-task-skill').value);
+    const skillColor = normalizeHexColor(document.getElementById('edit-task-skill-color').value) || getDeterministicColorForSkill(skill);
     
-    if (!name || !time) {
-        alert('Please fill in all fields');
+    if (!name || !time || !skill) {
+        alert('Please fill in all required fields');
         return;
+    }
+
+    const normalizedName = name.toLowerCase();
+    if (g_editingTaskIndex === null) {
+        const archivedMatchIndex = TASK_DEFINITIONS.findIndex((task) => isTaskArchived(task) && task.name.trim().toLowerCase() === normalizedName);
+        if (archivedMatchIndex > -1) {
+            const shouldRestore = confirm(`"${TASK_DEFINITIONS[archivedMatchIndex].name}" is archived. Restore it with previous history?`);
+            if (shouldRestore) {
+                const restoreDaysDue = frequency === 'daily'
+                    ? [0,1,2,3,4,5,6]
+                    : Array.from(document.querySelectorAll('.day-checkbox:checked')).map(cb => parseInt(cb.value));
+                if (frequency !== 'daily' && restoreDaysDue.length === 0) {
+                    alert('Please select at least one day for this frequency');
+                    return;
+                }
+                const archivedTask = TASK_DEFINITIONS[archivedMatchIndex];
+                archivedTask.name = name;
+                archivedTask.time = time;
+                archivedTask.frequency = frequency;
+                archivedTask.daysDue = restoreDaysDue;
+                archivedTask.isEssential = isEssential;
+                archivedTask.icon = ICON_LIBRARY[iconIndex];
+                archivedTask.skill = skill;
+                archivedTask.skillColor = skillColor;
+                archivedTask.status = TASK_STATUS.active;
+                delete archivedTask.archivedAt;
+                persistTaskDefinitions(true);
+                closeTaskEditModal();
+                renderTaskList();
+                renderTodayView();
+                return;
+            }
+        }
     }
     
     // Get selected days
@@ -2721,9 +3735,11 @@ function saveTaskEdit() {
         y: y,
         frequency: frequency,
         daysDue: daysDue,
-        skill: 'Mindfulness', // Default to Mindfulness for new tasks
-        skillColor: '#6366f1',
-        isDefault: g_editingTaskIndex === null ? false : Boolean(TASK_DEFINITIONS[g_editingTaskIndex].isDefault)
+        skill: skill,
+        skillColor: skillColor,
+        isDefault: g_editingTaskIndex === null ? false : Boolean(TASK_DEFINITIONS[g_editingTaskIndex].isDefault),
+        status: g_editingTaskIndex === null ? TASK_STATUS.active : normalizeTaskStatus(TASK_DEFINITIONS[g_editingTaskIndex].status),
+        createdAt: g_editingTaskIndex === null ? Date.now() : TASK_DEFINITIONS[g_editingTaskIndex].createdAt
     };
     
     if (g_editingTaskIndex === null) {
@@ -2738,6 +3754,9 @@ function saveTaskEdit() {
         task.daysDue = daysDue;
         task.isEssential = isEssential;
         task.icon = ICON_LIBRARY[iconIndex];
+        task.skill = skill;
+        task.skillColor = skillColor;
+        task.status = normalizeTaskStatus(task.status);
     }
     
     persistTaskDefinitions(true);
@@ -2746,135 +3765,391 @@ function saveTaskEdit() {
     renderTodayView(); // Refresh the map
 }
 
-// Delete task
-function deleteTask(index) {
-    if (TASK_DEFINITIONS.length <= 1) {
-        alert('At least one habit is required.');
+function archiveTask(index) {
+    const task = TASK_DEFINITIONS[index];
+    if (!task) return;
+    const activeTasks = TASK_DEFINITIONS.filter(t => isTaskActive(t));
+    if (activeTasks.length <= 1 && isTaskActive(task)) {
+        alert('At least one active habit is required.');
         return;
     }
-    if (confirm('Are you sure you want to delete this task?')) {
-        const task = TASK_DEFINITIONS[index];
-        TASK_DEFINITIONS.splice(index, 1);
-        delete g_appState.taskHistory[task.id];
-        g_appState.completedTasksToday.delete(task.id);
-        saveTaskHistoryLocally();
-        persistTaskDefinitions(true);
-        renderTaskList();
-        renderTodayView(); // Refresh the map
+    task.status = TASK_STATUS.archived;
+    task.archivedAt = Date.now();
+    saveTaskHistoryLocally();
+    persistTaskDefinitions(true);
+    renderTaskList();
+    renderTodayView();
+    if (g_appState.currentView === 'progress') updateAllCharts();
+}
+
+function hardDeleteTask(index) {
+    const task = TASK_DEFINITIONS[index];
+    if (!task) return;
+    const activeTasks = TASK_DEFINITIONS.filter(t => isTaskActive(t));
+    if (activeTasks.length <= 1 && isTaskActive(task)) {
+        alert('At least one active habit is required.');
+        return;
     }
+    task.status = TASK_STATUS.deleted;
+    task.deletedAt = Date.now();
+    g_appState.completedTasksToday.delete(task.id);
+    saveTaskHistoryLocally();
+    persistTaskDefinitions(true);
+    if (g_appState.calendarHabitId === task.id) {
+        g_appState.calendarHabitId = CALENDAR_ALL_HABITS;
+    }
+    renderTaskList();
+    renderTodayView();
+    if (g_appState.currentView === 'progress') updateAllCharts();
+}
+
+function restoreHabit(index) {
+    const task = TASK_DEFINITIONS[index];
+    if (!task) return;
+    task.status = TASK_STATUS.active;
+    delete task.archivedAt;
+    persistTaskDefinitions(true);
+    renderTaskList();
+    renderTodayView();
+    if (g_appState.currentView === 'progress') updateAllCharts();
+}
+
+// Backward compatibility for any legacy calls
+function deleteTask(index) {
+    askRemoveHabit(index);
 }
 
 // --- CALENDAR HEATMAP ---
 function populateCalendarHabitSelector() {
     if (!g_dom.calendarHabitSelect) return;
-    const options = [
-        `<option value="${CALENDAR_ALL_HABITS}">All Habits</option>`,
-        ...TASK_DEFINITIONS.map(task => `<option value="${task.id}">${task.name}</option>`)
-    ];
+    const scopedTasks = getProgressTasks();
+    const activeTasks = scopedTasks.filter(task => isTaskActive(task));
+    const archivedTasks = scopedTasks.filter(task => isTaskArchived(task));
+    const deletedSelectedTask = TASK_DEFINITIONS.find(task => isTaskDeleted(task) && task.id === g_appState.calendarHabitId);
+    const options = [`<option value="${CALENDAR_ALL_HABITS}">All Habits</option>`];
+    activeTasks.forEach(task => options.push(`<option value="${task.id}">${escapeHtml(task.name)}</option>`));
+    if (g_appState.progressFilters.includeArchived) {
+        archivedTasks.forEach(task => options.push(`<option value="${task.id}">${escapeHtml(task.name)} (Archived)</option>`));
+    }
+    if (deletedSelectedTask) {
+        options.push(`<option value="${deletedSelectedTask.id}">${escapeHtml(deletedSelectedTask.name)} (Deleted)</option>`);
+    }
     g_dom.calendarHabitSelect.innerHTML = options.join('');
-    if (!TASK_DEFINITIONS.some(task => task.id === g_appState.calendarHabitId)) {
+    const optionValues = new Set(options.map(option => {
+        const match = option.match(/value="([^"]+)"/);
+        return match ? match[1] : '';
+    }));
+    if (!optionValues.has(g_appState.calendarHabitId)) {
         g_appState.calendarHabitId = CALENDAR_ALL_HABITS;
     }
     g_dom.calendarHabitSelect.value = g_appState.calendarHabitId;
 }
 
-function countCompletionsOnDate(date) {
+function countCompletionsOnDate(date, taskIds = []) {
     const { dayStart, dayEnd } = getDayBounds(date);
-    return Object.values(g_appState.taskHistory).reduce((count, timestamps) => {
+    return taskIds.reduce((count, taskId) => {
+        const timestamps = g_appState.taskHistory[taskId];
         if (!Array.isArray(timestamps)) return count;
         return count + timestamps.filter(ts => ts >= dayStart && ts <= dayEnd).length;
     }, 0);
 }
 
-function renderCalendarHeatmap() {
-    const container = document.getElementById('calendar-heatmap');
-    if (!container) return;
+function getCalendarWeekOrderMondayFirst() {
+    return [1, 2, 3, 4, 5, 6, 0];
+}
 
-    const selectedHabitId = g_dom.calendarHabitSelect ? g_dom.calendarHabitSelect.value : g_appState.calendarHabitId;
-    g_appState.calendarHabitId = selectedHabitId || CALENDAR_ALL_HABITS;
-    localStorage.setItem(LOCAL_STORAGE_KEYS.calendarHabit, g_appState.calendarHabitId);
-    const selectedHabit = g_appState.calendarHabitId === CALENDAR_ALL_HABITS ? null : getTaskById(g_appState.calendarHabitId);
-    const today = getStartOfDay(g_appState.today || new Date());
-    const days = 90;
-    const periodStart = new Date(today);
-    periodStart.setDate(periodStart.getDate() - (days - 1));
-    const gridStart = new Date(periodStart);
-    gridStart.setDate(gridStart.getDate() - gridStart.getDay());
-    const gridEnd = new Date(today);
-    gridEnd.setDate(gridEnd.getDate() + (6 - gridEnd.getDay()));
-    const heatmapData = [];
-    let maxCompletions = 0;
-    let completionDays = 0;
-    let totalCompletions = 0;
-    let dueDays = 0;
-    let completedDueDays = 0;
+function getCalendarWeekdayLabelsMondayFirst() {
+    const weekdayMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return getCalendarWeekOrderMondayFirst().map((day) => weekdayMap[day]);
+}
 
-    for (let cursor = new Date(gridStart); cursor <= gridEnd; cursor.setDate(cursor.getDate() + 1)) {
+function buildCalendarDayStateMap(range, taskIds = [], selectedHabit = null) {
+    const start = getStartOfDay(range.start);
+    const end = getStartOfDay(range.end);
+    const dayStateMap = {};
+    const metrics = {
+        maxCompletions: 0,
+        completionDays: 0,
+        totalCompletions: 0,
+        dueDays: 0,
+        completedDueDays: 0
+    };
+
+    for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
         const date = new Date(cursor);
-        const insideRange = date >= periodStart && date <= today;
-        const dayData = {
+        const dateStr = getLocalDateKey(date);
+        const dayState = {
             date,
-            dateStr: getLocalDateKey(date),
-            insideRange,
+            dateStr,
             count: 0,
-            status: 'not-due'
+            status: 'not-due',
+            insideRange: true
         };
 
-        if (!insideRange) {
-            heatmapData.push(dayData);
-            continue;
-        }
-
         if (!selectedHabit) {
-            dayData.count = countCompletionsOnDate(date);
-            if (dayData.count > 0) {
-                completionDays++;
-            }
-            totalCompletions += dayData.count;
-            maxCompletions = Math.max(maxCompletions, dayData.count);
+            dayState.count = countCompletionsOnDate(date, taskIds);
+            metrics.totalCompletions += dayState.count;
+            if (dayState.count > 0) metrics.completionDays += 1;
+            metrics.maxCompletions = Math.max(metrics.maxCompletions, dayState.count);
         } else {
             const due = isTaskDueOnDate(selectedHabit, date);
             const completed = due && isTaskCompletedOnDate(selectedHabit.id, date);
+            dayState.status = due ? (completed ? 'completed' : 'missed') : 'not-due';
             if (due) {
-                dueDays++;
-                if (completed) {
-                    completedDueDays++;
-                }
+                metrics.dueDays += 1;
+                if (completed) metrics.completedDueDays += 1;
             }
-            dayData.status = due ? (completed ? 'completed' : 'missed') : 'not-due';
         }
 
-        heatmapData.push(dayData);
+        dayStateMap[dateStr] = dayState;
     }
 
-    const weeks = [];
-    for (let i = 0; i < heatmapData.length; i += 7) {
-        weeks.push(heatmapData.slice(i, i + 7));
+    return { dayStateMap, metrics };
+}
+
+function buildMonthPagesForRange(range) {
+    const pages = [];
+    let cursor = new Date(range.start.getFullYear(), range.start.getMonth(), 1);
+    while (cursor <= range.end) {
+        const monthStart = new Date(cursor);
+        const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0);
+        const start = monthStart < range.start ? new Date(range.start) : monthStart;
+        const end = monthEnd > range.end ? new Date(range.end) : monthEnd;
+        if (start <= end) {
+            pages.push({
+                start,
+                end,
+                year: monthStart.getFullYear(),
+                month: monthStart.getMonth(),
+                label: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+            });
+        }
+        cursor.setMonth(cursor.getMonth() + 1);
     }
-    const totalWeeks = weeks.length;
+    return pages;
+}
+
+function buildMonthMatrix(pageMonth) {
+    const fallbackDate = new Date();
+    const monthSeed = pageMonth && pageMonth.start instanceof Date
+        ? pageMonth.start
+        : new Date(
+            Number.isInteger(pageMonth && pageMonth.year) ? pageMonth.year : fallbackDate.getFullYear(),
+            Number.isInteger(pageMonth && pageMonth.month) ? pageMonth.month : fallbackDate.getMonth(),
+            1
+        );
+    const firstOfMonth = new Date(monthSeed.getFullYear(), monthSeed.getMonth(), 1);
+    const mondayIndex = (firstOfMonth.getDay() + 6) % 7;
+    const gridStart = new Date(firstOfMonth);
+    gridStart.setDate(gridStart.getDate() - mondayIndex);
+    const matrix = [];
+    let cursor = new Date(gridStart);
+
+    for (let row = 0; row < 6; row += 1) {
+        const rowDays = [];
+        for (let col = 0; col < 7; col += 1) {
+            rowDays.push(new Date(cursor));
+            cursor.setDate(cursor.getDate() + 1);
+        }
+        matrix.push(rowDays);
+    }
+
+    return matrix;
+}
+
+function getCalendarAggregateColorClass(count, maxCompletions) {
+    if (count === 0 || maxCompletions === 0) return 'state-neutral';
+    const percent = (count / maxCompletions) * 100;
+    if (percent <= 25) return 'state-aggregate-low';
+    if (percent <= 50) return 'state-aggregate-mid';
+    if (percent <= 75) return 'state-aggregate-high';
+    return 'state-aggregate-peak';
+}
+
+function getCalendarHabitColorClass(status) {
+    if (status === 'completed') return 'state-done';
+    if (status === 'missed') return 'state-missed';
+    return 'state-neutral';
+}
+
+function describeCalendarDay(dayState, selectedHabit) {
+    if (!selectedHabit) {
+        const completionLabel = dayState.count === 1 ? 'completion' : 'completions';
+        return `${dayState.count} ${completionLabel}`;
+    }
+    if (dayState.status === 'completed') return 'Done (due day)';
+    if (dayState.status === 'missed') return 'Missed (due day)';
+    return 'Not due';
+}
+
+function closeCalendarTooltip() {
+    if (!g_dom.calendarTooltip) return;
+    g_dom.calendarTooltip.classList.remove('visible');
+    g_dom.calendarTooltip.classList.add('hidden');
+    g_appState.calendarTooltip.open = false;
+    g_appState.calendarTooltip.dateKey = '';
+    g_appState.calendarTooltip.anchorRect = null;
+}
+
+function positionCalendarTooltip(anchorRect) {
+    if (!g_dom.calendarTooltip || !anchorRect) return;
+    const tooltip = g_dom.calendarTooltip;
+    const spacing = 10;
+    const rect = tooltip.getBoundingClientRect();
+
+    let left = anchorRect.left + (anchorRect.width / 2) - (rect.width / 2);
+    left = Math.max(spacing, Math.min(left, window.innerWidth - rect.width - spacing));
+
+    let top = anchorRect.top - rect.height - spacing;
+    if (top < spacing) {
+        top = Math.min(window.innerHeight - rect.height - spacing, anchorRect.bottom + spacing);
+    }
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+}
+
+function openCalendarTooltip(dayState, selectedHabit, anchorEl) {
+    if (!g_dom.calendarTooltip || !g_dom.calendarTooltipDate || !g_dom.calendarTooltipBody || !anchorEl) return;
+
+    const dateLabel = dayState.date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+    });
+    g_dom.calendarTooltipDate.textContent = dateLabel;
+
+    if (!selectedHabit) {
+        const count = dayState.count || 0;
+        const completionLabel = count === 1 ? 'completion' : 'completions';
+        g_dom.calendarTooltipBody.textContent = `${count} ${completionLabel} recorded on this date.`;
+    } else if (dayState.status === 'completed') {
+        g_dom.calendarTooltipBody.textContent = `${selectedHabit.name} was due and marked complete.`;
+    } else if (dayState.status === 'missed') {
+        g_dom.calendarTooltipBody.textContent = `${selectedHabit.name} was due and missed.`;
+    } else {
+        g_dom.calendarTooltipBody.textContent = `${selectedHabit.name} was not due on this date.`;
+    }
+
+    g_dom.calendarTooltip.classList.remove('hidden');
+    g_dom.calendarTooltip.classList.add('visible');
+    const anchorRect = anchorEl.getBoundingClientRect();
+    g_appState.calendarTooltip.open = true;
+    g_appState.calendarTooltip.dateKey = dayState.dateStr;
+    g_appState.calendarTooltip.anchorRect = anchorRect;
+
+    requestAnimationFrame(() => positionCalendarTooltip(anchorRect));
+}
+
+function bindCalendarCellTooltipEvents(container, dayStateMap, selectedHabit) {
+    const interactiveCells = container.querySelectorAll('.calendar-date-cell[data-in-range="1"]');
+    interactiveCells.forEach((cell) => {
+        cell.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const dateKey = cell.getAttribute('data-date-key');
+            if (!dateKey || !dayStateMap[dateKey]) return;
+            openCalendarTooltip(dayStateMap[dateKey], selectedHabit, cell);
+        });
+    });
+}
+
+function attachCalendarPageHandlers(pageMeta, activeRange, scopedTasks) {
+    const prevBtn = document.getElementById('calendar-page-prev');
+    const nextBtn = document.getElementById('calendar-page-next');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            g_appState.calendarPageIndex = Math.max(0, g_appState.calendarPageIndex - 1);
+            renderCalendarHeatmap(activeRange, scopedTasks);
+        });
+    }
+    if (nextBtn && pageMeta) {
+        nextBtn.addEventListener('click', () => {
+            g_appState.calendarPageIndex = Math.min(pageMeta.pages.length - 1, g_appState.calendarPageIndex + 1);
+            renderCalendarHeatmap(activeRange, scopedTasks);
+        });
+    }
+}
+
+function renderCalendarHeatmap(rangeInput = null, tasksInput = null) {
+    const container = document.getElementById('calendar-heatmap');
+    if (!container) return;
+    closeCalendarTooltip();
+
+    const activeRange = rangeInput || getProgressRange();
+    if (!activeRange) return;
+    const scopedTasks = Array.isArray(tasksInput) ? tasksInput : getProgressTasks();
+    const scopedTaskIds = scopedTasks.map(task => task.id);
+
+    const selectedHabitId = g_dom.calendarHabitSelect ? g_dom.calendarHabitSelect.value : g_appState.calendarHabitId;
+    g_appState.calendarHabitId = selectedHabitId || CALENDAR_ALL_HABITS;
+    let selectedHabit = g_appState.calendarHabitId === CALENDAR_ALL_HABITS ? null : getTaskById(g_appState.calendarHabitId);
+    if (selectedHabit && !scopedTaskIds.includes(selectedHabit.id) && !isTaskDeleted(selectedHabit)) {
+        selectedHabit = null;
+        g_appState.calendarHabitId = CALENDAR_ALL_HABITS;
+    }
+    localStorage.setItem(LOCAL_STORAGE_KEYS.calendarHabit, g_appState.calendarHabitId);
+    if (g_dom.calendarHabitSelect && g_dom.calendarHabitSelect.value !== g_appState.calendarHabitId) {
+        g_dom.calendarHabitSelect.value = g_appState.calendarHabitId;
+    }
+
+    const fullRangeStart = getStartOfDay(activeRange.start);
+    const fullRangeEnd = getStartOfDay(activeRange.end);
+
+    const allRangeTaskIds = selectedHabit ? [selectedHabit.id] : scopedTaskIds;
+    const { dayStateMap, metrics } = buildCalendarDayStateMap(
+        { start: fullRangeStart, end: fullRangeEnd },
+        allRangeTaskIds,
+        selectedHabit
+    );
+    const maxCompletions = metrics.maxCompletions;
+    const completionDays = metrics.completionDays;
+    const totalCompletions = metrics.totalCompletions;
+    const dueDays = metrics.dueDays;
+    const completedDueDays = metrics.completedDueDays;
+    const isSevenDayPreset = activeRange.mode === 'preset' && activeRange.dayCount === 7;
+    g_appState.calendarViewMode = isSevenDayPreset ? 'week' : 'month';
+
+    let pageMeta = null;
+    let activePage = null;
+    if (!isSevenDayPreset) {
+        const pages = buildMonthPagesForRange({ start: fullRangeStart, end: fullRangeEnd });
+        if (pages.length > 0) {
+            if (g_appState.calendarPageIndex < 0) g_appState.calendarPageIndex = 0;
+            if (g_appState.calendarPageIndex >= pages.length) g_appState.calendarPageIndex = pages.length - 1;
+            activePage = pages[g_appState.calendarPageIndex];
+            pageMeta = { pages, currentIndex: g_appState.calendarPageIndex, label: activePage.label };
+        } else {
+            g_appState.calendarPageIndex = 0;
+        }
+    } else {
+        g_appState.calendarPageIndex = 0;
+    }
 
     if (g_dom.calendarLegend) {
         if (!selectedHabit) {
             g_dom.calendarLegend.innerHTML = `
-                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-neutral calendar-cell"></span>No Activity</span>
-                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-aggregate-low calendar-cell"></span>Low</span>
-                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-aggregate-mid calendar-cell"></span>Medium</span>
-                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-aggregate-high calendar-cell"></span>High</span>
-                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-aggregate-peak calendar-cell"></span>Peak</span>
+                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-neutral"></span>No Activity</span>
+                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-aggregate-low"></span>Low</span>
+                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-aggregate-mid"></span>Medium</span>
+                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-aggregate-high"></span>High</span>
+                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-aggregate-peak"></span>Peak</span>
             `;
         } else {
             g_dom.calendarLegend.innerHTML = `
-                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-done calendar-cell"></span>Done</span>
-                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-missed calendar-cell"></span>Missed</span>
-                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-neutral calendar-cell"></span>Not Due</span>
+                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-done"></span>Done</span>
+                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-missed"></span>Missed</span>
+                <span class="calendar-legend-chip"><span class="calendar-legend-dot state-neutral"></span>Not Due</span>
             `;
         }
     }
 
     if (g_dom.calendarSubtitle) {
+        const activeLabel = getRangeLabel({ start: fullRangeStart, end: fullRangeEnd });
+        const pagingSuffix = pageMeta && pageMeta.pages.length > 1 ? ` Viewing ${pageMeta.label} (${pageMeta.currentIndex + 1}/${pageMeta.pages.length}).` : '';
         g_dom.calendarSubtitle.textContent = selectedHabit
-            ? `${selectedHabit.name}: day-by-day consistency for the last 90 days.`
-            : 'Your daily completion intensity for the last 90 days';
+            ? `${selectedHabit.name}: day-by-day consistency for ${activeLabel}.${pagingSuffix}`
+            : `Your daily completion intensity for ${activeLabel}.${pagingSuffix}`;
     }
 
     if (!selectedHabit) {
@@ -2895,69 +4170,119 @@ function renderCalendarHeatmap() {
         if (g_dom.calendarAvgLabel) g_dom.calendarAvgLabel.textContent = 'consistency';
     }
 
-    const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     const formatLongDate = (date) => date.toLocaleDateString('en-US', {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
         year: 'numeric'
     });
-    const rangeStartLabel = periodStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const rangeEndLabel = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const getAggregateColorClass = (count) => {
-        if (count === 0 || maxCompletions === 0) return 'state-neutral';
-        const percent = (count / maxCompletions) * 100;
-        if (percent <= 25) return 'state-aggregate-low';
-        if (percent <= 50) return 'state-aggregate-mid';
-        if (percent <= 75) return 'state-aggregate-high';
-        return 'state-aggregate-peak';
-    };
-    const getHabitColorClass = (status) => {
-        if (status === 'completed') return 'state-done';
-        if (status === 'missed') return 'state-missed';
-        return 'state-neutral';
-    };
+    const rangeStartLabel = fullRangeStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const rangeEndLabel = fullRangeEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const showPager = Boolean(pageMeta && pageMeta.pages.length > 1);
+    const pagerMarkup = showPager
+        ? `<div class="calendar-pager">
+            <button id="calendar-page-prev" class="calendar-page-btn" ${pageMeta.currentIndex === 0 ? 'disabled' : ''}>Prev</button>
+            <span class="calendar-page-label">${pageMeta.label} (${pageMeta.currentIndex + 1}/${pageMeta.pages.length})</span>
+            <button id="calendar-page-next" class="calendar-page-btn" ${pageMeta.currentIndex >= pageMeta.pages.length - 1 ? 'disabled' : ''}>Next</button>
+        </div>`
+        : '';
 
-    const monthMarkers = [{ weekIndex: 0, label: periodStart.toLocaleDateString('en-US', { month: 'short' }) }];
-    weeks.forEach((week, weekIndex) => {
-        week.forEach(day => {
-            if (!day.insideRange || day.date.getDate() !== 1) return;
-            if (!monthMarkers.some(marker => marker.weekIndex === weekIndex)) {
-                monthMarkers.push({ weekIndex, label: day.date.toLocaleDateString('en-US', { month: 'short' }) });
-            }
-        });
-    });
-    monthMarkers.sort((a, b) => a.weekIndex - b.weekIndex);
+    if (isSevenDayPreset) {
+        const weekDates = [];
+        for (let cursor = new Date(fullRangeStart); cursor <= fullRangeEnd; cursor.setDate(cursor.getDate() + 1)) {
+            weekDates.push(new Date(cursor));
+        }
+
+        container.innerHTML = `
+            <div class="calendar-shell" data-view="week">
+                <div class="calendar-range">${rangeStartLabel} - ${rangeEndLabel}</div>
+                <div class="calendar-week-strip">
+                    ${weekDates.map((date) => {
+                        const dateKey = getLocalDateKey(date);
+                        const dayState = dayStateMap[dateKey];
+                        const colorClass = selectedHabit
+                            ? getCalendarHabitColorClass(dayState.status)
+                            : getCalendarAggregateColorClass(dayState.count, maxCompletions);
+                        const title = `${formatLongDate(date)}: ${describeCalendarDay(dayState, selectedHabit)}`;
+                        const badgeMarkup = !selectedHabit && dayState.count > 0
+                            ? `<span class="calendar-count-badge">${dayState.count}</span>`
+                            : '';
+                        const statusDotMarkup = selectedHabit && dayState.status !== 'not-due'
+                            ? '<span class="calendar-status-dot"></span>'
+                            : '';
+                        const weekdayLabel = date.toLocaleDateString('en-US', { weekday: 'short' });
+                        return `
+                            <div class="calendar-date-cell ${colorClass} calendar-cell-in-range" data-date-key="${dateKey}" data-in-range="1" title="${escapeHtml(title)}">
+                                <span class="calendar-cell-weekday">${weekdayLabel}</span>
+                                <span class="calendar-date-num">${date.getDate()}</span>
+                                ${badgeMarkup || statusDotMarkup}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+        bindCalendarCellTooltipEvents(container, dayStateMap, selectedHabit);
+        return;
+    }
+
+    const monthMatrix = buildMonthMatrix(activePage || { year: fullRangeStart.getFullYear(), month: fullRangeStart.getMonth() });
+    const weekdayLabels = getCalendarWeekdayLabelsMondayFirst();
 
     container.innerHTML = `
-        <div class="calendar-shell">
+        <div class="calendar-shell" data-view="month">
             <div class="calendar-range">${rangeStartLabel} - ${rangeEndLabel}</div>
-            <div class="calendar-month-row" style="grid-template-columns: repeat(${totalWeeks}, minmax(0, 1fr));">
-                ${monthMarkers.map(marker => `<span class="calendar-month-label" style="grid-column: ${marker.weekIndex + 1} / span 2;">${marker.label}</span>`).join('')}
+            ${pagerMarkup}
+            <div class="calendar-weekday-header">
+                ${weekdayLabels.map(label => `<div class="calendar-weekday-cell">${label}</div>`).join('')}
             </div>
-            <div class="calendar-grid-layout">
-                <div class="calendar-day-labels">
-                    ${dayLabels.map(day => `<div class="calendar-day-label">${day}</div>`).join('')}
-                </div>
-                <div class="calendar-week-grid" style="grid-template-columns: repeat(${totalWeeks}, minmax(0, 1fr));">
-                    ${weeks.map(week => `
-                        <div class="calendar-week-col">
-                            ${week.map(day => {
-                                if (!day || !day.insideRange) return '<div class="calendar-cell outside-range"></div>';
-                                const colorClass = selectedHabit
-                                    ? getHabitColorClass(day.status)
-                                    : getAggregateColorClass(day.count);
-                                const title = selectedHabit
-                                    ? `${formatLongDate(day.date)}: ${day.status === 'completed' ? 'Completed' : day.status === 'missed' ? 'Missed (due)' : 'Not due'}`
-                                    : `${formatLongDate(day.date)}: ${day.count} completions`;
-                                return `<div class="calendar-cell ${colorClass}" title="${title}"></div>`;
-                            }).join('')}
+            <div class="calendar-month-grid">
+                ${monthMatrix.flat().map((date) => {
+                    const dateKey = getLocalDateKey(date);
+                    const dayState = dayStateMap[dateKey] || {
+                        date,
+                        dateStr: dateKey,
+                        count: 0,
+                        status: 'not-due',
+                        insideRange: false
+                    };
+                    const inRange = date >= fullRangeStart && date <= fullRangeEnd;
+                    const inPageMonth = activePage
+                        ? date.getMonth() === activePage.start.getMonth() && date.getFullYear() === activePage.start.getFullYear()
+                        : true;
+                    const colorClass = inRange
+                        ? (selectedHabit
+                            ? getCalendarHabitColorClass(dayState.status)
+                            : getCalendarAggregateColorClass(dayState.count, maxCompletions))
+                        : 'state-neutral';
+                    const title = inRange
+                        ? `${formatLongDate(date)}: ${describeCalendarDay(dayState, selectedHabit)}`
+                        : `${formatLongDate(date)}: Outside selected range`;
+                    const badgeMarkup = !selectedHabit && inRange && dayState.count > 0
+                        ? `<span class="calendar-count-badge">${dayState.count}</span>`
+                        : '';
+                    const statusDotMarkup = selectedHabit && inRange && dayState.status !== 'not-due'
+                        ? '<span class="calendar-status-dot"></span>'
+                        : '';
+                    const inRangeAttr = inRange ? '1' : '0';
+                    return `
+                        <div class="calendar-date-cell ${colorClass} ${inRange ? 'calendar-cell-in-range' : 'calendar-cell-outside-range'} ${inPageMonth ? '' : 'calendar-cell-other-month'}"
+                             data-date-key="${dateKey}"
+                             data-in-range="${inRangeAttr}"
+                             title="${escapeHtml(title)}">
+                            <span class="calendar-date-num">${date.getDate()}</span>
+                            ${badgeMarkup || statusDotMarkup}
                         </div>
-                    `).join('')}
-                </div>
+                    `;
+                }).join('')}
             </div>
         </div>
     `;
+
+    bindCalendarCellTooltipEvents(container, dayStateMap, selectedHabit);
+    if (showPager) {
+        attachCalendarPageHandlers(pageMeta, activeRange, scopedTasks);
+    }
 }
 
 </script>
