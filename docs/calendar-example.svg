@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-label="Calendar example: date in cell blocks">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#161f3a"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#24355f" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#1a2748" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="520" fill="url(#bg)"/>
+  <rect x="70" y="70" width="1060" height="380" rx="20" fill="url(#panel)" stroke="#2b3c6b"/>
+
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" fill="#eaf0ff">
+    <text x="104" y="125" font-size="22" font-weight="700">Activity Calendar</text>
+    <text x="104" y="155" font-size="14" fill="#c6d3ff">Google-style date-in-cell blocks with tooltip details.</text>
+  </g>
+
+  <!-- Weekday headers -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="13" fill="#c6d3ff">
+    <text x="160" y="205">Mon</text><text x="296" y="205">Tue</text><text x="432" y="205">Wed</text><text x="568" y="205">Thu</text><text x="704" y="205">Fri</text><text x="840" y="205">Sat</text><text x="976" y="205">Sun</text>
+  </g>
+
+  <!-- Cells (6x7) -->
+  <g>
+    <!-- Row 1 -->
+    <rect x="140" y="230" width="110" height="80" rx="14" fill="#26355b" stroke="#31456e"/>
+    <rect x="276" y="230" width="110" height="80" rx="14" fill="#1f7a5d" stroke="#39d7a0"/>
+    <rect x="412" y="230" width="110" height="80" rx="14" fill="#26355b" stroke="#31456e"/>
+    <rect x="548" y="230" width="110" height="80" rx="14" fill="#7a2a3a" stroke="#ff6b6b"/>
+    <rect x="684" y="230" width="110" height="80" rx="14" fill="#26355b" stroke="#31456e"/>
+    <rect x="820" y="230" width="110" height="80" rx="14" fill="#26355b" stroke="#31456e"/>
+    <rect x="956" y="230" width="110" height="80" rx="14" fill="#26355b" stroke="#31456e"/>
+
+    <!-- Row 2 -->
+    <rect x="140" y="320" width="110" height="80" rx="14" fill="#1f7a5d" stroke="#39d7a0"/>
+    <rect x="276" y="320" width="110" height="80" rx="14" fill="#26355b" stroke="#31456e"/>
+    <rect x="412" y="320" width="110" height="80" rx="14" fill="#26355b" stroke="#31456e"/>
+    <rect x="548" y="320" width="110" height="80" rx="14" fill="#26355b" stroke="#31456e"/>
+    <rect x="684" y="320" width="110" height="80" rx="14" fill="#7a2a3a" stroke="#ff6b6b"/>
+    <rect x="820" y="320" width="110" height="80" rx="14" fill="#26355b" stroke="#31456e"/>
+    <rect x="956" y="320" width="110" height="80" rx="14" fill="#26355b" stroke="#31456e"/>
+  </g>
+
+  <!-- Dates -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="16" fill="#eaf0ff">
+    <text x="162" y="260">1</text><text x="298" y="260">2</text><text x="434" y="260">3</text><text x="570" y="260">4</text><text x="706" y="260">5</text><text x="842" y="260">6</text><text x="978" y="260">7</text>
+    <text x="162" y="350">8</text><text x="298" y="350">9</text><text x="430" y="350">10</text><text x="566" y="350">11</text><text x="702" y="350">12</text><text x="838" y="350">13</text><text x="974" y="350">14</text>
+  </g>
+
+  <!-- Badges -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="12" fill="#0b1220">
+    <rect x="354" y="240" width="24" height="18" rx="9" fill="#ffd166"/>
+    <text x="362" y="253" fill="#0b1220" font-weight="700">3</text>
+    <rect x="218" y="330" width="24" height="18" rx="9" fill="#ffd166"/>
+    <text x="226" y="343" fill="#0b1220" font-weight="700">1</text>
+  </g>
+
+  <!-- Legend -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="13" fill="#c6d3ff">
+    <rect x="104" y="470" width="14" height="14" rx="4" fill="#1f7a5d" stroke="#39d7a0"/>
+    <text x="126" y="482">Done</text>
+    <rect x="182" y="470" width="14" height="14" rx="4" fill="#7a2a3a" stroke="#ff6b6b"/>
+    <text x="204" y="482">Missed</text>
+    <rect x="284" y="470" width="14" height="14" rx="4" fill="#26355b" stroke="#31456e"/>
+    <text x="306" y="482">Not due / No completions</text>
+  </g>
+</svg>
+
