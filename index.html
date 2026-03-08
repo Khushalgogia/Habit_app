@@ -12,8 +12,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- Load Chart.js for the Radar Chart -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Setup Tailwind Dark Mode -->
 <script>
 tailwind.config = {
@@ -1014,6 +1012,110 @@ background: rgba(244, 248, 255, 0.8); /* #f4f8ff with opacity */
 opacity: 0;
 pointer-events: none;
 }
+.startup-state {
+position: absolute;
+inset: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 1rem;
+z-index: 6;
+}
+.startup-panel {
+width: min(100%, 34rem);
+padding: 1rem;
+border-radius: 1.25rem;
+border: 1px solid rgba(148, 163, 184, 0.22);
+background: rgba(15, 23, 42, 0.46);
+backdrop-filter: blur(12px);
+box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+}
+html.light .startup-panel {
+background: rgba(255, 255, 255, 0.72);
+box-shadow: 0 18px 40px rgba(148, 163, 184, 0.18);
+}
+.startup-title {
+font-size: 1rem;
+font-weight: 700;
+color: #f8fafc;
+}
+html.light .startup-title {
+color: #0f172a;
+}
+.startup-copy {
+margin-top: 0.4rem;
+font-size: 0.85rem;
+line-height: 1.5;
+color: rgba(226, 232, 240, 0.88);
+}
+html.light .startup-copy {
+color: #475569;
+}
+.startup-skeleton-grid {
+display: grid;
+grid-template-columns: repeat(3, minmax(0, 1fr));
+gap: 0.9rem;
+margin-top: 1rem;
+}
+.startup-skeleton-card {
+height: 6.5rem;
+border-radius: 1.1rem;
+border: 1px solid rgba(148, 163, 184, 0.18);
+background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(59, 130, 246, 0.06), rgba(34, 211, 238, 0.12));
+background-size: 200% 100%;
+animation: startupShimmer 1.8s ease-in-out infinite;
+}
+.startup-skeleton-card:nth-child(2) {
+animation-delay: 0.12s;
+}
+.startup-skeleton-card:nth-child(3) {
+animation-delay: 0.24s;
+}
+.startup-actions {
+display: flex;
+flex-wrap: wrap;
+gap: 0.75rem;
+margin-top: 1rem;
+}
+.startup-action-btn {
+border: 1px solid rgba(148, 163, 184, 0.32);
+border-radius: 999px;
+padding: 0.62rem 0.95rem;
+font-size: 0.85rem;
+font-weight: 600;
+transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.startup-action-btn:hover {
+transform: translateY(-1px);
+}
+.startup-action-btn.primary {
+background: linear-gradient(135deg, #6366f1, #0ea5e9);
+color: #fff;
+border-color: transparent;
+}
+.startup-action-btn.secondary {
+background: rgba(30, 41, 59, 0.32);
+color: #e2e8f0;
+}
+html.light .startup-action-btn.secondary {
+background: rgba(241, 245, 249, 0.92);
+color: #334155;
+}
+.app-disabled {
+opacity: 0.55;
+pointer-events: none;
+filter: saturate(0.7);
+}
+@keyframes startupShimmer {
+0% { background-position: 0% 50%; opacity: 0.72; }
+50% { background-position: 100% 50%; opacity: 1; }
+100% { background-position: 0% 50%; opacity: 0.72; }
+}
+@media (max-width: 640px) {
+    .startup-skeleton-grid {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 </head>
 <body class="flex flex-col h-screen">
@@ -1026,7 +1128,7 @@ pointer-events: none;
 </div>
 
 <!-- NEW: Loading Overlay -->
-<div id="loading-overlay">
+<div id="loading-overlay" class="hidden">
 <svg class="animate-spin h-10 w-10 text-indigo-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -1506,8 +1608,14 @@ Save
 
 // --- 0. CONFIGURATION ---
 // ⬇️ !!! PASTE YOUR GOOGLE APPS SCRIPT URL HERE !!! ⬇️
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyv6OEpO8Ti-pJX9rtaMWOCpNdtHmPjk4JpEJm1ZbeYEZAqTO1WuRUlita8_nobWRqB_w/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-2KjfaTRvQJhyBBfyUJYYN3iQKgrABYNYMWZlwlny1PyOwvhupDmi7YjuvTJgWKaQLw/exec";
 // ⬆️ !!! PASTE YOUR GOOGLE APPS SCRIPT URL HERE !!! ⬆️
+const BOOTSTRAP_HISTORY_DAYS = 120;
+const BOOTSTRAP_TIMEOUT_MS = 6500;
+const BOOTSTRAP_RETRY_COUNT = 1;
+const BOOTSTRAP_RETRY_DELAY_MS = 400;
+const REFRESH_COOLDOWN_MS = 1500;
+const CHART_JS_CDN_URL = 'https://cdn.jsdelivr.net/npm/chart.js';
 const LOCAL_STORAGE_KEYS = {
 taskHistory: 'habitAppTaskHistoryV1',
 tasks: 'habitAppTasksV1',
@@ -1583,12 +1691,20 @@ undoAction: null,
 undoTimer: null,
 pendingRemoveTaskIndex: null,
 pendingRemoveAction: null,
+loadedHistoryRanges: {},
 sync: {
     isSyncing: false,
     backendCompatible: true,
     lastSuccessAt: null,
     lastError: '',
-    cloudTasksEmpty: false
+    cloudTasksEmpty: false,
+    bootstrapLoaded: false,
+    bootstrapFailed: false,
+    offlineCacheMode: false,
+    snapshotVersion: '',
+    historyWindowDays: 0,
+    lastRefreshStartedAt: 0,
+    refreshPromise: null
 }
 };
 
@@ -1611,6 +1727,8 @@ navToday: document.getElementById('nav-today'),
 navWeekly: document.getElementById('nav-weekly'), // Will be null, but safe
 navProgress: document.getElementById('nav-progress'),
 navReflection: document.getElementById('nav-reflection'), // Will be null, but safe
+taskManagerBtn: document.getElementById('task-manager-btn'),
+taskManagerBtnProgress: document.getElementById('task-manager-btn-progress'),
 // Theme
 themeToggle: document.getElementById('theme-toggle'),
 themeToggleProgress: document.getElementById('theme-toggle-progress'),
@@ -1700,6 +1818,7 @@ removeConfirmContinue: document.getElementById('remove-confirm-continue')
 // --- 4. CHART.JS INSTANCES ---
 let g_skillWebChart = null;
 let g_cadenceChart = null;
+let g_chartJsLoadPromise = null;
 
 // --- 5. HELPER & UTILITY FUNCTIONS ---
 
@@ -1782,12 +1901,18 @@ function renderSyncStatus() {
         if (!GOOGLE_SCRIPT_URL) {
             g_dom.syncStatusText.textContent = 'Sync: disabled (missing script URL)';
             g_dom.syncStatusText.className = 'font-medium text-rose-500';
+        } else if (!g_appState.sync.bootstrapLoaded && !g_appState.sync.bootstrapFailed) {
+            g_dom.syncStatusText.textContent = 'Sync: loading latest data...';
+            g_dom.syncStatusText.className = 'font-medium text-indigo-600 dark:text-indigo-300';
         } else if (g_appState.sync.isSyncing) {
             g_dom.syncStatusText.textContent = 'Sync: syncing...';
             g_dom.syncStatusText.className = 'font-medium text-indigo-600 dark:text-indigo-300';
         } else if (!g_appState.sync.backendCompatible) {
             g_dom.syncStatusText.textContent = 'Sync: backend incompatible';
             g_dom.syncStatusText.className = 'font-medium text-rose-500';
+        } else if (g_appState.sync.offlineCacheMode) {
+            g_dom.syncStatusText.textContent = 'Sync: cached copy';
+            g_dom.syncStatusText.className = 'font-medium text-amber-500';
         } else if (g_appState.sync.lastError) {
             g_dom.syncStatusText.textContent = `Sync: failed - ${g_appState.sync.lastError}`;
             g_dom.syncStatusText.className = 'font-medium text-rose-500';
@@ -1810,9 +1935,10 @@ function renderSyncStatus() {
         g_dom.syncLastSync.textContent = last ? `Last sync: ${last}` : '';
     }
     if (g_dom.syncNowBtn) {
-        g_dom.syncNowBtn.disabled = g_appState.sync.isSyncing;
-        g_dom.syncNowBtn.classList.toggle('opacity-60', g_appState.sync.isSyncing);
-        g_dom.syncNowBtn.classList.toggle('pointer-events-none', g_appState.sync.isSyncing);
+        const disableSyncBtn = g_appState.sync.isSyncing || !g_appState.sync.bootstrapLoaded;
+        g_dom.syncNowBtn.disabled = disableSyncBtn;
+        g_dom.syncNowBtn.classList.toggle('opacity-60', disableSyncBtn);
+        g_dom.syncNowBtn.classList.toggle('pointer-events-none', disableSyncBtn);
     }
 }
 
@@ -1829,7 +1955,94 @@ function ensureHabitEditingAllowed(actionLabel = 'edit habits') {
         alert(`Cloud sync backend is incompatible. Cannot ${actionLabel} until Apps Script V2 is deployed correctly.`);
         return false;
     }
+    if (!g_appState.sync.bootstrapLoaded) {
+        alert(`Please wait for the latest cloud data to load before you ${actionLabel}.`);
+        return false;
+    }
     return true;
+}
+
+function setBootstrapInteractionState(isReady) {
+    const disabledControls = [
+        g_dom.navProgress,
+        g_dom.taskManagerBtn,
+        g_dom.taskManagerBtnProgress,
+        g_dom.toggleFullBtn,
+        g_dom.toggleMiniBtn
+    ];
+    disabledControls.forEach(control => {
+        if (!control) return;
+        control.classList.toggle('app-disabled', !isReady);
+        if ('disabled' in control) control.disabled = !isReady;
+        control.setAttribute('aria-disabled', isReady ? 'false' : 'true');
+    });
+}
+
+function clearStartupState() {
+    g_dom.mapWrapper.querySelectorAll('.startup-state').forEach(node => node.remove());
+}
+
+function renderStartupSkeleton() {
+    clearStartupState();
+    clearConstellation();
+    const state = document.createElement('div');
+    state.className = 'startup-state';
+    state.innerHTML = `
+        <div class="startup-panel">
+            <p class="startup-title">Syncing your archipelago</p>
+            <p class="startup-copy">Pulling the latest habits and recent history from Google Sheets before the day view unlocks.</p>
+            <div class="startup-skeleton-grid" aria-hidden="true">
+                <div class="startup-skeleton-card"></div>
+                <div class="startup-skeleton-card"></div>
+                <div class="startup-skeleton-card"></div>
+            </div>
+        </div>
+    `;
+    g_dom.mapWrapper.appendChild(state);
+    g_dom.progressText.textContent = 'Loading the latest cloud snapshot...';
+}
+
+function renderStartupErrorState(message) {
+    clearStartupState();
+    const state = document.createElement('div');
+    state.className = 'startup-state';
+    state.innerHTML = `
+        <div class="startup-panel">
+            <p class="startup-title">Cloud startup failed</p>
+            <p class="startup-copy">${escapeHtml(message || 'The latest cloud snapshot did not arrive in time.')}</p>
+            <div class="startup-actions">
+                <button id="startup-retry-btn" type="button" class="startup-action-btn primary">Retry Cloud Sync</button>
+                <button id="startup-cached-btn" type="button" class="startup-action-btn secondary">Continue with Cached Data</button>
+            </div>
+        </div>
+    `;
+    g_dom.mapWrapper.appendChild(state);
+    const retryBtn = document.getElementById('startup-retry-btn');
+    const cachedBtn = document.getElementById('startup-cached-btn');
+    if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+            renderStartupSkeleton();
+            loadDataFromSheet();
+        });
+    }
+    if (cachedBtn) {
+        cachedBtn.addEventListener('click', () => activateCachedStartupFallback(message));
+    }
+    g_dom.progressText.textContent = 'Cloud sync failed. Retry or continue with cached data.';
+}
+
+function activateCachedStartupFallback(message = '') {
+    clearStartupState();
+    loadCompletionsForDate(g_appState.viewingDate);
+    setSyncState({
+        bootstrapLoaded: true,
+        bootstrapFailed: true,
+        offlineCacheMode: true,
+        isSyncing: false,
+        lastError: message || 'Using cached local data.'
+    });
+    setBootstrapInteractionState(true);
+    renderTodayView();
 }
 
 function hashTaskDefinitions(tasks) {
@@ -1848,36 +2061,182 @@ function hashTaskHistory(history) {
     }
 }
 
-async function fetchCloudSnapshot() {
+async function fetchJsonWithTimeout(url, options = {}, timeoutMs = BOOTSTRAP_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+        return response;
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
+async function fetchBootstrapSnapshot(options = {}) {
+    if (!GOOGLE_SCRIPT_URL) {
+        return { ok: false, type: 'config', message: 'Google Script URL is missing.' };
+    }
+    const retryCount = options.retryCount ?? 0;
+    const timeoutMs = options.timeoutMs ?? BOOTSTRAP_TIMEOUT_MS;
+    let lastFailure = null;
+    for (let attempt = 0; attempt <= retryCount; attempt++) {
+        try {
+            const url = `${GOOGLE_SCRIPT_URL}?action=loadBootstrap&userId=${encodeURIComponent(g_appState.userId || getOrCreateUserId())}&days=${BOOTSTRAP_HISTORY_DAYS}&_ts=${Date.now()}`;
+            const response = await fetchJsonWithTimeout(url, { method: 'GET', mode: 'cors', cache: 'no-store' }, timeoutMs);
+            if (!response.ok) {
+                lastFailure = { ok: false, type: 'network', message: `Load failed: ${response.status} ${response.statusText}` };
+            } else {
+                const payload = await response.json();
+                if (payload && payload.error) {
+                    return { ok: false, type: 'backend', message: String(payload.error) };
+                }
+                if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+                    return { ok: false, type: 'incompatible', message: 'Unexpected response payload from Apps Script.' };
+                }
+                const requiredKeys = ['taskHistory', 'tasks', 'windowDays', 'snapshotVersion'];
+                const hasAllRequired = requiredKeys.every(key => Object.prototype.hasOwnProperty.call(payload, key));
+                if (!hasAllRequired) {
+                    return { ok: false, type: 'incompatible', message: 'Apps Script must return { tasks, taskHistory, windowDays, snapshotVersion }.' };
+                }
+                return {
+                    ok: true,
+                    taskHistory: sanitizeTaskHistory(payload.taskHistory || {}),
+                    tasks: Array.isArray(payload.tasks) ? payload.tasks : [],
+                    windowDays: Number(payload.windowDays) || BOOTSTRAP_HISTORY_DAYS,
+                    snapshotVersion: String(payload.snapshotVersion || ''),
+                    serverTime: Number(payload.serverTime) || Date.now()
+                };
+            }
+        } catch (error) {
+            const isAbort = error?.name === 'AbortError';
+            lastFailure = {
+                ok: false,
+                type: isAbort ? 'timeout' : 'network',
+                message: isAbort ? 'Cloud bootstrap timed out.' : (error?.message || 'Failed to load cloud snapshot.')
+            };
+        }
+        if (attempt < retryCount) {
+            await new Promise(resolve => setTimeout(resolve, BOOTSTRAP_RETRY_DELAY_MS));
+        }
+    }
+    return lastFailure || { ok: false, type: 'network', message: 'Failed to load cloud snapshot.' };
+}
+
+async function fetchHistoryRange(from, to) {
     if (!GOOGLE_SCRIPT_URL) {
         return { ok: false, type: 'config', message: 'Google Script URL is missing.' };
     }
     try {
-        const url = `${GOOGLE_SCRIPT_URL}?action=loadAll&userId=${encodeURIComponent(g_appState.userId || getOrCreateUserId())}&_ts=${Date.now()}`;
-        const response = await fetch(url, { method: 'GET', mode: 'cors', cache: 'no-store' });
+        const url = `${GOOGLE_SCRIPT_URL}?action=loadHistoryRange&userId=${encodeURIComponent(g_appState.userId || getOrCreateUserId())}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&_ts=${Date.now()}`;
+        const response = await fetchJsonWithTimeout(url, { method: 'GET', mode: 'cors', cache: 'no-store' }, BOOTSTRAP_TIMEOUT_MS);
         if (!response.ok) {
-            return { ok: false, type: 'network', message: `Load failed: ${response.status} ${response.statusText}` };
+            return { ok: false, type: 'network', message: `Range load failed: ${response.status} ${response.statusText}` };
         }
         const payload = await response.json();
         if (payload && payload.error) {
             return { ok: false, type: 'backend', message: String(payload.error) };
         }
         if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-            return { ok: false, type: 'incompatible', message: 'Unexpected response payload from Apps Script.' };
-        }
-        const hasTaskHistory = Object.prototype.hasOwnProperty.call(payload, 'taskHistory');
-        const hasTasks = Object.prototype.hasOwnProperty.call(payload, 'tasks');
-        if (!hasTaskHistory || !hasTasks) {
-            return { ok: false, type: 'incompatible', message: 'Apps Script must return { taskHistory, tasks }.' };
+            return { ok: false, type: 'incompatible', message: 'Unexpected range payload from Apps Script.' };
         }
         return {
             ok: true,
             taskHistory: sanitizeTaskHistory(payload.taskHistory || {}),
-            tasks: Array.isArray(payload.tasks) ? payload.tasks : []
+            snapshotVersion: String(payload.snapshotVersion || ''),
+            from,
+            to
         };
     } catch (error) {
-        return { ok: false, type: 'network', message: error?.message || 'Failed to load cloud snapshot.' };
+        const isAbort = error?.name === 'AbortError';
+        return {
+            ok: false,
+            type: isAbort ? 'timeout' : 'network',
+            message: isAbort ? 'History range request timed out.' : (error?.message || 'Failed to load history range.')
+        };
     }
+}
+
+function mergeTaskHistory(partialHistory, fromDate = '', toDate = '') {
+    const cleanPartial = sanitizeTaskHistory(partialHistory);
+    let fromTs = null;
+    let toTs = null;
+    if (fromDate && toDate) {
+        const parsedFrom = parseDateInputValue(fromDate);
+        const parsedTo = parseDateInputValue(toDate);
+        if (parsedFrom && parsedTo) {
+            fromTs = getStartOfDay(parsedFrom).getTime();
+            toTs = getStartOfDay(parsedTo).getTime() + (24 * 60 * 60 * 1000 - 1);
+        }
+    }
+
+    Object.keys(g_appState.taskHistory).forEach(taskId => {
+        if (fromTs === null || toTs === null) return;
+        g_appState.taskHistory[taskId] = (g_appState.taskHistory[taskId] || []).filter(ts => ts < fromTs || ts > toTs);
+        if (g_appState.taskHistory[taskId].length === 0) {
+            delete g_appState.taskHistory[taskId];
+        }
+    });
+
+    Object.entries(cleanPartial).forEach(([taskId, timestamps]) => {
+        const merged = new Set([...(g_appState.taskHistory[taskId] || []), ...timestamps]);
+        g_appState.taskHistory[taskId] = Array.from(merged).sort((a, b) => a - b);
+    });
+}
+
+function isRangeOutsideBootstrapWindow(range) {
+    if (!range) return false;
+    const windowDays = g_appState.sync.historyWindowDays || BOOTSTRAP_HISTORY_DAYS;
+    const bootstrapStart = getStartOfDay(g_appState.today);
+    bootstrapStart.setDate(bootstrapStart.getDate() - (windowDays - 1));
+    return getStartOfDay(range.start).getTime() < bootstrapStart.getTime();
+}
+
+async function ensureProgressHistoryLoaded(range) {
+    if (!range || !isRangeOutsideBootstrapWindow(range)) {
+        return { ok: true, fetched: false };
+    }
+    const from = formatDateInputValue(range.start);
+    const to = formatDateInputValue(range.end);
+    const cacheKey = `${g_appState.userId || getOrCreateUserId()}|${from}|${to}`;
+    if (g_appState.loadedHistoryRanges[cacheKey]) {
+        return { ok: true, fetched: false, cached: true };
+    }
+    const result = await fetchHistoryRange(from, to);
+    if (!result.ok) {
+        setSyncState({
+            lastError: result.message || 'Failed to load additional history.'
+        });
+        return result;
+    }
+    mergeTaskHistory(result.taskHistory, result.from, result.to);
+    saveTaskHistoryLocally();
+    g_appState.loadedHistoryRanges[cacheKey] = true;
+    setSyncState({
+        lastSuccessAt: Date.now(),
+        lastError: '',
+        snapshotVersion: result.snapshotVersion || g_appState.sync.snapshotVersion
+    });
+    return { ok: true, fetched: true };
+}
+
+async function ensureChartsLibraryLoaded() {
+    if (window.Chart) return true;
+    if (g_chartJsLoadPromise) return g_chartJsLoadPromise;
+    g_chartJsLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = CHART_JS_CDN_URL;
+        script.async = true;
+        script.onload = () => resolve(true);
+        script.onerror = () => {
+            g_chartJsLoadPromise = null;
+            reject(new Error('Failed to load Chart.js'));
+        };
+        document.head.appendChild(script);
+    });
+    return g_chartJsLoadPromise;
 }
 
 function applyCloudSnapshot(snapshot, options = {}) {
@@ -1912,6 +2271,11 @@ function applyCloudSnapshot(snapshot, options = {}) {
 
     ensureOrphanHistoryTasks();
     saveTasksLocally();
+    setSyncState({
+        historyWindowDays: snapshot.windowDays || g_appState.sync.historyWindowDays || BOOTSTRAP_HISTORY_DAYS,
+        snapshotVersion: snapshot.snapshotVersion || g_appState.sync.snapshotVersion,
+        offlineCacheMode: false
+    });
     return changed;
 }
 
@@ -1928,7 +2292,10 @@ async function pullCloudSnapshotAndMerge(options = {}) {
         ...(silent ? {} : { lastError: '' })
     });
 
-    const snapshot = await fetchCloudSnapshot();
+    const snapshot = await fetchBootstrapSnapshot({
+        retryCount: options.retryCount ?? 0,
+        timeoutMs: options.timeoutMs ?? BOOTSTRAP_TIMEOUT_MS
+    });
     if (!snapshot.ok) {
         if (snapshot.type === 'incompatible') {
             setSyncState({
@@ -1945,12 +2312,34 @@ async function pullCloudSnapshotAndMerge(options = {}) {
         return snapshot;
     }
 
+    if (
+        source !== 'initial' &&
+        snapshot.snapshotVersion &&
+        g_appState.sync.snapshotVersion &&
+        snapshot.snapshotVersion === g_appState.sync.snapshotVersion
+    ) {
+        setSyncState({
+            isSyncing: false,
+            backendCompatible: true,
+            lastError: '',
+            lastSuccessAt: Date.now(),
+            historyWindowDays: snapshot.windowDays || g_appState.sync.historyWindowDays,
+            snapshotVersion: snapshot.snapshotVersion
+        });
+        return { ok: true, changed: false, skippedRender: true };
+    }
+
     const changed = applyCloudSnapshot(snapshot, { source });
     setSyncState({
         isSyncing: false,
         backendCompatible: true,
         lastError: '',
-        lastSuccessAt: Date.now()
+        lastSuccessAt: Date.now(),
+        bootstrapLoaded: true,
+        bootstrapFailed: false,
+        offlineCacheMode: false,
+        historyWindowDays: snapshot.windowDays || g_appState.sync.historyWindowDays,
+        snapshotVersion: snapshot.snapshotVersion || g_appState.sync.snapshotVersion
     });
 
     if (changed && renderAfterMerge) {
@@ -2469,6 +2858,7 @@ return data;
 function navigateTo(viewName) {
 if (g_appState.currentView === viewName) return;
 if (g_appState.calendarTooltip.open) closeCalendarTooltip();
+if (viewName === 'progress' && !g_appState.sync.bootstrapLoaded) return;
 
 g_appState.currentView = viewName;
 
@@ -2553,6 +2943,7 @@ g_appState.completedTasksToday.add(task.id);
 function renderMap() {
     // Clear only island nodes, keep SVG layer
     g_dom.mapWrapper.querySelectorAll('.island-node').forEach(node => node.remove());
+    clearStartupState();
 
     let completedTodayCount = 0;
     let totalDueTodayCount = 0;
@@ -2646,6 +3037,7 @@ document.getElementById('cancel-btn').addEventListener('click', hideFocusCard);
 * Updates all elements in the "Today" view
 */
 function renderTodayView() {
+if (!g_appState.sync.bootstrapLoaded) return;
 // Update date
 g_dom.currentDateDisplay.textContent = formatDate(g_appState.viewingDate); // Use updated ID
 
@@ -2681,9 +3073,12 @@ renderMap(); // This now implicitly calls checkAllTasksDone
 }
 
 // --- 8. "PROGRESS" VIEW RENDER FUNCTIONS ---
-function updateAllCharts() {
+async function updateAllCharts() {
+if (!g_appState.sync.bootstrapLoaded) return;
 const range = getProgressRange();
 if (!range) return;
+const historyStatus = await ensureProgressHistoryLoaded(range);
+if (historyStatus && historyStatus.ok === false) return;
 const tasks = getProgressTasks();
 populateCalendarHabitSelector();
 const data = getDynamicProgressData(range, tasks);
@@ -2698,10 +3093,17 @@ renderCalendarHeatmap(range, tasks);
 g_dom.statStreak.textContent = `${data.currentStreak} Days 🔥`;
 g_dom.statCompletions.textContent = data.totalCompletions;
 renderSkillChart(data.skillCounts, data.totalCompletions, tasks);
-renderCadenceChart(data.cadence, data.skillCounts, tasks);
-renderSkillWeb(data.skillCounts, tasks);
 renderHabitDeepDive(data.habitData);
 renderSpotlight(data.habitData);
+try {
+    g_dom.cadenceComparison.textContent = '';
+    await ensureChartsLibraryLoaded();
+    renderCadenceChart(data.cadence, data.skillCounts, tasks);
+    renderSkillWeb(data.skillCounts, tasks);
+} catch (chartError) {
+    console.error('Chart.js failed to load:', chartError);
+    g_dom.cadenceComparison.textContent = 'Charts unavailable';
+}
 }
 
 function hexToRgba(hex, alpha = 1) {
@@ -3295,16 +3697,52 @@ function createParticles() {
 const darkWrapper = g_dom.animationWrapper.querySelector('.hidden'); const lightWrapper = g_dom.animationWrapper.querySelector('.block'); darkWrapper.innerHTML=''; lightWrapper.innerHTML=''; const particleCount=20; for(let i=0;i<particleCount;i++){ const star=document.createElement('div'); star.className='particle star'; const starSize=Math.random()*2+1; star.style.width=`${starSize}px`; star.style.height=`${starSize}px`; star.style.setProperty('--start-x', `${Math.random()*100}vw`); star.style.setProperty('--start-y', `${Math.random()*100}vh`); star.style.setProperty('--end-x', `${Math.random()*100}vw`); star.style.setProperty('--end-y', `${Math.random()*100}vh`); star.style.animationDelay=`${Math.random()*-15}s`; darkWrapper.appendChild(star); const mote=document.createElement('div'); mote.className='particle mote'; const moteSize=Math.random()*4+2; mote.style.width=`${moteSize}px`; mote.style.height=`${moteSize}px`; mote.style.setProperty('--start-x', `${Math.random()*100}vw`); mote.style.setProperty('--start-y', `${Math.random()*100+100}vh`); mote.style.animationDelay=`${Math.random()*-20}s`; lightWrapper.appendChild(mote) }
 }
 
-async function refreshCloudSnapshot(reason = 'refresh') {
-    if (!GOOGLE_SCRIPT_URL) return;
+function deferParticles() {
+    const runner = () => {
+        if (!g_appState.sync.bootstrapLoaded) return;
+        createParticles();
+    };
+    if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(runner, { timeout: 1200 });
+    } else {
+        setTimeout(runner, 600);
+    }
+}
+
+async function refreshCloudSnapshot(reason = 'refresh', options = {}) {
+    if (!GOOGLE_SCRIPT_URL || !g_appState.sync.bootstrapLoaded) return { ok: false, skipped: true };
     const result = await pullCloudSnapshotAndMerge({
         source: reason,
-        silent: true,
-        renderAfterMerge: true
+        silent: options.silent ?? true,
+        renderAfterMerge: true,
+        force: Boolean(options.force),
+        timeoutMs: options.timeoutMs ?? BOOTSTRAP_TIMEOUT_MS,
+        retryCount: options.retryCount ?? 0
     });
     if (result.ok && result.changed) {
         console.log('Cloud snapshot refreshed and applied.', reason);
     }
+    return result;
+}
+
+function scheduleCloudRefresh(reason = 'refresh', options = {}) {
+    if (!GOOGLE_SCRIPT_URL || !g_appState.sync.bootstrapLoaded) {
+        return Promise.resolve({ ok: false, skipped: true });
+    }
+    const now = Date.now();
+    if (!options.force && g_appState.sync.refreshPromise) {
+        return g_appState.sync.refreshPromise;
+    }
+    if (!options.force && now - (g_appState.sync.lastRefreshStartedAt || 0) < REFRESH_COOLDOWN_MS) {
+        return Promise.resolve({ ok: false, skipped: true });
+    }
+    setSyncState({ lastRefreshStartedAt: now });
+    const refreshPromise = refreshCloudSnapshot(reason, options)
+        .finally(() => {
+            setSyncState({ refreshPromise: null });
+        });
+    setSyncState({ refreshPromise });
+    return refreshPromise;
 }
 
 
@@ -3318,48 +3756,64 @@ async function loadDataFromSheet() {
         console.error("GOOGLE_SCRIPT_URL is not set.");
         setSyncState({
             backendCompatible: false,
-            lastError: 'Google Script URL is missing.'
+            lastError: 'Google Script URL is missing.',
+            bootstrapLoaded: true,
+            bootstrapFailed: true,
+            offlineCacheMode: true
         });
         loadCompletionsForDate(g_appState.viewingDate);
         renderTodayView();
-        g_dom.loadingOverlay.classList.add('hidden');
+        setBootstrapInteractionState(true);
         return;
     }
+    renderStartupSkeleton();
+    setBootstrapInteractionState(false);
     try {
-        const result = await pullCloudSnapshotAndMerge({ source: 'initial', force: true });
+        const result = await pullCloudSnapshotAndMerge({
+            source: 'initial',
+            force: true,
+            timeoutMs: BOOTSTRAP_TIMEOUT_MS,
+            retryCount: BOOTSTRAP_RETRY_COUNT
+        });
         if (!result.ok) {
             if (result.type === 'incompatible') {
                 console.error('Backend incompatible for task sync:', result.message);
             } else {
                 console.error('Failed to load cloud snapshot:', result.message);
             }
-            g_appState.taskHistory = loadTaskHistoryFromLocal();
-            ensureOrphanHistoryTasks();
-            saveTasksLocally();
-            saveTaskHistoryLocally();
+            setSyncState({
+                bootstrapLoaded: false,
+                bootstrapFailed: true,
+                lastError: result.message || 'Failed to load from cloud.'
+            });
+            renderStartupErrorState(result.message || 'Failed to load the latest cloud data.');
+            return;
         } else {
             console.log('Loaded cloud snapshot successfully.');
         }
     } catch (error) {
         console.error("Failed to load data from sheet:", error);
-        g_appState.taskHistory = loadTaskHistoryFromLocal();
-        ensureOrphanHistoryTasks();
-        saveTaskHistoryLocally();
-        saveTasksLocally();
         setSyncState({
+            bootstrapLoaded: false,
+            bootstrapFailed: true,
             lastError: error?.message || 'Failed to load from cloud.'
         });
+        renderStartupErrorState(error?.message || 'Failed to load the latest cloud data.');
+        return;
     } finally {
-        // This block ensures the UI becomes interactive even if there are errors
-        try {
-            loadCompletionsForDate(g_appState.viewingDate);
-            renderTodayView(); // Try to render with whatever data we have
-            if (g_appState.currentView === 'progress') updateAllCharts();
-        } catch (renderError) {
-            console.error("Critical error during initial render:", renderError);
-            alert("A critical error occurred while displaying your data. The app may not function correctly. Please check the developer console.");
-        }
-        g_dom.loadingOverlay.classList.add('hidden'); // Always hide the overlay
+        g_dom.loadingOverlay.classList.add('hidden');
+    }
+
+    try {
+        clearStartupState();
+        loadCompletionsForDate(g_appState.viewingDate);
+        renderTodayView();
+        setBootstrapInteractionState(true);
+        if (g_appState.currentView === 'progress') updateAllCharts();
+        deferParticles();
+    } catch (renderError) {
+        console.error("Critical error during initial render:", renderError);
+        renderStartupErrorState('A critical error occurred while rendering your data.');
     }
 }
 
@@ -3435,17 +3889,17 @@ if (g_dom.calendarHabitSelect) {
 }
 if (g_dom.syncNowBtn) {
     g_dom.syncNowBtn.addEventListener('click', async () => {
-        await refreshCloudSnapshot('manual');
+        await scheduleCloudRefresh('manual', { force: true });
     });
 }
 document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) refreshCloudSnapshot('visibility');
+    if (!document.hidden) scheduleCloudRefresh('visibility');
 });
 window.addEventListener('focus', () => {
-    refreshCloudSnapshot('focus');
+    scheduleCloudRefresh('focus');
 });
 
-createParticles();
+setBootstrapInteractionState(false);
 loadDataFromSheet(); // Load data and do initial render
 
 // Task Manager Event Listeners
@@ -3812,6 +4266,7 @@ function initializeTaskState() {
 
 // Open task manager modal
 function openTaskManager() {
+    if (!g_appState.sync.bootstrapLoaded) return;
     document.getElementById('task-manager-modal').classList.remove('hidden');
     renderTaskList();
 }

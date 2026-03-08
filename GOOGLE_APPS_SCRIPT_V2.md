@@ -15,8 +15,10 @@ Your current frontend now sends:
 - `entity: "tasks"` with `action: "saveTasks"` and full `tasks` array
 - `userId` on all requests
 
-It also loads with:
-- `GET ?action=loadAll&userId=<id>`
+It now loads with:
+- `GET ?action=loadBootstrap&userId=<id>&days=120` for startup
+- `GET ?action=loadHistoryRange&userId=<id>&from=YYYY-MM-DD&to=YYYY-MM-DD` for older custom ranges
+- `GET ?action=loadAll&userId=<id>` remains backward compatible
 
 Frontend note:
 - Default `userId` is `habit-app-primary-user` (single-user mode).
@@ -197,10 +199,23 @@ function jsonResponse_(obj) {
 }
 ```
 
+## Deployed web app
+
+Current production endpoint:
+
+`https://script.google.com/macros/s/AKfycbw-2KjfaTRvQJhyBBfyUJYYN3iQKgrABYNYMWZlwlny1PyOwvhupDmi7YjuvTJgWKaQLw/exec`
+
+## Frontend usage notes
+
+- Startup should use `loadBootstrap`, not `loadAll`.
+- Presets `7d`, `30d`, `90d` should rely on the bootstrap history window.
+- Older custom ranges should call `loadHistoryRange` and merge the returned history into local cache.
+- The frontend should point `GOOGLE_SCRIPT_URL` at the endpoint above.
+
 ## Deploy steps
 1. Open Apps Script linked to your Google Sheet.
 2. Replace code with the script above.
 3. Deploy as Web App:
    - Execute as: `Me`
    - Who has access: `Anyone`
-4. Keep your existing `GOOGLE_SCRIPT_URL` in `index.html` pointed to that deployment URL.
+4. Keep `GOOGLE_SCRIPT_URL` in `index.html` pointed to the deployed endpoint above.
