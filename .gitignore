@@ -113,6 +113,7 @@ celerybeat.pid
 
 # Environments
 .env
+supabase_cred.env
 .venv
 env/
 venv/
@@ -152,3 +153,9 @@ cython_debug/
 
 # MacOS
 .DS_Store
+
+# Flutter / Supabase local state
+.dart_tool/
+mobile_app/.dart_tool/
+mobile_app/build/
+supabase/.temp/

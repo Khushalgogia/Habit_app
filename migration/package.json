@@ -1,0 +1,11 @@
+{
+  "name": "voice-growth-archipelago-migration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "import": "node import_from_apps_script.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.5.0"
+  }
+}
