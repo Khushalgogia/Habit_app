@@ -153,9 +153,18 @@ cython_debug/
 
 # MacOS
 .DS_Store
+*.iml
+firebase-debug.log
 
 # Flutter / Supabase local state
 .dart_tool/
 mobile_app/.dart_tool/
 mobile_app/build/
 supabase/.temp/
+mobile_app/.idea/
+mobile_app/android/.kotlin/
+
+# Archived legacy generated files
+archive/legacy-web/**/node_modules/
+archive/legacy-web/**/.vite/
+archive/legacy-web/**/dist/

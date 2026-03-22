@@ -1,0 +1,369 @@
+import React, { useState, useEffect } from 'react';
+import { Play, Square, Pause, Eye, Sparkles, Zap, VolumeX, Hexagon, Flame } from 'lucide-react';
+
+export default function App() {
+  // --- Game State ---
+  const [isSetup, setIsSetup] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [selectedDuration, setSelectedDuration] = useState(300);
+  const [timeLeft, setTimeLeft] = useState(300);
+  
+  // --- Engine State ---
+  const [currentPrompt, setCurrentPrompt] = useState(null); 
+  const [cooldown, setCooldown] = useState(0); 
+  const [silenceLeft, setSilenceLeft] = useState(0); 
+  const [timeToNextEvent, setTimeToNextEvent] = useState(10);
+  const [streak, setStreak] = useState(0);
+
+  // Data Banks (Expanded)
+  const objects = ["Rusty Syringe", "Shattered Mirror", "Glowing Apple", "Velvet Blindfold", "Ticking Metronome", "Torn Map", "Silver Coin"];
+  const emotions = ["Paralyzing Fear", "Manic Euphoria", "Righteous Fury", "Deep Melancholy", "Absolute Suspicion", "Breathless Awe"];
+  const constraints = ["Speak in Questions", "Whisper Everything", "Talk 2x Faster", "No Hand Gestures", "Monotone Voice"];
+
+  // --- Core Game Loop ---
+  useEffect(() => {
+    let timer;
+    if (isRunning && !isPaused && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+        
+        if (silenceLeft > 0) {
+          setSilenceLeft((prev) => prev - 1);
+          if (silenceLeft === 1) {
+            handleEventComplete();
+          }
+        } else if (cooldown > 0) {
+          setCooldown((prev) => prev - 1);
+          if (cooldown === 1) {
+             handleEventComplete(); // Successfully survived the prompt
+          }
+        } else {
+          setTimeToNextEvent((prev) => {
+            if (prev <= 1) {
+              triggerRandomEvent();
+              return 20 + Math.floor(Math.random() * 10);
+            }
+            return prev - 1;
+          });
+        }
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsRunning(false);
+      setIsPaused(false);
+    }
+    return () => clearInterval(timer);
+  }, [isRunning, isPaused, timeLeft, cooldown, silenceLeft]);
+
+  const handleEventComplete = () => {
+    setCurrentPrompt(null);
+    setCooldown(10); // Safe zone before next
+    setTimeToNextEvent(10 + Math.floor(Math.random() * 10));
+    setStreak(s => s + 1);
+  };
+
+  // --- Triggers ---
+  const triggerRandomEvent = () => {
+    const roll = Math.random();
+    if (roll < 0.3) forceEvent('OBJECT');
+    else if (roll < 0.6) forceEvent('EMOTION');
+    else if (roll < 0.85) forceEvent('CONSTRAINT');
+    else forceEvent('SILENCE');
+  };
+
+  const forceEvent = (type) => {
+    let newPrompt;
+    if (type === 'OBJECT') newPrompt = { type: 'OBJECT', value: objects[Math.floor(Math.random() * objects.length)] };
+    else if (type === 'EMOTION') newPrompt = { type: 'EMOTION', value: emotions[Math.floor(Math.random() * emotions.length)] };
+    else if (type === 'CONSTRAINT') newPrompt = { type: 'CONSTRAINT', value: constraints[Math.floor(Math.random() * constraints.length)] };
+    else {
+      newPrompt = { type: 'SILENCE', value: '10 SECONDS' };
+      setSilenceLeft(10);
+      setCooldown(0);
+    }
+    
+    setCurrentPrompt(newPrompt);
+    if (type !== 'SILENCE') setCooldown(20);
+  };
+
+  const handleStart = () => {
+    setTimeLeft(selectedDuration);
+    setIsSetup(false);
+    setIsRunning(true);
+    setCurrentPrompt(null);
+    setCooldown(0);
+    setTimeToNextEvent(5); // Start fast
+    setStreak(0);
+  };
+
+  const handleStop = () => {
+    setIsRunning(false);
+    setIsSetup(true);
+    setIsPaused(false);
+    setCurrentPrompt(null);
+    setSilenceLeft(0);
+  };
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // --- Ultra-Punchy Editorial Themes ---
+  const getTheme = () => {
+    if (silenceLeft > 0) return { 
+      bg: 'bg-[#050505]', text: 'text-[#FF003C]', outline: 'text-transparent border-[#FF003C]', 
+      label: 'OVERRIDE: SILENCE', ring: 'border-[#FF003C]'
+    };
+    if (currentPrompt?.type === 'EMOTION') return { 
+      bg: 'bg-[#7A00FF]', text: 'text-[#E0FF00]', outline: 'text-transparent border-[#E0FF00]', 
+      label: 'TONAL SHIFT', ring: 'border-[#E0FF00]'
+    };
+    if (currentPrompt?.type === 'OBJECT') return { 
+      bg: 'bg-[#FF4B00]', text: 'text-white', outline: 'text-transparent border-white', 
+      label: 'INJECT OBJECT', ring: 'border-white'
+    };
+    if (currentPrompt?.type === 'CONSTRAINT') return { 
+      bg: 'bg-[#00FF66]', text: 'text-[#050505]', outline: 'text-transparent border-[#050505]', 
+      label: 'NEW CONSTRAINT', ring: 'border-[#050505]'
+    };
+    return { 
+      bg: 'bg-[#00051A]', text: 'text-[#00E5FF]', outline: 'text-transparent border-[#00E5FF]', 
+      label: 'MAINTAIN FLOW', ring: 'border-transparent'
+    };
+  };
+
+  const theme = getTheme();
+
+  // ==========================================
+  // VIEW: SETUP SCREEN (Awwwards Brutalism)
+  // ==========================================
+  if (isSetup) {
+    return (
+      <div className="min-h-screen bg-[#E0FF00] text-[#050505] flex flex-col items-center justify-center font-sans overflow-hidden relative selection:bg-white">
+        
+        {/* Infinite Marquee Background */}
+        <div className="absolute inset-0 flex flex-col justify-between py-10 opacity-[0.03] pointer-events-none z-0 overflow-hidden">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className={`whitespace-nowrap font-black text-[8vw] uppercase leading-none ${i % 2 === 0 ? 'animate-marquee-left' : 'animate-marquee-right'}`}>
+              NEUROLOGICAL GYM // DIVERGENT THINKING // PROSODY CONTROL // NEUROLOGICAL GYM // DIVERGENT THINKING // PROSODY CONTROL //
+            </div>
+          ))}
+        </div>
+
+        {/* Film Grain */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.06] z-[1] mix-blend-multiply" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
+
+        <div className="w-full max-w-4xl relative z-10 px-6 flex flex-col md:flex-row items-center justify-between gap-12">
+          
+          <div className="flex-1 flex flex-col">
+            <div className="inline-flex items-center gap-3 px-4 py-2 border-2 border-[#050505] rounded-full w-fit mb-8 shadow-[4px_4px_0px_#050505] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#050505] transition-all cursor-default bg-white">
+              <Hexagon className="w-5 h-5" />
+              <span className="font-black text-sm tracking-[0.2em] uppercase">System v3.0</span>
+            </div>
+            
+            <h1 className="text-[15vw] md:text-[8rem] font-black tracking-tighter leading-[0.8] mb-6 uppercase">
+              Neuro<br/>
+              <span className="text-transparent" style={{ WebkitTextStroke: '3px #050505' }}>Story.</span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl font-bold tracking-tight max-w-md border-l-4 border-[#FF4B00] pl-6 py-2">
+              Advanced improvisational framework for executive function and verbal fluency.
+            </p>
+          </div>
+          
+          <div className="w-full md:w-auto flex flex-col gap-6">
+            <div className="p-6 bg-white border-4 border-[#050505] shadow-[8px_8px_0px_#050505] transform -rotate-2 hover:rotate-0 transition-transform duration-300">
+              <h3 className="font-black text-xl uppercase tracking-widest mb-4 border-b-2 border-black/10 pb-2">Duration</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[60, 180, 300, 600].map((time) => (
+                  <button
+                    key={time}
+                    onClick={() => setSelectedDuration(time)}
+                    className={`py-4 px-6 font-black tracking-tighter text-2xl transition-all border-2 ${
+                      selectedDuration === time 
+                        ? 'bg-[#050505] text-[#E0FF00] border-[#050505]' 
+                        : 'bg-transparent text-[#050505] border-[#050505] hover:bg-black/5'
+                    }`}
+                  >
+                    {time / 60}<span className="text-sm">M</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button 
+              onClick={handleStart}
+              className="group relative w-full py-6 bg-[#FF4B00] border-4 border-[#050505] text-white font-black text-3xl uppercase tracking-tighter transition-all hover:bg-[#E0FF00] hover:text-[#050505] shadow-[8px_8px_0px_#050505] hover:shadow-[4px_4px_0px_#050505] hover:translate-x-1 hover:translate-y-1 overflow-hidden"
+            >
+              <div className="relative z-10 flex items-center justify-center gap-4">
+                Initialize <Play className="w-8 h-8 fill-current group-hover:scale-125 transition-transform" />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* CSS Animations */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes marqueeLeft { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+          @keyframes marqueeRight { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
+          .animate-marquee-left { animation: marqueeLeft 30s linear infinite; }
+          .animate-marquee-right { animation: marqueeRight 30s linear infinite; }
+        `}} />
+      </div>
+    );
+  }
+
+  // ==========================================
+  // VIEW: ACTIVE WORKOUT SCREEN
+  // ==========================================
+  return (
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-hidden relative ${theme.bg}`}>
+      
+      {/* Background Shockwave Effect on Prompt */}
+      {currentPrompt && silenceLeft === 0 && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] rounded-full border-[20vw] opacity-0 animate-shockwave pointer-events-none mix-blend-overlay" style={{ borderColor: 'white' }}></div>
+      )}
+      
+      {/* Noise Grain */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.08] mix-blend-multiply z-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
+
+      {/* --- TOP HUD --- */}
+      <header className="relative z-10 p-4 sm:p-8 flex justify-between items-start">
+        <div className="flex items-center gap-3">
+          <button onClick={handleStop} className={`p-4 border-2 rounded-full transition-all hover:scale-90 ${theme.text} border-current`}>
+            <Square className="w-6 h-6 fill-current" />
+          </button>
+          <button onClick={() => setIsPaused(!isPaused)} className={`p-4 border-2 rounded-full transition-all hover:scale-90 ${theme.text} border-current ${isPaused ? 'bg-current text-black' : ''}`}>
+            {isPaused ? <Play className="w-6 h-6 fill-current" /> : <Pause className="w-6 h-6 fill-current" />}
+          </button>
+        </div>
+        
+        <div className={`flex flex-col items-end ${theme.text}`}>
+          <div className="text-5xl sm:text-7xl font-black font-mono tracking-tighter leading-none mb-2">
+            {formatTime(timeLeft)}
+          </div>
+          <div className="flex items-center gap-2 font-black uppercase tracking-[0.2em] text-sm opacity-80 bg-black/10 px-3 py-1 rounded-full">
+            <Flame className="w-4 h-4" /> Streak x{streak}
+          </div>
+        </div>
+      </header>
+
+      {/* --- MAIN CENTER STAGE --- */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 w-full max-w-6xl mx-auto">
+        
+        {silenceLeft > 0 ? (
+          <div className="flex flex-col items-center text-center animate-glitch">
+            <VolumeX className={`w-24 h-24 mb-6 animate-pulse ${theme.text}`} />
+            <h2 className={`text-[18vw] sm:text-[12rem] font-black tracking-tighter leading-none uppercase ${theme.text}`}>
+              MUTE.
+            </h2>
+            <div className={`text-[12vw] sm:text-[8rem] font-black font-mono mt-[-2vw] ${theme.text} opacity-50`}>
+              {silenceLeft}
+            </div>
+          </div>
+        ) : currentPrompt ? (
+          <div className="flex flex-col items-center text-center w-full animate-pop-in">
+            <div className={`inline-flex items-center gap-3 px-6 py-2 border-2 rounded-full mb-8 sm:mb-12 font-black uppercase tracking-[0.3em] text-sm sm:text-lg ${theme.text} border-current`}>
+              <Zap className="w-5 h-5 animate-pulse" /> {theme.label}
+            </div>
+            
+            <h2 className={`text-[15vw] sm:text-[9rem] font-black tracking-tighter leading-[0.85] uppercase w-full break-words break-all sm:break-normal ${theme.text} drop-shadow-2xl`} style={{ wordSpacing: '-0.1em' }}>
+              {currentPrompt.value}
+            </h2>
+          </div>
+        ) : (
+          <div className="relative flex items-center justify-center w-[60vw] h-[60vw] max-w-[400px] max-h-[400px]">
+            {/* Outer Ring */}
+            <div className={`absolute inset-0 rounded-full border-[2px] border-dashed animate-spin-slow ${theme.text} border-current opacity-30`}></div>
+            {/* Middle Ring */}
+            <div className={`absolute inset-[10%] rounded-full border-[4px] border-dotted animate-spin-slow-reverse ${theme.text} border-current opacity-50`}></div>
+            {/* Inner Core */}
+            <div className={`absolute inset-[25%] rounded-full border-[1vw] animate-pulse-slow flex items-center justify-center ${theme.text} border-current shadow-[0_0_50px_currentColor]`}>
+              <h2 className="text-3xl sm:text-5xl font-black tracking-widest uppercase bg-[#00051A] px-4 rounded-full">FLOW</h2>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Pause Overlay */}
+      {isPaused && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-lg">
+          <h2 className="text-[20vw] font-black text-white tracking-tighter uppercase animate-pulse drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">PAUSED</h2>
+        </div>
+      )}
+
+      {/* --- BOTTOM DASHBOARD --- */}
+      <footer className="relative z-10 p-4 sm:p-8 mt-auto">
+        
+        {/* Dynamic Timer Bar */}
+        <div className="w-full mb-8 relative">
+           <div className={`absolute -top-6 right-0 font-black font-mono text-sm tracking-widest uppercase opacity-60 ${theme.text}`}>
+             {cooldown > 0 ? 'Survive Cooldown' : 'Next Injection'} : {cooldown > 0 ? cooldown : timeToNextEvent}S
+           </div>
+           <div className={`w-full h-4 rounded-none overflow-hidden border-2 ${theme.text} border-current bg-transparent`}>
+             <div 
+                className={`h-full transition-all duration-1000 ease-linear ${silenceLeft > 0 ? 'bg-[#FF003C]' : (currentPrompt ? 'bg-current' : 'bg-current opacity-20')}`}
+                style={{ width: cooldown > 0 ? `${(cooldown / 20) * 100}%` : '100%' }}
+             />
+           </div>
+        </div>
+
+        {/* Prototype Controls (Brutalist style) */}
+        <div className={`p-4 sm:p-6 border-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-[8px_8px_0px_rgba(0,0,0,1)] transition-colors duration-500 ${silenceLeft > 0 ? 'bg-white border-[#FF003C] shadow-[8px_8px_0px_#FF003C] text-black' : `bg-transparent backdrop-blur-md border-current shadow-[8px_8px_0px_currentColor] ${theme.text}`}`}>
+          <div className="flex items-center gap-2 font-black uppercase tracking-[0.2em] text-current">
+            <Eye className="w-5 h-5" /> Manual Injection
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 w-full md:w-auto">
+            <button onClick={() => forceEvent('OBJECT')} className="py-3 px-6 bg-[#FF4B00] text-white font-black uppercase tracking-widest text-xs hover:bg-black transition-colors">
+              Object
+            </button>
+            <button onClick={() => forceEvent('EMOTION')} className="py-3 px-6 bg-[#7A00FF] text-[#E0FF00] font-black uppercase tracking-widest text-xs hover:bg-black hover:text-white transition-colors">
+              Emotion
+            </button>
+            <button onClick={() => forceEvent('CONSTRAINT')} className="py-3 px-6 bg-[#00FF66] text-black font-black uppercase tracking-widest text-xs hover:bg-black hover:text-[#00FF66] transition-colors">
+              Constraint
+            </button>
+            <button onClick={() => forceEvent('SILENCE')} className="py-3 px-6 bg-[#FF003C] text-white font-black uppercase tracking-widest text-xs hover:bg-black transition-colors">
+              Silence
+            </button>
+          </div>
+        </div>
+      </footer>
+
+      {/* Global & Animation Styles */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes shockwave {
+          0% { transform: translate(-50%, -50%) scale(0); opacity: 0.8; }
+          100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+        .animate-shockwave { animation: shockwave 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        
+        @keyframes popIn {
+          0% { transform: scale(0.9) translateY(20px); opacity: 0; filter: blur(10px); }
+          100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0px); }
+        }
+        .animate-pop-in { animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        
+        @keyframes glitch {
+          0% { transform: translate(0) }
+          20% { transform: translate(-2px, 2px) }
+          40% { transform: translate(-2px, -2px) }
+          60% { transform: translate(2px, 2px) }
+          80% { transform: translate(2px, -2px) }
+          100% { transform: translate(0) }
+        }
+        .animate-glitch { animation: glitch 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite; }
+
+        @keyframes spinSlow { 100% { transform: rotate(360deg); } }
+        @keyframes spinSlowReverse { 100% { transform: rotate(-360deg); } }
+        .animate-spin-slow { animation: spinSlow 12s linear infinite; }
+        .animate-spin-slow-reverse { animation: spinSlowReverse 12s linear infinite; }
+        
+        .animate-pulse-slow { animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      `}} />
+    </div>
+  );
+}

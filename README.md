@@ -1,127 +1,79 @@
-# Voice Growth Archipelago
+# Voice Growth Archipelago Mobile Repository
 
-<p align="center">
-  <img src="docs/hero.svg" alt="Voice Growth Archipelago hero" width="900" />
-</p>
+This repository is now organized around the Flutter Android app in `mobile_app/`.
 
-Habits as islands. Progress as a map.
+The active product is the mobile app. Older web-era work is preserved in `archive/legacy-web/` so the root stays focused on the pieces you need for building, releasing, and maintaining the app.
 
-This is a single-file web app (`index.html`) for tracking daily routines and skill categories, with **reliable cross-device sync** via **Google Sheets + Apps Script**. It’s designed to feel lightweight (open in any browser), while still giving you “real product” features like archive-safe habit lifecycle, a Google-style activity calendar, and consistent analytics windows.
+## Active Folders
 
-<p align="center">
-  <img src="docs/architecture.svg" alt="Architecture diagram" width="900" />
-</p>
+- `mobile_app/` - Flutter app source, tests, Android project, and app assets
+- `scripts/` - helper scripts for release builds and Supabase configuration
+- `supabase/` - database migrations, edge function, and Supabase project config
+- `hosting/` - public legal pages used for privacy and delete-account support
+- `releases/android/` - place to store dated APK/AAB releases and release notes
 
-## Table of contents
+## Archived Material
 
-- [What it is](#what-it-is)
-- [Key features](#key-features)
-- [How it works](#how-it-works)
-- [Quick start](#quick-start)
-- [Deploy to your site](#deploy-to-your-site)
-- [Troubleshooting](#troubleshooting)
-- [Credits](#credits)
+`archive/legacy-web/` contains older work that is not part of the current mobile build path, including:
 
-## What it is
+- the original single-file web app
+- Google Apps Script sync notes
+- old architecture docs and implementation notes
+- Firebase/Firestore-era migration files
+- the experimental `version2_meditation` prototype
 
-- A habit tracker you can host anywhere (GitHub Pages, Netlify, your own domain).
-- A consistent “source of truth” setup where Google Sheets stores:
-  - Habit definitions (name, schedule, category, colors, lifecycle status)
-  - Completion history (events over time)
-- A Progress section that supports `7/30/90` presets and a custom range across all charts.
+See `archive/legacy-web/README.md` for details.
 
-## Key features
+## Build The Mobile App
 
-### Today
-- Island-based habit tracking with one-tap complete/uncomplete.
-- Undo toast for quick recovery from accidental taps.
-- Day scopes:
-  - `Standard Day`: all active due habits.
-  - `Lite Day`: only core due habits.
-- Constellation celebration when all core due habits are completed.
+The signed Android release flow uses:
 
-### Progress
-- Preset windows: `7`, `30`, `90` days, plus `Custom`.
-- Scope filter: `All Habits` vs `Core Habits` and optional `Include archived`.
-- Activity Calendar (Google-style date-in-cell blocks):
-  - All-habits intensity mode with daily completion count badges
-  - Single-habit done/missed/not-due mode
-  - Monday-first week layout and 3-letter weekday labels (`Mon Tue ...`)
-  - Month paging for long ranges
+- `scripts/build_mobile_release.sh`
+- `mobile_app/android/key.properties`
+- `mobile_app/android/app/upload-keystore.jks`
+- `supabase_cred.env`
 
-<p align="center">
-  <img src="docs/calendar-example.svg" alt="Calendar example" width="900" />
-</p>
+The script reads Supabase values from `supabase_cred.env` and builds:
 
-### Categories (skills)
-- One category per habit, fully user-controlled from Add/Edit Habit.
-- Analytics aggregate dynamically from the categories you actually use (no hardcoded “Mindfulness/Discipline/Learning”).
+- `mobile_app/build/app/outputs/flutter-apk/app-release.apk`
+- `mobile_app/build/app/outputs/bundle/release/app-release.aab`
 
-### Habit Lifecycle
-- Add/edit habits with frequency, days, category, and color.
-- Remove is two-step and safe:
-  - Archive habit (default)
-  - Delete permanently
-- Re-adding a habit with the same name as an archived one offers restore.
-- Archived history is preserved and can be included in analytics.
+Before running it, keep your signing files local and make sure Flutter, Java 17, and your Android toolchain are available.
 
-### Sync (cross-device)
-- Google Sheets is the authoritative store for habit definitions and completion history.
-- The app loads a cloud snapshot on startup and refreshes on tab focus.
-- Optional `?uid=<your-id>` isolates data per user (defaults to a shared personal id).
-- LocalStorage remains a fallback for transient network failures.
+## Backend And Support
 
-## How it works
+The mobile app still depends on support files outside `mobile_app/`:
 
-- **Frontend**: `index.html` renders Today + Progress, and stores local UI state.
-- **Backend**: Apps Script exposes a simple web endpoint that reads/writes JSON into your Google Sheet.
-- **Conflict policy**: “latest editor wins” when two devices edit close together (simple and reliable for personal use).
+- `supabase/` for auth/database configuration and migrations
+- `scripts/configure_supabase.sh` for linking and deploying backend changes
+- `hosting/public/privacy.html` and `hosting/public/delete-account.html` for public legal/account-deletion pages
 
-For the exact script contract and deployment steps, see `GOOGLE_APPS_SCRIPT_V2.md`.
+## Release History Workflow
 
-## Data model notes
+Use two layers for version history:
 
-Each habit task now supports lifecycle fields:
-- `status`: `active | archived | deleted`
-- `createdAt`, `archivedAt`, `deletedAt`
+1. Create a git tag for each source release, for example `mobile-v1.0.0`.
+2. Save the built APK/AAB under `releases/android/<version-or-date>/`.
 
-Backward compatibility is preserved:
-- Missing status defaults to `active`.
-- Missing category defaults to `Uncategorized`.
+Suggested release folder contents:
 
-## Quick start
+```text
+releases/android/mobile-v1.0.0/
+  RELEASE.md
+  app-release.apk
+  app-release.aab
+```
 
-1. Deploy the Apps Script web app (see `GOOGLE_APPS_SCRIPT_V2.md`).
-2. Set `GOOGLE_SCRIPT_URL` in `index.html` to your deployed endpoint.
-3. Open `index.html` in a browser.
+`RELEASE.md` should record:
 
-Verify the backend quickly:
-- Open `.../exec?action=loadAll&userId=habit-app-primary-user`
-- Expect JSON containing `tasks` and `taskHistory`.
+- version name
+- git tag
+- build date
+- important notes
+- artifact names
 
-## Deploy to your site
+## Safety Notes
 
-- Any static hosting works since this is a single HTML file.
-- Recommended: GitHub Pages (simple), Netlify (fast), or your own domain (drop-in file).
-- After deploying, open the same URL on phone + desktop and edits should sync after reload/focus.
-
-## File structure
-
-- `index.html` — Main app (UI + state + rendering + task lifecycle).
-- `GOOGLE_APPS_SCRIPT_V2.md` — Backend script contract for tasks/completions sync.
-
-## Troubleshooting
-
-- Data mismatch across devices:
-  - Verify same `uid` is used.
-  - Verify the same Apps Script deployment URL is configured.
-- Custom date not updating charts:
-  - Ensure `From <= To` and end date is not in the future.
-- Habit missing after removal:
-  - Check if it was archived (toggle `Include archived` in Progress).
-
-## Credits
-
-- Icons: [Heroicons](https://heroicons.com/)
-- Charts: [Chart.js](https://www.chartjs.org/)
-- CSS: [Tailwind CSS](https://tailwindcss.com/)
+- Local secrets and signing files should remain untracked.
+- Generated folders such as `mobile_app/build/`, `mobile_app/.dart_tool/`, and `supabase/.temp/` can be recreated and should not be treated as source.
+- A safety tag named `pre-restructure-2026-03-22` was created before this cleanup, and patch backups of uncommitted work were saved in `/tmp/habit_app_safety`.

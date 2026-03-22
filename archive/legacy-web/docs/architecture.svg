@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-label="Architecture diagram: browser to Apps Script to Google Sheets">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#151f38"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#24355f" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#1a2748" stop-opacity="0.95"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c6d3ff"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="420" fill="url(#bg)"/>
+
+  <!-- Cards -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">
+    <rect x="70" y="110" width="300" height="200" rx="18" fill="url(#card)" stroke="#2b3c6b" />
+    <text x="104" y="160" font-size="20" font-weight="700" fill="#eaf0ff">Browser</text>
+    <text x="104" y="190" font-size="14" fill="#c6d3ff">`index.html`</text>
+    <text x="104" y="218" font-size="14" fill="#c6d3ff">- Habits + categories</text>
+    <text x="104" y="242" font-size="14" fill="#c6d3ff">- Completion history</text>
+    <text x="104" y="266" font-size="14" fill="#c6d3ff">- Analytics + calendar</text>
+
+    <rect x="450" y="110" width="300" height="200" rx="18" fill="url(#card)" stroke="#2b3c6b" />
+    <text x="484" y="160" font-size="20" font-weight="700" fill="#eaf0ff">Apps Script V2</text>
+    <text x="484" y="190" font-size="14" fill="#c6d3ff">Web App Endpoint</text>
+    <text x="484" y="218" font-size="14" fill="#c6d3ff">- `loadAll` snapshot</text>
+    <text x="484" y="242" font-size="14" fill="#c6d3ff">- `saveTasks` upserts</text>
+    <text x="484" y="266" font-size="14" fill="#c6d3ff">- `taskHistory` events</text>
+
+    <rect x="830" y="110" width="300" height="200" rx="18" fill="url(#card)" stroke="#2b3c6b" />
+    <text x="864" y="160" font-size="20" font-weight="700" fill="#eaf0ff">Google Sheet</text>
+    <text x="864" y="190" font-size="14" fill="#c6d3ff">Single source of truth</text>
+    <text x="864" y="218" font-size="14" fill="#c6d3ff">- Tasks JSON</text>
+    <text x="864" y="242" font-size="14" fill="#c6d3ff">- History log</text>
+    <text x="864" y="266" font-size="14" fill="#c6d3ff">- Multi-device sync</text>
+  </g>
+
+  <!-- Arrows -->
+  <path d="M370 210 L450 210" stroke="#c6d3ff" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M750 210 L830 210" stroke="#c6d3ff" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- Labels -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="13" fill="#c6d3ff">
+    <text x="382" y="195">GET/POST</text>
+    <text x="758" y="195">Read/Write</text>
+  </g>
+
+  <!-- Footer -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="14" fill="#c6d3ff">
+    <text x="70" y="360">Sync rule: cloud snapshot wins when non-empty; first editor seeds when empty.</text>
+  </g>
+</svg>
+

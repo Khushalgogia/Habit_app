@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:voice_growth_archipelago/src/core/utils/date_utils.dart';
@@ -49,6 +51,7 @@ void main() {
         user: user,
         repository: repository,
         cache: _MemorySnapshotCacheStore(),
+        mutationQueue: _MemoryMutationQueueStore(),
         themeMode: StateController<AppThemeMode>(AppThemeMode.dark),
       );
 
@@ -98,6 +101,7 @@ void main() {
         user: user,
         repository: _FakeAppRepository(snapshot),
         cache: _MemorySnapshotCacheStore(),
+        mutationQueue: _MemoryMutationQueueStore(),
         themeMode: StateController<AppThemeMode>(AppThemeMode.dark),
       );
 
@@ -111,6 +115,97 @@ void main() {
       expect(result.status, HabitMutationStatus.validationError);
       expect(result.message, 'At least one active habit is required.');
       expect(controller.state.snapshot!.habits.single.isActive, isTrue);
+    });
+  });
+
+  group('Offline reliability', () {
+    test('keeps cached snapshot when bootstrap hits a network error', () async {
+      final AppUser user = const AppUser(
+        uid: 'u1',
+        displayName: 'User',
+        email: 'user@example.com',
+      );
+      final AppSnapshot cached = AppSnapshot.seed(
+        user: user,
+        habits: starterArchipelago(),
+      ).copyWith(
+        profile: AppSnapshot.seed(user: user).profile.copyWith(
+              onboardingState: OnboardingState.completed,
+            ),
+      );
+      final _MemorySnapshotCacheStore cache = _MemorySnapshotCacheStore()
+        ..stored = cached;
+      final _FakeAppRepository repository = _FakeAppRepository(cached)
+        ..failBootstrapWithNetwork = true;
+      final AppController controller = AppController(
+        user: user,
+        repository: repository,
+        cache: cache,
+        mutationQueue: _MemoryMutationQueueStore(),
+        themeMode: StateController<AppThemeMode>(AppThemeMode.dark),
+      );
+
+      await controller.bootstrap();
+
+      expect(controller.state.snapshot, isNotNull);
+      expect(controller.state.syncStatus, AppSyncStatus.offlineUsingCache);
+      expect(controller.state.error, isNull);
+    });
+
+    test('queues completion changes offline and syncs them later', () async {
+      final AppUser user = const AppUser(
+        uid: 'u1',
+        displayName: 'User',
+        email: 'user@example.com',
+      );
+      final Habit habit = starterArchipelago().first;
+      final AppSnapshot snapshot = AppSnapshot(
+        profile: AppSnapshot.seed(user: user).profile.copyWith(
+              onboardingState: OnboardingState.completed,
+            ),
+        habits: <Habit>[habit],
+        dailyLogs: const <String, DailyLog>{},
+      );
+      final _FakeAppRepository repository = _FakeAppRepository(snapshot)
+        ..failToggleWithNetwork = true;
+      final _MemoryMutationQueueStore mutationQueue =
+          _MemoryMutationQueueStore();
+      final AppController controller = AppController(
+        user: user,
+        repository: repository,
+        cache: _MemorySnapshotCacheStore(),
+        mutationQueue: mutationQueue,
+        themeMode: StateController<AppThemeMode>(AppThemeMode.dark),
+      );
+
+      await controller.bootstrap();
+      final DateTime today = startOfDay(DateTime.now());
+
+      final CompletionMutationResult result = await controller.toggleCompletion(
+        habit: habit,
+        day: today,
+        completed: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(controller.state.pendingMutationCount, 1);
+      expect(controller.state.syncStatus, AppSyncStatus.offlineUsingCache);
+      expect(
+        controller
+            .state.snapshot!.dailyLogs[formatDateKey(today)]!.completedHabitIds,
+        contains(habit.id),
+      );
+
+      repository.failToggleWithNetwork = false;
+      await controller.retryPendingSync();
+
+      expect(controller.state.pendingMutationCount, 0);
+      expect(controller.state.syncStatus, AppSyncStatus.idle);
+      expect(mutationQueue.stored, isEmpty);
+      expect(
+          repository
+              .snapshot.dailyLogs[formatDateKey(today)]!.completedHabitIds,
+          contains(habit.id));
     });
   });
 
@@ -208,6 +303,10 @@ class _FakeAppRepository implements AppRepository {
   _FakeAppRepository(this.snapshot);
 
   AppSnapshot snapshot;
+  bool failBootstrapWithNetwork = false;
+  bool failSaveHabitWithNetwork = false;
+  bool failToggleWithNetwork = false;
+  bool failThemeWithNetwork = false;
 
   @override
   Future<void> completeOnboarding(
@@ -231,11 +330,17 @@ class _FakeAppRepository implements AppRepository {
     required AppUser user,
     int windowDays = 120,
   }) async {
+    if (failBootstrapWithNetwork) {
+      throw const SocketException('Failed host lookup');
+    }
     return snapshot;
   }
 
   @override
   Future<void> saveHabit(String uid, Habit habit) async {
+    if (failSaveHabitWithNetwork) {
+      throw const SocketException('Failed host lookup');
+    }
     final List<Habit> habits = <Habit>[...snapshot.habits];
     final int index = habits.indexWhere((Habit item) => item.id == habit.id);
     if (index == -1) {
@@ -248,6 +353,9 @@ class _FakeAppRepository implements AppRepository {
 
   @override
   Future<void> saveThemeMode(String uid, AppThemeMode themeMode) async {
+    if (failThemeWithNetwork) {
+      throw const SocketException('Failed host lookup');
+    }
     snapshot = snapshot.copyWith(
       profile: snapshot.profile.copyWith(themeMode: themeMode),
     );
@@ -260,6 +368,9 @@ class _FakeAppRepository implements AppRepository {
     required DateTime day,
     required bool completed,
   }) async {
+    if (failToggleWithNetwork) {
+      throw const SocketException('Failed host lookup');
+    }
     final String dateKey = formatDateKey(day);
     final DailyLog existing = snapshot.dailyLogs[dateKey] ??
         DailyLog(
@@ -305,5 +416,24 @@ class _MemorySnapshotCacheStore implements SnapshotCache {
   @override
   Future<void> write(String uid, AppSnapshot snapshot) async {
     stored = snapshot;
+  }
+}
+
+class _MemoryMutationQueueStore implements MutationQueueStore {
+  List<PendingMutation> stored = <PendingMutation>[];
+
+  @override
+  Future<void> clear(String uid) async {
+    stored = <PendingMutation>[];
+  }
+
+  @override
+  Future<List<PendingMutation>> read(String uid) async {
+    return List<PendingMutation>.from(stored);
+  }
+
+  @override
+  Future<void> write(String uid, List<PendingMutation> mutations) async {
+    stored = List<PendingMutation>.from(mutations);
   }
 }
