@@ -224,6 +224,7 @@ class _NavHarnessState extends State<_NavHarness> {
         child: HomeBottomNavigationBar(
           selectedIndex: _selectedIndex,
           isBreatheTab: _selectedIndex == 1,
+          isStoryTab: _selectedIndex == 2,
           breathePalette: defaultAuraShellPalette,
           onDestinationSelected: (int index) {
             setState(() => _selectedIndex = index);

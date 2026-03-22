@@ -1,0 +1,12 @@
+[
+  {"name": "Extreme Excitement", "vocalCue": "Fast pacing, high pitch, breathless, smiling"},
+  {"name": "Suppressed Anger", "vocalCue": "Slow, tight jaw, gritted teeth, heavy pauses"},
+  {"name": "Sudden Panic", "vocalCue": "Erratic breathing, rushing words, darting eyes"},
+  {"name": "Deep Sadness", "vocalCue": "Low pitch, slow pacing, looking down, sighing"},
+  {"name": "Deep Suspicion / Doubt", "vocalCue": "Narrowed eyes, questioning tone, drawn-out words"},
+  {"name": "Arrogant / Prideful", "vocalCue": "Chin up, loud, clear, dismissive tone"},
+  {"name": "Calm and Peaceful", "vocalCue": "Very slow, smooth, relaxed shoulders, gentle tone"},
+  {"name": "Nostalgic / Missing Someone", "vocalCue": "Soft voice, looking into the distance, slight smile"},
+  {"name": "Desperate Guilt / Pleading", "vocalCue": "Shaky voice, fast explanations, eye contact"},
+  {"name": "Absolute Awe / Wonder", "vocalCue": "Whispering, wide eyes, long pauses"}
+]
