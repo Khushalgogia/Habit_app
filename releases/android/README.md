@@ -5,30 +5,36 @@ Store built Android release artifacts here so older app versions are easy to fin
 ## Suggested Layout
 
 ```text
-releases/android/mobile-v1.0.0/
+releases/android/mobile-v2.1.1-build4/
   RELEASE.md
-  app-release.apk
-  app-release.aab
+  voice-growth-archipelago-v2.1.1-build4.apk
+  voice-growth-archipelago-v2.1.1-build4.aab
+  screenshots/
 ```
 
 ## RELEASE.md Template
 
 ```md
-# mobile-v1.0.0
+# mobile-v2.1.1-build4
 
-- Tag: `mobile-v1.0.0`
 - Build date: `YYYY-MM-DD`
-- Commit: `<git-sha>`
-- Notes: short release summary
+- Source base commit: `<git-sha>`
+- App version: `2.1.1`
+- Build number: `4`
+- Installed release label: `2.1.1 (4)`
 - Artifacts:
-  - `app-release.apk`
-  - `app-release.aab`
+  - `voice-growth-archipelago-v2.1.1-build4.apk`
+  - `voice-growth-archipelago-v2.1.1-build4.aab`
+- SHA-256:
+  - `voice-growth-archipelago-v2.1.1-build4.apk`: `<sha256>`
+  - `voice-growth-archipelago-v2.1.1-build4.aab`: `<sha256>`
 ```
 
 ## Workflow
 
 1. Build the app with `scripts/build_mobile_release.sh`.
-2. Create a git tag for the release.
-3. Create a versioned folder here.
-4. Copy the APK/AAB into that folder.
-5. Add a `RELEASE.md` file with the tag, date, commit, and notes.
+2. The script reads the version from `mobile_app/pubspec.yaml`.
+3. It creates a versioned release folder here automatically.
+4. It copies the APK/AAB using human-readable versioned filenames.
+5. It writes `RELEASE.md` with version, build number, commit, and SHA-256 checksums.
+6. Optionally add screenshots or notes inside the release folder for visual proof.

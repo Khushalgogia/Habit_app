@@ -11,6 +11,9 @@ void main() {
   testWidgets('Breathe screen opens detail and starts a session', (
     WidgetTester tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     final _FakePreferencesStore preferencesStore = _FakePreferencesStore();
     final _FakeAudioService audioService = _FakeAudioService();
 
@@ -40,11 +43,11 @@ void main() {
     await tester.pump();
     expect(find.text('8 Breaths/Min'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('3m'));
-    await tester.tap(find.text('3m'));
+    await tester.tap(find.text('3 min'));
     await tester.pump();
     expect(find.text('3 minutes'), findsOneWidget);
 
+    expect(tester.getBottomRight(find.text('Begin Journey')).dy, lessThan(844));
     await tester.tap(find.text('Begin Journey'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
@@ -152,7 +155,6 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    await tester.ensureVisible(find.text('New Preset'));
     await tester.tap(find.text('New Preset'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
@@ -177,8 +179,7 @@ void main() {
 
     expect(find.text('Reset'), findsWidgets);
 
-    await tester.ensureVisible(find.text('30m'));
-    await tester.tap(find.text('30m'));
+    await tester.tap(find.text('30 min'));
     await tester.pump();
 
     expect(find.text('30 minutes'), findsOneWidget);
@@ -223,9 +224,9 @@ class _NavHarnessState extends State<_NavHarness> {
         alignment: Alignment.bottomCenter,
         child: HomeBottomNavigationBar(
           selectedIndex: _selectedIndex,
-          isBreatheTab: _selectedIndex == 1,
-          isStoryTab: _selectedIndex == 2,
-          breathePalette: defaultAuraShellPalette,
+          isAuraTab: _selectedIndex == 1 || _selectedIndex == 2,
+          isStoryTab: _selectedIndex == 3,
+          auraPalette: defaultAuraShellPalette,
           onDestinationSelected: (int index) {
             setState(() => _selectedIndex = index);
           },

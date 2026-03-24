@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>NeuroStory</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+/* ───────────────────────────────────────────────────────────────
+   RESET & BASE
+   ─────────────────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Space Mono', monospace;
+  -webkit-font-smoothing: antialiased;
+  background: #E0FF00;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   SCREENS
+   ─────────────────────────────────────────────────────────────── */
+.screen { display: none; width: 100%; height: 100%; position: relative; overflow: hidden; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ───────────────────────────────────────────────────────────────
+   FILM GRAIN OVERLAY
+   ─────────────────────────────────────────────────────────────── */
+.film-grain {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 100;
+  opacity: 0.08;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   SETUP SCREEN
+   ─────────────────────────────────────────────────────────────── */
+#setup-screen { background: #E0FF00; }
+
+/* Marquee background */
+.marquee-container {
+  position: absolute; inset: 0;
+  overflow: hidden; pointer-events: none;
+  opacity: 0.03; z-index: 0;
+}
+.marquee-row {
+  white-space: nowrap;
+  font-size: 48px; font-weight: 700;
+  color: #050505;
+  line-height: 1.2;
+  will-change: transform;
+}
+.marquee-row.left  { animation: marquee-left  30s linear infinite; }
+.marquee-row.right { animation: marquee-right 30s linear infinite; }
+@keyframes marquee-left  { 0% { transform: translateX(0); }    100% { transform: translateX(-50%); } }
+@keyframes marquee-right { 0% { transform: translateX(-50%); } 100% { transform: translateX(0); } }
+
+/* Setup content */
+.setup-content {
+  position: relative; z-index: 1;
+  flex: 1; display: flex; flex-direction: column;
+  padding: 32px 24px;
+  max-width: 480px; margin: 0 auto; width: 100%;
+  overflow-y: auto;
+}
+
+/* System badge */
+.system-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #fff; border: 2px solid #050505;
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 3px; color: #050505;
+  box-shadow: 4px 4px 0 #050505;
+  align-self: flex-start;
+  margin-bottom: 24px;
+}
+.system-badge svg { width: 14px; height: 14px; }
+
+/* Title */
+.setup-title { margin-bottom: 20px; }
+.setup-title .line1 {
+  display: block;
+  font-size: 72px; font-weight: 700;
+  line-height: 0.85; color: #050505;
+}
+.setup-title .line2 {
+  display: block; position: relative;
+  font-size: 72px; font-weight: 700;
+  line-height: 0.85;
+}
+.setup-title .line2 .stroke {
+  -webkit-text-stroke: 3px #050505;
+  color: transparent;
+  position: absolute; left: 0; top: 0;
+}
+.setup-title .line2 .fill {
+  color: #fff;
+  position: relative;
+}
+
+/* Subtitle */
+.setup-subtitle {
+  border-left: 4px solid #FF4B00;
+  padding-left: 16px;
+  font-size: 16px; font-weight: 700;
+  line-height: 1.5; color: #050505;
+  margin-bottom: 28px;
+}
+
+/* Duration card */
+.duration-card {
+  background: #fff;
+  border: 4px solid #050505;
+  box-shadow: 8px 8px 0 #050505;
+  padding: 20px;
+  transform: rotate(-2deg);
+  margin-bottom: 28px;
+}
+.duration-card-header {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 6px; color: #050505;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #050505;
+  margin-bottom: 16px;
+}
+.duration-buttons {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  justify-content: center;
+}
+.dur-btn {
+  width: 72px; height: 48px;
+  border: 2px solid #050505;
+  background: transparent;
+  font-family: 'Space Mono', monospace;
+  font-size: 22px; font-weight: 700;
+  color: #050505;
+  cursor: pointer;
+  display: flex; align-items: baseline;
+  justify-content: center; gap: 1px;
+  transition: background 0.15s, color 0.15s;
+}
+.dur-btn .unit { font-size: 11px; font-weight: 700; }
+.dur-btn.selected {
+  background: #050505;
+  color: #E0FF00;
+}
+
+/* Initialize button */
+.init-btn {
+  width: 100%;
+  padding: 24px;
+  background: #FF4B00;
+  border: 4px solid #050505;
+  box-shadow: 8px 8px 0 #050505;
+  font-family: 'Space Mono', monospace;
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -1px;
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center;
+  justify-content: center; gap: 12px;
+  transition: opacity 0.2s;
+}
+.init-btn svg { width: 36px; height: 36px; }
+.init-btn:active { transform: translate(2px, 2px); box-shadow: 6px 6px 0 #050505; }
+
+/* ───────────────────────────────────────────────────────────────
+   ACTIVE SESSION SCREEN
+   ─────────────────────────────────────────────────────────────── */
+#active-screen {
+  transition: background-color 0.4s ease;
+}
+
+/* Top HUD */
+.top-hud {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 16px 16px 0;
+  z-index: 10;
+}
+.hud-left { display: flex; gap: 12px; }
+.hud-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.hud-btn svg { width: 22px; height: 22px; }
+.hud-btn.filled { background: currentColor; }
+.hud-btn.filled svg { color: #050505; }
+.hud-right { text-align: right; }
+.timer-display {
+  font-size: 48px; font-weight: 700;
+  line-height: 1;
+  transition: color 0.4s;
+}
+.streak-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-size: 11px; font-weight: 900;
+  letter-spacing: 2px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+.streak-badge svg { width: 14px; height: 14px; }
+
+/* Center stage */
+.center-stage {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  z-index: 5;
+  overflow: hidden;
+}
+
+/* Flow display */
+.flow-display {
+  position: relative;
+  width: 260px; height: 260px;
+  display: flex; align-items: center; justify-content: center;
+}
+.flow-display.hidden { display: none; }
+
+.flow-outer-ring {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0.3;
+  animation: rotate 12s linear infinite;
+}
+@keyframes rotate { to { transform: rotate(360deg); } }
+
+.flow-dotted-ring {
+  position: absolute;
+  width: 208px; height: 208px;
+  animation: rotate-reverse 12s linear infinite;
+  opacity: 0.5;
+}
+@keyframes rotate-reverse { to { transform: rotate(-360deg); } }
+
+.flow-inner-ring {
+  position: relative;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  border: 6px solid currentColor;
+  display: flex; align-items: center; justify-content: center;
+  animation: pulse 4s ease-in-out infinite alternate;
+}
+@keyframes pulse {
+  0%   { transform: scale(0.9); }
+  100% { transform: scale(1.0); }
+}
+.flow-label {
+  font-size: 22px; font-weight: 900;
+  letter-spacing: 6px;
+  padding: 8px 16px;
+  border-radius: 100px;
+}
+
+/* Prompt display */
+.prompt-display {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 24px;
+}
+.prompt-display.visible {
+  display: flex;
+  animation: prompt-enter 600ms cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes prompt-enter {
+  0%   { opacity: 0; transform: translateY(8%) scale(0.9); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.prompt-label-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 2px solid currentColor;
+  border-radius: 100px;
+  padding: 8px 20px;
+  font-size: 11px; font-weight: 900;
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+}
+.prompt-label-badge svg { width: 18px; height: 18px; }
+
+.prompt-text {
+  font-size: 56px; font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -2px;
+  text-transform: uppercase;
+}
+
+.vocal-cue {
+  display: none;
+  margin-top: 24px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px; font-weight: 600;
+  font-style: italic;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+  max-width: 340px;
+}
+.vocal-cue.visible { display: block; }
+
+/* Silence display */
+.silence-display {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+.silence-display.visible {
+  display: flex;
+  animation: glitch 200ms steps(3) infinite;
+}
+@keyframes glitch {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-2px, 1px); }
+  50%  { transform: translate(2px, -2px); }
+  75%  { transform: translate(-1px, 2px); }
+  100% { transform: translate(1px, -1px); }
+}
+.silence-icon svg { width: 80px; height: 80px; }
+.silence-mute {
+  font-size: 80px; font-weight: 700;
+  line-height: 1;
+}
+.silence-countdown {
+  font-size: 64px; font-weight: 700;
+  line-height: 1.2;
+  opacity: 0.5;
+}
+
+/* Shockwave */
+.shockwave {
+  position: absolute;
+  width: 150vmax; height: 150vmax;
+  border-radius: 50%;
+  border: 15vw solid rgba(255,255,255,0.3);
+  pointer-events: none;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  z-index: 4;
+}
+.shockwave.fire {
+  animation: shockwave 800ms ease-out forwards;
+}
+@keyframes shockwave {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   BOTTOM DASHBOARD
+   ─────────────────────────────────────────────────────────────── */
+.bottom-dashboard {
+  padding: 0 16px 16px;
+  z-index: 10;
+}
+
+/* Timer bar */
+.timer-bar-section { margin-bottom: 12px; }
+.timer-bar-label {
+  font-size: 10px; font-weight: 900;
+  letter-spacing: 3px;
+  opacity: 0.6;
+  text-align: right;
+  margin-bottom: 6px;
+}
+.timer-bar-container {
+  height: 14px; width: 100%;
+  border: 2px solid currentColor;
+  overflow: hidden;
+}
+.timer-bar-fill {
+  height: 100%;
+  transition: width 1s linear;
+}
+
+/* Injection panel */
+.injection-panel {
+  border: 4px solid currentColor;
+  padding: 16px;
+  transition: box-shadow 0.4s, border-color 0.4s, background 0.4s;
+}
+.injection-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.injection-header svg { width: 18px; height: 18px; }
+.injection-header span {
+  font-size: 11px; font-weight: 900;
+  letter-spacing: 3px;
+}
+.injection-buttons {
+  display: flex; gap: 8px;
+}
+.inject-btn {
+  flex: 1;
+  padding: 12px 0;
+  border: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; font-weight: 900;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.inject-btn:active { opacity: 0.8; }
+.inject-btn.object  { background: #FF4B00; color: #fff; }
+.inject-btn.emotion { background: #7A00FF; color: #E0FF00; }
+.inject-btn.silence { background: #FF003C; color: #fff; }
+
+/* ───────────────────────────────────────────────────────────────
+   PAUSE OVERLAY
+   ─────────────────────────────────────────────────────────────── */
+.pause-overlay {
+  display: none;
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 200;
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+  cursor: pointer;
+}
+.pause-overlay.visible { display: flex; }
+.pause-overlay .pause-text {
+  font-size: 64px; font-weight: 700;
+  letter-spacing: -2px; color: #fff;
+}
+.pause-overlay .resume-hint {
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 6px; color: rgba(255,255,255,0.5);
+}
+
+/* ───────────────────────────────────────────────────────────────
+   RESPONSIVE
+   ─────────────────────────────────────────────────────────────── */
+@media (max-height: 680px) {
+  .prompt-text { font-size: 40px; }
+  .silence-mute { font-size: 56px; }
+  .silence-icon svg { width: 56px; height: 56px; }
+  .timer-display { font-size: 36px; }
+  .flow-display { width: 200px; height: 200px; }
+  .flow-dotted-ring { width: 160px; height: 160px; }
+  .flow-inner-ring { width: 110px; height: 110px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SETUP SCREEN
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="setup-screen" class="screen active">
+  <!-- Marquee background -->
+  <div class="marquee-container" id="marquee-container"></div>
+
+  <!-- Film grain -->
+  <canvas class="film-grain" id="grain-setup"></canvas>
+
+  <!-- Content -->
+  <div class="setup-content">
+    <!-- System badge -->
+    <div class="system-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      </svg>
+      SYSTEM V3.0
+    </div>
+
+    <!-- Title -->
+    <div class="setup-title">
+      <span class="line1">Neuro</span>
+      <span class="line2">
+        <span class="stroke">Story.</span>
+        <span class="fill">Story.</span>
+      </span>
+    </div>
+
+    <!-- Subtitle -->
+    <p class="setup-subtitle">
+      Advanced improvisational framework for executive function and verbal fluency
+    </p>
+
+    <!-- Duration card -->
+    <div class="duration-card">
+      <div class="duration-card-header">DURATION</div>
+      <div class="duration-buttons" id="duration-buttons"></div>
+    </div>
+
+    <!-- Initialize button -->
+    <button class="init-btn" id="init-btn" onclick="handleInitialize()">
+      INITIALIZE
+      <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ACTIVE SESSION SCREEN
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="active-screen" class="screen">
+  <!-- Film grain -->
+  <canvas class="film-grain" id="grain-active"></canvas>
+
+  <!-- Shockwave -->
+  <div class="shockwave" id="shockwave"></div>
+
+  <!-- Top HUD -->
+  <div class="top-hud">
+    <div class="hud-left">
+      <button class="hud-btn" id="btn-stop" onclick="handleStop()" title="Stop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="6" y="6" width="12" height="12"/>
+        </svg>
+      </button>
+      <button class="hud-btn" id="btn-pause" onclick="handlePauseToggle()" title="Pause">
+        <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+        </svg>
+        <svg id="icon-play" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+          <polygon points="5,3 19,12 5,21"/>
+        </svg>
+      </button>
+    </div>
+    <div class="hud-right">
+      <div class="timer-display" id="timer-display">5:00</div>
+      <div class="streak-badge" id="streak-badge">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 23c-3.2-2.4-8-7-8-12.6C4 5.5 7.6 2 12 2c1.8 0 3.5.6 4.8 1.7L12 12l6.4 3.2C17.2 19.3 14.4 21.6 12 23z"/></svg>
+        <span id="streak-text">STREAK x0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center stage -->
+  <div class="center-stage">
+    <!-- Flow rings -->
+    <div class="flow-display" id="flow-display">
+      <div class="flow-outer-ring"></div>
+      <svg class="flow-dotted-ring" id="dotted-ring" viewBox="0 0 208 208"></svg>
+      <div class="flow-inner-ring">
+        <div class="flow-label" id="flow-label">FLOW</div>
+      </div>
+    </div>
+
+    <!-- Prompt -->
+    <div class="prompt-display" id="prompt-display">
+      <div class="prompt-label-badge" id="prompt-badge">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span id="prompt-badge-text">INJECT OBJECT</span>
+      </div>
+      <div class="prompt-text" id="prompt-text"></div>
+      <div class="vocal-cue" id="vocal-cue"></div>
+    </div>
+
+    <!-- Silence -->
+    <div class="silence-display" id="silence-display">
+      <div class="silence-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+      </div>
+      <div class="silence-mute">MUTE.</div>
+      <div class="silence-countdown" id="silence-countdown">10</div>
+    </div>
+  </div>
+
+  <!-- Bottom dashboard -->
+  <div class="bottom-dashboard">
+    <div class="timer-bar-section">
+      <div class="timer-bar-label" id="bar-label">NEXT INJECTION : 5S</div>
+      <div class="timer-bar-container">
+        <div class="timer-bar-fill" id="bar-fill"></div>
+      </div>
+    </div>
+    <div class="injection-panel" id="injection-panel">
+      <div class="injection-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+        <span>MANUAL INJECTION</span>
+      </div>
+      <div class="injection-buttons">
+        <button class="inject-btn object" onclick="handleInject('object')">OBJECT</button>
+        <button class="inject-btn emotion" onclick="handleInject('emotion')">EMOTION</button>
+        <button class="inject-btn silence" onclick="handleInject('silence')">SILENCE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause overlay -->
+  <div class="pause-overlay" id="pause-overlay" onclick="handlePauseToggle()">
+    <div class="pause-text">PAUSED</div>
+    <div class="resume-hint">TAP TO RESUME</div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════════════════════════════ */
+const OBJECTS = [
+  "Aadhaar card","Tiffin","Bat","Chalk","₹10 note","Ticket","Register",
+  "Carrom","Dholak","ID card","Pen drive","Newspaper","Agarbatti","Cooker",
+  "Auto","PAN card","Laptop","Whiteboard","Badminton","Remote","Earphones",
+  "Chai","Doodh","Passport photos","Chappal","Fan","Notebook","Pen",
+  "Water bottle","Helmet","Metro card","Ration card"
+];
+
+const EMOTIONS = [
+  { name: "Extreme Excitement", vocalCue: "Fast pacing, high pitch, breathless, smiling" },
+  { name: "Suppressed Anger", vocalCue: "Slow, tight jaw, gritted teeth, heavy pauses" },
+  { name: "Sudden Panic", vocalCue: "Erratic breathing, rushing words, darting eyes" },
+  { name: "Deep Sadness", vocalCue: "Low pitch, slow pacing, looking down, sighing" },
+  { name: "Deep Suspicion/Doubt", vocalCue: "Narrowed eyes, questioning tone, drawn-out words" },
+  { name: "Arrogant/Prideful", vocalCue: "Chin up, loud, clear, dismissive tone" },
+  { name: "Calm and Peaceful", vocalCue: "Very slow, smooth, relaxed shoulders, gentle tone" },
+  { name: "Nostalgic/Missing Someone", vocalCue: "Soft voice, looking into distance, slight smile" },
+  { name: "Desperate Guilt/Pleading", vocalCue: "Shaky voice, fast explanations, eye contact" },
+  { name: "Absolute Awe/Wonder", vocalCue: "Whispering, wide eyes, long pauses" }
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   DURATION CONFIGS
+   ═══════════════════════════════════════════════════════════════ */
+const DURATION_OPTIONS = [60, 180, 300, 360, 480, 600];
+
+const DURATION_CONFIGS = {
+  60:  { maxPrompts: 2,  allowedTypes: ['object','emotion'],                maxSilence: 0,   baseCooldown: 15 },
+  180: { maxPrompts: 5,  allowedTypes: ['object','emotion','silence'],      maxSilence: 1,   baseCooldown: 20 },
+  300: { maxPrompts: 10, allowedTypes: ['object','emotion','silence'],      maxSilence: 999, baseCooldown: 15 },
+  360: { maxPrompts: 7,  allowedTypes: ['object','emotion','silence'],      maxSilence: 2,   baseCooldown: 18 },
+  480: { maxPrompts: 12, allowedTypes: ['object','emotion','silence'],      maxSilence: 999, baseCooldown: 15 },
+  600: { maxPrompts: 15, allowedTypes: ['object','emotion','silence'],      maxSilence: 999, baseCooldown: 15 },
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   THEMES
+   ═══════════════════════════════════════════════════════════════ */
+const THEMES = {
+  flow:    { bg: '#00051A', text: '#00E5FF', label: 'MAINTAIN FLOW' },
+  object:  { bg: '#FF4B00', text: '#FFFFFF', label: 'INJECT OBJECT' },
+  emotion: { bg: '#7A00FF', text: '#E0FF00', label: 'TONAL SHIFT' },
+  silence: { bg: '#050505', text: '#FF003C', label: 'OVERRIDE: SILENCE' },
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   ENGINE
+   ═══════════════════════════════════════════════════════════════ */
+class StorytellingEngine {
+  constructor(durationSeconds, onStateChanged) {
+    this.totalSeconds = durationSeconds;
+    this.remainingSeconds = durationSeconds;
+    this.config = DURATION_CONFIGS[durationSeconds] || DURATION_CONFIGS[300];
+    this.onStateChanged = onStateChanged;
+
+    this.timer = null;
+    this.streakCount = 0;
+    this.promptCount = 0;
+    this.silenceCount = 0;
+    this.activePrompt = null;
+    this.displayMode = 'flow';
+    this.cooldownRemaining = 0;
+    this.cooldownTotal = 0;
+    this.timeToNextEvent = 5;
+    this.silenceCountdown = 0;
+    this.isPlaying = false;
+    this.isPaused = false;
+    this.isComplete = false;
+  }
+
+  start() {
+    this.isPlaying = true;
+    this.isPaused = false;
+    this.isComplete = false;
+    this._emit();
+    this.timer = setInterval(() => this._tick(), 1000);
+  }
+
+  pause() {
+    this.isPaused = true;
+    clearInterval(this.timer);
+    this.timer = null;
+    this._emit();
+  }
+
+  resume() {
+    if (!this.isPlaying || !this.isPaused) return;
+    this.isPaused = false;
+    this.timer = setInterval(() => this._tick(), 1000);
+    this._emit();
+  }
+
+  stop() {
+    clearInterval(this.timer);
+    this.timer = null;
+    this.isPlaying = false;
+    this.isPaused = false;
+    this.isComplete = true;
+    this.activePrompt = null;
+    this.displayMode = 'flow';
+    this.silenceCountdown = 0;
+    this.cooldownRemaining = 0;
+    this._emit();
+  }
+
+  injectPrompt(type) {
+    if (!this.isPlaying || this.isPaused || this.isComplete) return;
+    if (this.remainingSeconds <= 15) return;
+    this._firePrompt(type);
+  }
+
+  dispose() {
+    clearInterval(this.timer);
+    this.timer = null;
+  }
+
+  _tick() {
+    this.remainingSeconds -= 1;
+
+    if (this.remainingSeconds <= 0) {
+      this.remainingSeconds = 0;
+      this.stop();
+      return;
+    }
+
+    if (this.silenceCountdown > 0) {
+      this.silenceCountdown -= 1;
+      if (this.silenceCountdown <= 0) {
+        this._handleEventComplete();
+      }
+      this._emit();
+      return;
+    }
+
+    if (this.cooldownRemaining > 0) {
+      this.cooldownRemaining -= 1;
+      if (this.cooldownRemaining <= 0 && this.activePrompt) {
+        this._handleEventComplete();
+      }
+      this._emit();
+      return;
+    }
+
+    if (!this.activePrompt && this.remainingSeconds > 15) {
+      this.timeToNextEvent -= 1;
+      if (this.timeToNextEvent <= 0) {
+        this._triggerRandomEvent();
+      }
+    }
+
+    this._emit();
+  }
+
+  _handleEventComplete() {
+    this.activePrompt = null;
+    this.displayMode = 'flow';
+    this.silenceCountdown = 0;
+    this.cooldownRemaining = 0;
+    this.cooldownTotal = 0;
+    this.streakCount += 1;
+    this.timeToNextEvent = 10 + Math.floor(Math.random() * 11);
+  }
+
+  _triggerRandomEvent() {
+    if (this.promptCount >= this.config.maxPrompts) return;
+
+    const roll = Math.random();
+    let type;
+    if (roll < 0.50) type = 'object';
+    else if (roll < 0.90) type = 'emotion';
+    else type = 'silence';
+
+    if (!this.config.allowedTypes.includes(type)) type = 'object';
+    if (type === 'silence' && this.silenceCount >= this.config.maxSilence) type = 'object';
+
+    this._firePrompt(type);
+  }
+
+  _firePrompt(type) {
+    let text, vocalCue = null;
+
+    if (type === 'object') {
+      text = OBJECTS[Math.floor(Math.random() * OBJECTS.length)];
+    } else if (type === 'emotion') {
+      const e = EMOTIONS[Math.floor(Math.random() * EMOTIONS.length)];
+      text = e.name;
+      vocalCue = e.vocalCue;
+    } else {
+      text = '10 SECONDS';
+    }
+
+    this.activePrompt = { type, text, vocalCue };
+    this.promptCount += 1;
+
+    if (type === 'silence') {
+      this.displayMode = 'silence';
+      this.silenceCountdown = 10;
+      this.silenceCount += 1;
+      this.cooldownRemaining = 0;
+      this.cooldownTotal = 0;
+    } else {
+      this.displayMode = 'prompt';
+      const fatigue = (this.totalSeconds - this.remainingSeconds) > 300 ? 5 : 0;
+      const cooldown = this.config.baseCooldown + Math.floor(Math.random() * 11) + fatigue;
+      this.cooldownRemaining = cooldown;
+      this.cooldownTotal = cooldown;
+    }
+
+    this.timeToNextEvent = 20 + Math.floor(Math.random() * 11);
+    this._emit();
+  }
+
+  _emit() {
+    this.onStateChanged({
+      totalSeconds:       this.totalSeconds,
+      remainingSeconds:   this.remainingSeconds,
+      streakCount:        this.streakCount,
+      activePrompt:       this.activePrompt,
+      displayMode:        this.displayMode,
+      cooldownRemaining:  this.cooldownRemaining,
+      cooldownTotal:      this.cooldownTotal,
+      timeToNextEvent:    this.timeToNextEvent,
+      silenceCountdown:   this.silenceCountdown,
+      isPlaying:          this.isPlaying,
+      isPaused:           this.isPaused,
+      isComplete:         this.isComplete,
+    });
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UI CONTROLLER
+   ═══════════════════════════════════════════════════════════════ */
+let selectedDuration = 300;
+let engine = null;
+let wakeLock = null;
+let lastPromptId = null;
+
+// DOM refs
+const $setup      = document.getElementById('setup-screen');
+const $active     = document.getElementById('active-screen');
+const $timer      = document.getElementById('timer-display');
+const $streak     = document.getElementById('streak-text');
+const $flow       = document.getElementById('flow-display');
+const $flowLabel  = document.getElementById('flow-label');
+const $prompt     = document.getElementById('prompt-display');
+const $promptBadge     = document.getElementById('prompt-badge-text');
+const $promptText      = document.getElementById('prompt-text');
+const $vocalCue        = document.getElementById('vocal-cue');
+const $silence         = document.getElementById('silence-display');
+const $silenceCountdown = document.getElementById('silence-countdown');
+const $shockwave  = document.getElementById('shockwave');
+const $barLabel   = document.getElementById('bar-label');
+const $barFill    = document.getElementById('bar-fill');
+const $injPanel   = document.getElementById('injection-panel');
+const $pauseOverlay = document.getElementById('pause-overlay');
+const $btnPause   = document.getElementById('btn-pause');
+const $iconPause  = document.getElementById('icon-pause');
+const $iconPlay   = document.getElementById('icon-play');
+const $streakBadge = document.getElementById('streak-badge');
+
+/* ── Build setup screen ── */
+function buildDurationButtons() {
+  const container = document.getElementById('duration-buttons');
+  DURATION_OPTIONS.forEach(sec => {
+    const min = sec / 60;
+    const btn = document.createElement('button');
+    btn.className = 'dur-btn' + (sec === selectedDuration ? ' selected' : '');
+    btn.innerHTML = `${min}<span class="unit">M</span>`;
+    btn.onclick = () => {
+      selectedDuration = sec;
+      container.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
+    container.appendChild(btn);
+  });
+}
+
+/* ── Build marquee ── */
+function buildMarquee() {
+  const container = document.getElementById('marquee-container');
+  const text = 'NEUROLOGICAL GYM \u00a0//\u00a0 DIVERGENT THINKING \u00a0//\u00a0 PROSODY CONTROL \u00a0//\u00a0 ';
+  const doubled = text + text;
+  for (let i = 0; i < 6; i++) {
+    const row = document.createElement('div');
+    row.className = 'marquee-row ' + (i % 2 === 0 ? 'left' : 'right');
+    row.textContent = doubled;
+    container.appendChild(row);
+  }
+}
+
+/* ── Build dotted ring SVG ── */
+function buildDottedRing() {
+  const svg = document.getElementById('dotted-ring');
+  const cx = 104, cy = 104, r = 96;
+  const segments = 24;
+  const gapFraction = 0.4;
+  const segAngle = (2 * Math.PI) / segments;
+  const dashAngle = segAngle * (1 - gapFraction);
+
+  let d = '';
+  for (let i = 0; i < segments; i++) {
+    const startAngle = i * segAngle;
+    const endAngle = startAngle + dashAngle;
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    d += `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} `;
+  }
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '4');
+  path.setAttribute('stroke-linecap', 'round');
+  svg.appendChild(path);
+}
+
+/* ── Film grain ── */
+function drawGrain(canvasId, seed) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Seeded random (simple LCG)
+  let s = seed;
+  function rand() {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  }
+
+  for (let i = 0; i < 90; i++) {
+    const x = rand() * canvas.width;
+    const y = rand() * canvas.height;
+    const r = 20 + rand() * 42;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fill();
+  }
+}
+
+/* ── Format time ── */
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+/* ── Apply theme ── */
+function applyTheme(theme) {
+  $active.style.backgroundColor = theme.bg;
+  $active.style.color = theme.text;
+
+  // Inner ring glow
+  const inner = document.querySelector('.flow-inner-ring');
+  if (inner) inner.style.boxShadow = `0 0 50px 10px ${theme.text}4D`;
+
+  // Flow label bg
+  $flowLabel.style.backgroundColor = theme.bg;
+
+  // Timer bar fill color
+  $barFill.style.backgroundColor = theme.text;
+
+  // Injection panel shadow
+  $injPanel.style.boxShadow = `8px 8px 0 ${theme.text}`;
+}
+
+/* ── Wakelock ── */
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch (_) {}
+}
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+}
+
+/* ── Fire shockwave ── */
+function fireShockwave() {
+  $shockwave.classList.remove('fire');
+  void $shockwave.offsetWidth; // reflow
+  $shockwave.classList.add('fire');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE UPDATE
+   ═══════════════════════════════════════════════════════════════ */
+function onStateChanged(state) {
+  if (state.isComplete) {
+    showScreen('setup');
+    releaseWakeLock();
+    return;
+  }
+
+  // Get current theme
+  let themeKey = 'flow';
+  if (state.displayMode === 'silence') themeKey = 'silence';
+  else if (state.displayMode === 'prompt' && state.activePrompt) themeKey = state.activePrompt.type;
+  const theme = THEMES[themeKey];
+
+  applyTheme(theme);
+
+  // Timer
+  $timer.textContent = formatTime(state.remainingSeconds);
+
+  // Streak
+  $streak.textContent = `STREAK x${state.streakCount}`;
+
+  // Pause button state
+  if (state.isPaused) {
+    $btnPause.classList.add('filled');
+    $iconPause.style.display = 'none';
+    $iconPlay.style.display = 'block';
+  } else {
+    $btnPause.classList.remove('filled');
+    $iconPause.style.display = 'block';
+    $iconPlay.style.display = 'none';
+  }
+
+  // Pause overlay
+  $pauseOverlay.classList.toggle('visible', state.isPaused);
+
+  // Center stage: determine what to show
+  const hasPrompt = state.displayMode === 'prompt' && state.activePrompt;
+  const hasSilence = state.displayMode === 'silence';
+  const hasFlow = state.displayMode === 'flow';
+
+  $flow.classList.toggle('hidden', !hasFlow);
+
+  if (hasPrompt) {
+    const promptId = state.activePrompt.text + state.activePrompt.type;
+    if (promptId !== lastPromptId) {
+      lastPromptId = promptId;
+      // Trigger entry animation by removing and re-adding class
+      $prompt.classList.remove('visible');
+      void $prompt.offsetWidth;
+      $prompt.classList.add('visible');
+      // Shockwave
+      fireShockwave();
+    }
+    $promptBadge.textContent = theme.label;
+    $promptText.textContent = state.activePrompt.text.toUpperCase();
+
+    // Vocal cue
+    if (state.activePrompt.vocalCue) {
+      $vocalCue.textContent = state.activePrompt.vocalCue;
+      $vocalCue.style.background = `${theme.text}1F`;
+      $vocalCue.style.border = `1px solid ${theme.text}4D`;
+      $vocalCue.classList.add('visible');
+    } else {
+      $vocalCue.classList.remove('visible');
+    }
+
+    $silence.classList.remove('visible');
+  } else if (hasSilence) {
+    $prompt.classList.remove('visible');
+    lastPromptId = null;
+    $silence.classList.add('visible');
+    $silenceCountdown.textContent = state.silenceCountdown;
+  } else {
+    $prompt.classList.remove('visible');
+    $silence.classList.remove('visible');
+    lastPromptId = null;
+  }
+
+  // Bottom dashboard
+  const inCooldown = state.cooldownRemaining > 0 && state.activePrompt;
+  const inSilence = state.displayMode === 'silence';
+
+  if (inSilence) {
+    $barLabel.textContent = `OVERRIDE : ${state.silenceCountdown}S`;
+    const pct = state.silenceCountdown / 10;
+    $barFill.style.width = `${pct * 100}%`;
+    $barFill.style.backgroundColor = '#FF003C';
+    $barFill.style.opacity = '1';
+  } else if (inCooldown) {
+    $barLabel.textContent = `SURVIVE COOLDOWN : ${state.cooldownRemaining}S`;
+    const pct = state.cooldownTotal > 0 ? state.cooldownRemaining / state.cooldownTotal : 0;
+    $barFill.style.width = `${pct * 100}%`;
+    $barFill.style.backgroundColor = theme.text;
+    $barFill.style.opacity = '1';
+  } else {
+    $barLabel.textContent = `NEXT INJECTION : ${state.timeToNextEvent}S`;
+    $barFill.style.width = '0%';
+    $barFill.style.backgroundColor = theme.text;
+    $barFill.style.opacity = '0.2';
+  }
+
+  // Injection panel styling for silence mode
+  if (inSilence) {
+    $injPanel.style.background = '#fff';
+    $injPanel.style.borderColor = '#FF003C';
+    $injPanel.style.boxShadow = '8px 8px 0 #FF003C';
+    $injPanel.querySelector('.injection-header').style.color = '#050505';
+  } else {
+    $injPanel.style.background = 'transparent';
+    $injPanel.style.borderColor = theme.text;
+    $injPanel.style.boxShadow = `8px 8px 0 ${theme.text}`;
+    $injPanel.querySelector('.injection-header').style.color = theme.text;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HANDLERS
+   ═══════════════════════════════════════════════════════════════ */
+function showScreen(name) {
+  $setup.classList.toggle('active', name === 'setup');
+  $active.classList.toggle('active', name === 'active');
+}
+
+function handleInitialize() {
+  engine = new StorytellingEngine(selectedDuration, onStateChanged);
+  lastPromptId = null;
+  showScreen('active');
+  drawGrain('grain-active', 73);
+  requestWakeLock();
+  engine.start();
+}
+
+function handleStop() {
+  if (engine) {
+    engine.stop();
+    engine.dispose();
+    engine = null;
+  }
+  releaseWakeLock();
+  showScreen('setup');
+}
+
+function handlePauseToggle() {
+  if (!engine) return;
+  if (engine.isPaused) {
+    engine.resume();
+  } else {
+    engine.pause();
+  }
+}
+
+function handleInject(type) {
+  if (engine) engine.injectPrompt(type);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════════ */
+function init() {
+  buildDurationButtons();
+  buildMarquee();
+  buildDottedRing();
+  drawGrain('grain-setup', 42);
+
+  // Redraw grain on resize
+  window.addEventListener('resize', () => {
+    drawGrain('grain-setup', 42);
+    if ($active.classList.contains('active')) {
+      drawGrain('grain-active', 73);
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>

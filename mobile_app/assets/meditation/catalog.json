@@ -1,0 +1,159 @@
+{
+  "generatedAt": "2026-03-24T11:05:41Z",
+  "sourceDirectory": "/Users/khushal/Documents/Python/Habit_app/meditation_tab/Meditation tab",
+  "tracks": [
+    {
+      "id": "nsdr_huberman_10",
+      "title": "Huberman NSDR (10 min)",
+      "category": "NSDR / Yoga Nidra",
+      "audioAssetPath": "assets/meditation/audio/nsdr_huberman_10.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/nsdr_huberman_10.jpg",
+      "durationSeconds": 642,
+      "sourceFileName": "10 min NSDR Huberman.m4a",
+      "processingMode": "gain_limit",
+      "gainDb": 0.0,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+,
+    {
+      "id": "nsdr_kellyboys_10",
+      "title": "Kelly Boys NSDR (10 min)",
+      "category": "NSDR / Yoga Nidra",
+      "audioAssetPath": "assets/meditation/audio/nsdr_kellyboys_10.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/nsdr_kellyboys_10.jpg",
+      "durationSeconds": 669,
+      "sourceFileName": "10 min NSDR KellyBoys.mp3",
+      "processingMode": "gain_limit",
+      "gainDb": 1.5,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+,
+    {
+      "id": "nsdr_huberman_20",
+      "title": "Huberman NSDR (20 min)",
+      "category": "NSDR / Yoga Nidra",
+      "audioAssetPath": "assets/meditation/audio/nsdr_huberman_20.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/nsdr_huberman_20.jpg",
+      "durationSeconds": 1251,
+      "sourceFileName": "20 Min Huberman NSDR.mp3",
+      "processingMode": "gain_limit",
+      "gainDb": -0.4,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+,
+    {
+      "id": "visualisation_mitesh_21_days",
+      "title": "21-Day Visualisation Challenge",
+      "category": "Affirmations / Manifestation",
+      "audioAssetPath": "assets/meditation/audio/visualisation_mitesh_21_days.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/visualisation_mitesh_21_days.jpg",
+      "durationSeconds": 892,
+      "sourceFileName": "21 Days Visualisation Challenge with Mitesh Khatri _ LOA Tools That Work(M4A_128K).m4a",
+      "processingMode": "gain_limit",
+      "gainDb": -1.3,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+,
+    {
+      "id": "binaural_huberman_40hz",
+      "title": "Huberman 40 Hz Focus",
+      "category": "Focus / Binaural",
+      "audioAssetPath": "assets/meditation/audio/binaural_huberman_40hz.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/binaural_huberman_40hz.jpg",
+      "durationSeconds": 5416,
+      "sourceFileName": "40 HZ Binaural beats _FOCUS _ CONCENTRATION_ with Dr. Andrew Huberman(360P).mp4",
+      "processingMode": "convert_only",
+      "gainDb": 0.0,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+,
+    {
+      "id": "shoonya_drk_10",
+      "title": "Dr. K Shoonya Meditation",
+      "category": "Guided Meditation",
+      "audioAssetPath": "assets/meditation/audio/shoonya_drk_10.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/shoonya_drk_10.jpg",
+      "durationSeconds": 585,
+      "sourceFileName": "Dr. K - Shoonya Meditation - HealthyGamerGG [10 Minute Duration](480P).mp4",
+      "processingMode": "gain_limit",
+      "gainDb": 10.0,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+,
+    {
+      "id": "binaural_focus_40hz",
+      "title": "40 Hz Focus Binaural Beats",
+      "category": "Focus / Binaural",
+      "audioAssetPath": "assets/meditation/audio/binaural_focus_40hz.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/binaural_focus_40hz.jpg",
+      "durationSeconds": 3730,
+      "sourceFileName": "Improve Focus_ Concentration_ Attention with 40 Hertz Binaural Beats(MP3_160K).mp3",
+      "processingMode": "gain_limit",
+      "gainDb": -0.2,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+,
+    {
+      "id": "kellyboys_quick_afternoon",
+      "title": "Kelly Boys Afternoon NSDR",
+      "category": "NSDR / Yoga Nidra",
+      "audioAssetPath": "assets/meditation/audio/kellyboys_quick_afternoon.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/kellyboys_quick_afternoon.jpg",
+      "durationSeconds": 509,
+      "sourceFileName": "Quick Afternoon Practice with Kelly Boys - Relax Physical_ Emotional_ and Mental Tension--(MP3_160K).mp3",
+      "processingMode": "gain_limit",
+      "gainDb": 0.2,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+,
+    {
+      "id": "yoga_nidra_sleep_8",
+      "title": "Yoga Nidra for Sleep (8 min)",
+      "category": "NSDR / Yoga Nidra",
+      "audioAssetPath": "assets/meditation/audio/yoga_nidra_sleep_8.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/yoga_nidra_sleep_8.jpg",
+      "durationSeconds": 499,
+      "sourceFileName": "Yoga Nidra for Sleep (8 minute NSDR practice)(MP3_160K).mp3",
+      "processingMode": "copy_original",
+      "gainDb": 0.0,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+,
+    {
+      "id": "hooponopono_mithesh",
+      "title": "Hooponopono with Mitesh",
+      "category": "Affirmations / Manifestation",
+      "audioAssetPath": "assets/meditation/audio/hooponopono_mithesh.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/hooponopono_mithesh.jpg",
+      "durationSeconds": 771,
+      "sourceFileName": "hooponopono_mithesh (1).mp3",
+      "processingMode": "gain_limit",
+      "gainDb": 2.6,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+,
+    {
+      "id": "money_affirmations",
+      "title": "Money Affirmations",
+      "category": "Affirmations / Manifestation",
+      "audioAssetPath": "assets/meditation/audio/money_affirmations.mp3",
+      "artworkAssetPath": "assets/meditation/artwork/money_affirmations.jpg",
+      "durationSeconds": 254,
+      "sourceFileName": "money_affirmations.mp3",
+      "processingMode": "gain_limit",
+      "gainDb": 4.4,
+      "limiterDbfs": -1.5,
+      "artworkPending": false
+    }
+  ]
+}
