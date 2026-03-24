@@ -72,6 +72,16 @@ releases/android/mobile-v1.0.0/
 - important notes
 - artifact names
 
+## Git LFS For Large Assets
+
+This repository stores large binaries (meditation audio, APK/AAB releases) via Git LFS. To clone everything successfully:
+
+1. Install Git LFS and run `git lfs install`
+2. Clone the repo normally
+3. If needed, run `git lfs pull` to fetch large assets
+
+Files tracked via LFS include `*.mp3`, `*.m4a`, `*.mp4`, `*.wav`, `*.apk`, and `*.aab`.
+
 ## Safety Notes
 
 - Local secrets and signing files should remain untracked.
