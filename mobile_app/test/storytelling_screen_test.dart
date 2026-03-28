@@ -25,6 +25,17 @@ void main() {
         tester.getBottomLeft(find.text('INITIALIZE')).dy,
         lessThanOrEqualTo(700),
       );
+      final double gap = tester
+              .getTopLeft(
+                find.byKey(const ValueKey<String>('story-initialize-button')),
+              )
+              .dy -
+          tester
+              .getBottomLeft(
+                find.byKey(const ValueKey<String>('story-duration-card')),
+              )
+              .dy;
+      expect(gap, lessThan(40));
     },
   );
 }

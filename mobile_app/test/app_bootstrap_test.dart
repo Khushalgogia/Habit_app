@@ -17,7 +17,7 @@ void main() {
         },
       );
 
-      expect(state.environment.appVersion, '2.2.4');
+      expect(state.environment.appVersion, '2.2.9');
       expect(state.isBackgroundAudioAvailable, isFalse);
       expect(state.backgroundAudioWarning, isNotNull);
       expect(backendCalled, isTrue);
@@ -45,8 +45,8 @@ AppEnvironment _testEnvironment() {
   return const AppEnvironment(
     appName: 'Voice Growth Archipelago',
     applicationId: 'com.voicegrowth.archipelago',
-    appVersion: '2.2.4',
-    appBuildNumber: '9',
+    appVersion: '2.2.9',
+    appBuildNumber: '14',
     useDemoBackend: true,
     supportUrl: 'mailto:support@voicegrowth.archipelago',
     supabaseUrl: '',

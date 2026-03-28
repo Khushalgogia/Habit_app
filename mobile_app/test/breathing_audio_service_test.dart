@@ -1,29 +1,26 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:voice_growth_archipelago/src/features/breathe/data/breathing_audio_service.dart';
 import 'package:voice_growth_archipelago/src/features/breathe/domain/breathing_models.dart';
 
 void main() {
   test('inhale and exhale use duration matched playback while hold loops',
       () async {
-    final _FakeBreathingPlayer inhale = _FakeBreathingPlayer(
-      duration: const Duration(seconds: 6),
+    final _FakeBreathingCuePlayer player = _FakeBreathingCuePlayer(
+      durationsByPath: <String, Duration>{
+        '/cache/inhale.mp3': const Duration(seconds: 6),
+        '/cache/hold.mp3': const Duration(seconds: 2),
+        '/cache/exhale.mp3': const Duration(seconds: 5),
+      },
     );
-    final _FakeBreathingPlayer hold = _FakeBreathingPlayer(
-      duration: const Duration(seconds: 2),
-    );
-    final _FakeBreathingPlayer exhale = _FakeBreathingPlayer(
-      duration: const Duration(seconds: 5),
-    );
-    final _FakeBreathingPlayer complete = _FakeBreathingPlayer(
-      duration: const Duration(seconds: 6),
-    );
-    final JustAudioBreathingAudioService service =
-        JustAudioBreathingAudioService(
-      inhalePlayer: inhale,
-      holdPlayer: hold,
-      exhalePlayer: exhale,
-      completePlayer: complete,
+    final CueBreathingAudioService service = CueBreathingAudioService(
+      player: player,
+      assetCache: _FakeBreathingCueAssetCache(
+        <String, String>{
+          'assets/breathe/sounds/inhale_sound.mp3': '/cache/inhale.mp3',
+          'assets/breathe/sounds/hold_sound.mp3': '/cache/hold.mp3',
+          'assets/breathe/sounds/exhale_sound.mp3': '/cache/exhale.mp3',
+        },
+      ),
     );
 
     await service.preload();
@@ -32,64 +29,71 @@ void main() {
       durationSeconds: 3,
       soundMode: BreathingSoundMode.cues,
     );
-    expect(inhale.lastLoopMode, LoopMode.off);
-    expect(inhale.lastSpeed, 2);
-    expect(inhale.playCount, 1);
+    expect(player.currentSourcePath, '/cache/inhale.mp3');
+    expect(player.lastReleaseMode, BreathingCueReleaseMode.stop);
+    expect(player.lastSpeed, 2);
+    expect(player.resumeCount, 1);
 
     await service.playPhase(
       BreathingPhase.holdIn,
       durationSeconds: 7,
       soundMode: BreathingSoundMode.cues,
     );
-    expect(hold.lastLoopMode, LoopMode.one);
-    expect(hold.lastSpeed, 1);
-    expect(hold.playCount, 1);
+    expect(player.currentSourcePath, '/cache/hold.mp3');
+    expect(player.lastReleaseMode, BreathingCueReleaseMode.loop);
+    expect(player.lastSpeed, 1);
+    expect(player.resumeCount, 2);
 
     await service.playPhase(
       BreathingPhase.exhale,
       durationSeconds: 10,
       soundMode: BreathingSoundMode.cues,
     );
-    expect(exhale.lastLoopMode, LoopMode.off);
-    expect(exhale.lastSpeed, 0.5);
-    expect(exhale.playCount, 1);
+    expect(player.currentSourcePath, '/cache/exhale.mp3');
+    expect(player.lastReleaseMode, BreathingCueReleaseMode.stop);
+    expect(player.lastSpeed, 0.5);
+    expect(player.resumeCount, 3);
   });
 
-  test('completion uses inhale asset at slower original rate', () async {
-    final _FakeBreathingPlayer inhale = _FakeBreathingPlayer();
-    final _FakeBreathingPlayer hold = _FakeBreathingPlayer();
-    final _FakeBreathingPlayer exhale = _FakeBreathingPlayer();
-    final _FakeBreathingPlayer complete = _FakeBreathingPlayer();
-    final JustAudioBreathingAudioService service =
-        JustAudioBreathingAudioService(
-      inhalePlayer: inhale,
-      holdPlayer: hold,
-      exhalePlayer: exhale,
-      completePlayer: complete,
+  test('completion uses inhale cue at slower original rate', () async {
+    final _FakeBreathingCuePlayer player = _FakeBreathingCuePlayer(
+      durationsByPath: <String, Duration>{
+        '/cache/inhale.mp3': const Duration(seconds: 6),
+        '/cache/hold.mp3': const Duration(seconds: 2),
+        '/cache/exhale.mp3': const Duration(seconds: 5),
+      },
+    );
+    final CueBreathingAudioService service = CueBreathingAudioService(
+      player: player,
+      assetCache: _FakeBreathingCueAssetCache(
+        <String, String>{
+          'assets/breathe/sounds/inhale_sound.mp3': '/cache/inhale.mp3',
+          'assets/breathe/sounds/hold_sound.mp3': '/cache/hold.mp3',
+          'assets/breathe/sounds/exhale_sound.mp3': '/cache/exhale.mp3',
+        },
+      ),
     );
 
     await service.preload();
-
-    expect(complete.assetPath, 'assets/breathe/sounds/inhale_sound.mp3');
-
     await service.playComplete(BreathingSoundMode.cues);
 
-    expect(complete.lastLoopMode, LoopMode.off);
-    expect(complete.lastSpeed, 0.6);
-    expect(complete.playCount, 1);
+    expect(player.currentSourcePath, '/cache/inhale.mp3');
+    expect(player.lastReleaseMode, BreathingCueReleaseMode.stop);
+    expect(player.lastSpeed, 0.6);
+    expect(player.resumeCount, 1);
   });
 }
 
-class _FakeBreathingPlayer implements BreathingAudioPlayer {
-  _FakeBreathingPlayer({this.duration = const Duration(seconds: 4)});
+class _FakeBreathingCuePlayer implements BreathingCuePlayer {
+  _FakeBreathingCuePlayer({required this.durationsByPath});
 
-  final Duration duration;
-  String? assetPath;
-  LoopMode? lastLoopMode;
+  final Map<String, Duration> durationsByPath;
+  String? currentSourcePath;
+  BreathingCueReleaseMode? lastReleaseMode;
   double? lastSpeed;
   double? lastVolume;
   Duration? lastSeek;
-  int playCount = 0;
+  int resumeCount = 0;
   int stopCount = 0;
   int disposeCount = 0;
 
@@ -99,29 +103,13 @@ class _FakeBreathingPlayer implements BreathingAudioPlayer {
   }
 
   @override
-  Future<void> play() async {
-    playCount += 1;
+  Future<Duration?> getDuration() async {
+    return durationsByPath[currentSourcePath];
   }
 
   @override
-  Future<Duration?> setAsset(String assetPath) async {
-    this.assetPath = assetPath;
-    return duration;
-  }
-
-  @override
-  Future<void> setLoopMode(LoopMode mode) async {
-    lastLoopMode = mode;
-  }
-
-  @override
-  Future<void> setSpeed(double speed) async {
-    lastSpeed = speed;
-  }
-
-  @override
-  Future<void> setVolume(double volume) async {
-    lastVolume = volume;
+  Future<void> resume() async {
+    resumeCount += 1;
   }
 
   @override
@@ -130,7 +118,38 @@ class _FakeBreathingPlayer implements BreathingAudioPlayer {
   }
 
   @override
+  Future<void> setPlaybackRate(double speed) async {
+    lastSpeed = speed;
+  }
+
+  @override
+  Future<void> setReleaseMode(BreathingCueReleaseMode mode) async {
+    lastReleaseMode = mode;
+  }
+
+  @override
+  Future<void> setSourceDeviceFile(String path) async {
+    currentSourcePath = path;
+  }
+
+  @override
+  Future<void> setVolume(double volume) async {
+    lastVolume = volume;
+  }
+
+  @override
   Future<void> stop() async {
     stopCount += 1;
+  }
+}
+
+class _FakeBreathingCueAssetCache implements BreathingCueAssetCache {
+  _FakeBreathingCueAssetCache(this.pathsByAsset);
+
+  final Map<String, String> pathsByAsset;
+
+  @override
+  Future<String> loadPath(String assetPath) async {
+    return pathsByAsset[assetPath]!;
   }
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-24T11:05:41Z",
+  "generatedAt": "2026-03-28T07:51:47Z",
   "sourceDirectory": "/Users/khushal/Documents/Python/Habit_app/meditation_tab/Meditation tab",
   "tracks": [
     {
@@ -64,9 +64,9 @@
       "category": "Focus / Binaural",
       "audioAssetPath": "assets/meditation/audio/binaural_huberman_40hz.mp3",
       "artworkAssetPath": "assets/meditation/artwork/binaural_huberman_40hz.jpg",
-      "durationSeconds": 5416,
-      "sourceFileName": "40 HZ Binaural beats _FOCUS _ CONCENTRATION_ with Dr. Andrew Huberman(360P).mp4",
-      "processingMode": "convert_only",
+      "durationSeconds": 695,
+      "sourceFileName": "40hz _Focus _ Change your Mood_  with Dr. Andrew Huberman(MP3_160K).mp3",
+      "processingMode": "copy_original",
       "gainDb": 0.0,
       "limiterDbfs": -1.5,
       "artworkPending": false
@@ -82,20 +82,6 @@
       "sourceFileName": "Dr. K - Shoonya Meditation - HealthyGamerGG [10 Minute Duration](480P).mp4",
       "processingMode": "gain_limit",
       "gainDb": 10.0,
-      "limiterDbfs": -1.5,
-      "artworkPending": false
-    }
-,
-    {
-      "id": "binaural_focus_40hz",
-      "title": "40 Hz Focus Binaural Beats",
-      "category": "Focus / Binaural",
-      "audioAssetPath": "assets/meditation/audio/binaural_focus_40hz.mp3",
-      "artworkAssetPath": "assets/meditation/artwork/binaural_focus_40hz.jpg",
-      "durationSeconds": 3730,
-      "sourceFileName": "Improve Focus_ Concentration_ Attention with 40 Hertz Binaural Beats(MP3_160K).mp3",
-      "processingMode": "gain_limit",
-      "gainDb": -0.2,
       "limiterDbfs": -1.5,
       "artworkPending": false
     }

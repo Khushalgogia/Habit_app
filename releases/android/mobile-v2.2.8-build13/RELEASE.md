@@ -1,0 +1,21 @@
+# mobile-v2.2.8-build13
+
+- Build date: `2026-03-24`
+- Source base commit: `82b357c`
+- App version: `2.2.8`
+- Build number: `13`
+- Installed release label: `2.2.8 (13)`
+- Artifacts:
+  - `voice-growth-archipelago-v2.2.8-build13.apk`
+  - `voice-growth-archipelago-v2.2.8-build13.aab`
+- SHA-256:
+  - `voice-growth-archipelago-v2.2.8-build13.apk`: `df150db03b8ad737bea186f822fd3d77213ab12127b968fddf74b81717d8e86e`
+  - `voice-growth-archipelago-v2.2.8-build13.aab`: `c94f7e1e120d5c71c149418d6488989740243adf8900e0a663632a7193c6b211`
+- Validation:
+  - Full `flutter test` suite passed.
+  - Built APK and AAB both contain all `21` meditation catalog, audio, and artwork assets referenced by `assets/meditation/catalog.json`.
+- Notes:
+  - Meditation in-app controls now use isolated tap targets so row, recent-card, mini-player, and full-player buttons no longer swallow pause or skip gestures.
+  - Meditation seek now stays responsive in-app with optimistic drag/tap feedback and a single committed seek on release.
+  - Meditation resume state now saves immediately on pause, seek, track change, app background, and tab switch so `Continue Listening` reflects the latest position without waiting on a timer.
+  - Breathe and Story were audited for the same interaction pattern and were left unchanged because the same tap-target conflict was not present there.

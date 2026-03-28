@@ -149,9 +149,8 @@ TRACKS="$(cat <<'EOF'
 10 min NSDR KellyBoys.mp3|nsdr_kellyboys_10|Kelly Boys NSDR (10 min)|NSDR / Yoga Nidra|gain_limit|1.5|10 Minute NSDR KellyBoys
 20 Min Huberman NSDR.mp3|nsdr_huberman_20|Huberman NSDR (20 min)|NSDR / Yoga Nidra|gain_limit|-0.4|20 Minute NSDR Huberman
 21 Days Visualisation Challenge with Mitesh Khatri _ LOA Tools That Work(M4A_128K).m4a|visualisation_mitesh_21_days|21-Day Visualisation Challenge|Affirmations / Manifestation|gain_limit|-1.3|Mitesh Khatri 21 Days Visualisation
-40 HZ Binaural beats _FOCUS _ CONCENTRATION_ with Dr. Andrew Huberman(360P).mp4|binaural_huberman_40hz|Huberman 40 Hz Focus|Focus / Binaural|convert_only|0.0|40 HZ Binaural Beats Andrew Huberman
+40hz _Focus _ Change your Mood_  with Dr. Andrew Huberman(MP3_160K).mp3|binaural_huberman_40hz|Huberman 40 Hz Focus|Focus / Binaural|copy_original|0.0|40 HZ Focus Change Your Mood Andrew Huberman
 Dr. K - Shoonya Meditation - HealthyGamerGG [10 Minute Duration](480P).mp4|shoonya_drk_10|Dr. K Shoonya Meditation|Guided Meditation|gain_limit|10.0|Dr K Shoonya Meditation 10 Minute
-Improve Focus_ Concentration_ Attention with 40 Hertz Binaural Beats(MP3_160K).mp3|binaural_focus_40hz|40 Hz Focus Binaural Beats|Focus / Binaural|gain_limit|-0.2|Improve Focus Concentration Attention 40 Hertz Binaural Beats
 Quick Afternoon Practice with Kelly Boys - Relax Physical_ Emotional_ and Mental Tension--(MP3_160K).mp3|kellyboys_quick_afternoon|Kelly Boys Afternoon NSDR|NSDR / Yoga Nidra|gain_limit|0.2|Quick Afternoon Practice Kelly Boys Relax Emotional Mental Tension
 Yoga Nidra for Sleep (8 minute NSDR practice)(MP3_160K).mp3|yoga_nidra_sleep_8|Yoga Nidra for Sleep (8 min)|NSDR / Yoga Nidra|copy_original|0.0|Yoga Nidra for Sleep 8 minute NSDR practice
 hooponopono_mithesh (1).mp3|hooponopono_mithesh|Hooponopono with Mitesh|Affirmations / Manifestation|gain_limit|2.6|Hooponopono Mithesh Khatri

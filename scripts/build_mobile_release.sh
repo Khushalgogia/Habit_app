@@ -162,10 +162,10 @@ cat > "${RELEASE_DIR}/RELEASE.md" <<EOF
   - \`${APK_NAME}\`: \`${APK_SHA}\`
   - \`${AAB_NAME}\`: \`${AAB_SHA}\`
 - Notes:
-  - Meditation audio and artwork are bundled locally inside this release and validated before archiving
-  - Meditation playback now loads tracks lazily so the tab opens quickly while local playback still stays offline
-  - Bottom navigation is reduced to five tabs, with Settings moved into the Progress screen header
-  - Meditation cards and mini-player now use the lighter Breathe-style aura treatment
+  - Meditation now uses a Spotify-style local library with continue-listening and recent-session sections
+  - The shared Aura default now uses a green-led accent across Meditation and Breathe neutral states
+  - The Breathe favorite button was removed and Story setup spacing was tightened without changing feature behavior
+  - Meditation remains the app's only background-enabled audio player, so lock-screen controls stay reliable
 EOF
 
 echo "Release artifacts archived in ${RELEASE_DIR}"

@@ -32,6 +32,7 @@ void main() {
 
     expect(find.text('Aura'), findsOneWidget);
     expect(find.text('Relax'), findsOneWidget);
+    expect(find.byIcon(Icons.favorite_border_rounded), findsNothing);
 
     await tester.tap(find.text('Relax'));
     await tester.pump();
@@ -57,6 +58,49 @@ void main() {
     expect(audioService.phaseCalls, isNotEmpty);
 
     await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('Breathe pauses meditation before starting a session', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    bool meditationPauseCalled = false;
+    bool preloadSawPause = false;
+    final _FakeAudioService audioService = _FakeAudioService(
+      onPreload: () {
+        preloadSawPause = meditationPauseCalled;
+      },
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildAppTheme(Brightness.light),
+        home: Scaffold(
+          body: BreatheScreen(
+            preferencesStore: _FakePreferencesStore(),
+            audioService: audioService,
+            onBeforeSessionStart: () async {
+              meditationPauseCalled = true;
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Relax'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.tap(find.text('Begin Journey'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(meditationPauseCalled, isTrue);
+    expect(preloadSawPause, isTrue);
+    expect(find.text('Inhale'), findsOneWidget);
   });
 
   testWidgets('Breathe home cards keep labels horizontal on phone width', (
@@ -160,7 +204,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Preset name'), 'Reset');
+      find.widgetWithText(TextFormField, 'Preset name'),
+      'Reset',
+    );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Inhale seconds'),
       '4',
@@ -237,6 +283,9 @@ class _NavHarnessState extends State<_NavHarness> {
 }
 
 class _FakeAudioService implements BreathingAudioService {
+  _FakeAudioService({this.onPreload});
+
+  final VoidCallback? onPreload;
   int preloadCalls = 0;
   int stopCalls = 0;
   int completeCalls = 0;
@@ -262,6 +311,7 @@ class _FakeAudioService implements BreathingAudioService {
   @override
   Future<void> preload() async {
     preloadCalls += 1;
+    onPreload?.call();
   }
 
   @override
